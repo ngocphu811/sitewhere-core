@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:sec="http://www.springframework.org/schema/security"
+	xmlns:jaxws="http://cxf.apache.org/jaxws" xmlns:jaxrs="http://cxf.apache.org/jaxrs" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+           http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+           http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-3.1.xsd
+           http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd
+           http://cxf.apache.org/jaxrs http://cxf.apache.org/schemas/jaxrs.xsd">
+
+	<!-- Implements Spring AuthenticationProvider interface -->
+	<bean id="authenticationProvider" class="com.sitewhere.security.SitewhereAuthenticationProvider" />
+
+	<!-- Authentication manager -->
+	<sec:authentication-manager>
+		<sec:authentication-provider ref="authenticationProvider" />
+	</sec:authentication-manager>
+
+	<!-- Enable Spring security annotations on loaded classes -->
+	<sec:global-method-security secured-annotations="enabled" />
+
+	<!-- Used to establish identity for Atlas SOAP requests via WSS4J -->
+	<bean id="sitewhereWsSecAuth" class="com.sitewhere.security.cxf.SitewhereWss4jInInterceptor">
+		<constructor-arg>
+			<map>
+				<entry key="action" value="UsernameToken" />
+				<entry key="passwordType" value="PasswordText" />
+				<entry key="passwordCallbackRef">
+					<bean class="com.sitewhere.security.cxf.SitewherePasswordCallback" />
+				</entry>
+			</map>
+		</constructor-arg>
+		<property name="useFallbackAccount" value="false" />
+		<property name="fallbackUser" value="anonymous" />
+	</bean>
+</beans>

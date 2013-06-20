@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:sec="http://www.springframework.org/schema/security" xmlns:jaxws="http://cxf.apache.org/jaxws"
+	xmlns:jaxrs="http://cxf.apache.org/jaxrs" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+           http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+           http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-3.0.xsd
+           http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd
+           http://cxf.apache.org/jaxrs http://cxf.apache.org/schemas/jaxrs.xsd">
+
+
+	<!-- ################################  -->
+	<!-- #           IMPORTS            #  -->
+	<!-- ################################  -->
+
+	<!-- CXF Imports -->
+	<import resource="classpath:META-INF/cxf/cxf.xml" />
+	<import resource="classpath:META-INF/cxf/cxf-extension-soap.xml" />
+	<import resource="classpath:META-INF/cxf/cxf-extension-jaxrs-binding.xml" />
+	<import resource="classpath:META-INF/cxf/cxf-extension-http-jetty.xml" />
+
+	<!-- SiteWhere imports -->
+	<import resource="sitewhere-spi-impl.xml" />
+	<import resource="sitewhere-security.xml" />
+
+
+	<!-- ################################  -->
+	<!-- #         WEB SERVICES         #  -->
+	<!-- ################################  -->
+
+	<!-- User web service bean -->
+	<bean id="bootstrapBean" class="com.sitewhere.ws.BootstrapService" />
+
+	<!-- User web service bean -->
+	<bean id="userServiceBean" class="com.sitewhere.ws.UserManagementService" />
+	
+	<!-- Unprotected REST Services -->
+	<jaxrs:server id="unprotectedRestServices" address="http://0.0.0.0:8181/rest/">
+		<jaxrs:serviceBeans>
+			<ref bean="bootstrapBean" />
+		</jaxrs:serviceBeans>
+	</jaxrs:server>
+
+	<!-- Protected REST Services -->
+	<jaxrs:server id="protectedRestServices" address="http://0.0.0.0:8181/sitewhere/">
+		<jaxrs:inInterceptors>
+			<bean class="com.sitewhere.security.cxf.SitewhereBasicAuthInterceptor" />
+		</jaxrs:inInterceptors>
+		<jaxrs:serviceBeans>
+			<ref bean="userServiceBean" />
+		</jaxrs:serviceBeans>
+		<jaxrs:providers>
+			<bean class="com.sitewhere.security.SitewhereRuntimeExceptionMapper" />
+		</jaxrs:providers>
+	</jaxrs:server>
+</beans>
