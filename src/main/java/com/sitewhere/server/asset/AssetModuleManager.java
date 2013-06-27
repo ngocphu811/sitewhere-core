@@ -1,12 +1,12 @@
 /*
-* $Id$
-* --------------------------------------------------------------------------------------
-* Copyright (c) Reveal Technologies, LLC. All rights reserved. http://www.reveal-tech.com
-*
-* The software in this package is published under the terms of the CPAL v1.0
-* license, a copy of which has been included with this distribution in the
-* LICENSE.txt file.
-*/
+ * $Id$
+ * --------------------------------------------------------------------------------------
+ * Copyright (c) Reveal Technologies, LLC. All rights reserved. http://www.reveal-tech.com
+ *
+ * The software in this package is published under the terms of the CPAL v1.0
+ * license, a copy of which has been included with this distribution in the
+ * LICENSE.txt file.
+ */
 
 package com.sitewhere.server.asset;
 
@@ -43,8 +43,12 @@ public class AssetModuleManager implements IAssetModuleManager {
 	public void start() throws SiteWhereException {
 		for (IAssetModule<?> module : modules) {
 			LOGGER.info("Starting asset module: " + module.getName());
-			module.start();
-			LOGGER.info("Started asset module: " + module.getName());
+			try {
+				module.start();
+				LOGGER.info("Started asset module: " + module.getName());
+			} catch (SiteWhereException e) {
+				LOGGER.error("Unable to start asset module: " + module.getName(), e);
+			}
 		}
 	}
 
@@ -68,8 +72,7 @@ public class AssetModuleManager implements IAssetModuleManager {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see
-	 * com.sitewhere.spi.asset.IAssetModuleManager#getAssetById(com.sitewhere.spi.asset.AssetType,
+	 * @see com.sitewhere.spi.asset.IAssetModuleManager#getAssetById(com.sitewhere.spi.asset.AssetType,
 	 * java.lang.String)
 	 */
 	public IAsset getAssetById(AssetType type, String id) throws SiteWhereException {

@@ -1,0 +1,8 @@
+<hardware-assets>
+	<hardware-asset id="174" name="MeiTrack MT88" sku="MT88">
+		<description>Smallest GPS Tracker Suitable for the Blind, Elderly, Children and Pets. Recessed Braille SOS Button. Small Size. Clip for Watch Belt.</description>
+		<image-url>http://54.235.148.185/magento/media/catalog/product/m/2/m201010131357417441.jpg</image-url>
+		<property name="weight" value="1.000"/>
+		<property name="status" value="enabled"/>
+	</hardware-asset>
+</hardware-assets>

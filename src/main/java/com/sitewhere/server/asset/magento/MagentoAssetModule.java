@@ -1,12 +1,12 @@
 /*
-* $Id$
-* --------------------------------------------------------------------------------------
-* Copyright (c) Reveal Technologies, LLC. All rights reserved. http://www.reveal-tech.com
-*
-* The software in this package is published under the terms of the CPAL v1.0
-* license, a copy of which has been included with this distribution in the
-* LICENSE.txt file.
-*/
+ * $Id$
+ * --------------------------------------------------------------------------------------
+ * Copyright (c) Reveal Technologies, LLC. All rights reserved. http://www.reveal-tech.com
+ *
+ * The software in this package is published under the terms of the CPAL v1.0
+ * license, a copy of which has been included with this distribution in the
+ * LICENSE.txt file.
+ */
 
 package com.sitewhere.server.asset.magento;
 
@@ -28,6 +28,7 @@ import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.ObjectMapper;
 
 import com.sitewhere.rest.model.command.CommandResponse;
+import com.sitewhere.server.asset.AssetMatcher;
 import com.sitewhere.spi.SiteWhereException;
 import com.sitewhere.spi.asset.AssetType;
 import com.sitewhere.spi.asset.IAssetModule;
@@ -64,6 +65,9 @@ public class MagentoAssetModule implements IAssetModule<MagentoAsset> {
 
 	/** Cached asset map */
 	private Map<String, MagentoAsset> assetCache = new HashMap<String, MagentoAsset>();
+
+	/** Matcher used for searches */
+	protected AssetMatcher matcher = new AssetMatcher();
 
 	/*
 	 * (non-Javadoc)
@@ -106,8 +110,7 @@ public class MagentoAssetModule implements IAssetModule<MagentoAsset> {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see
-	 * com.sitewhere.spi.asset.IAssetModule#isAssetTypeSupported(com.sitewhere.spi.asset.AssetType)
+	 * @see com.sitewhere.spi.asset.IAssetModule#isAssetTypeSupported(com.sitewhere.spi.asset.AssetType)
 	 */
 	public boolean isAssetTypeSupported(AssetType type) {
 		if (type == AssetType.Hardware) {
@@ -138,8 +141,7 @@ public class MagentoAssetModule implements IAssetModule<MagentoAsset> {
 			return results;
 		}
 		for (MagentoAsset asset : assetCache.values()) {
-			if ((contains(asset.getName(), criteria)) || (contains(asset.getDescription(), criteria))
-					|| (contains(asset.getId(), criteria))) {
+			if (matcher.isHardwareMatch(asset, criteria)) {
 				results.add(asset);
 			}
 		}
@@ -157,20 +159,6 @@ public class MagentoAssetModule implements IAssetModule<MagentoAsset> {
 		} catch (SiteWhereException e) {
 			return new CommandResponse(CommandResult.Failed, e.getMessage());
 		}
-	}
-
-	/**
-	 * Simplifies comparing possibly null non-case sensitive values.
-	 * 
-	 * @param field
-	 * @param value
-	 * @return
-	 */
-	protected boolean contains(String field, String value) {
-		if (field == null) {
-			return false;
-		}
-		return field.trim().toLowerCase().indexOf(value) != -1;
 	}
 
 	/**
@@ -193,8 +181,7 @@ public class MagentoAssetModule implements IAssetModule<MagentoAsset> {
 	}
 
 	/**
-	 * Make calls to the Magento server to get all products and cache them locally for fast
-	 * searches.
+	 * Make calls to the Magento server to get all products and cache them locally for fast searches.
 	 * 
 	 * @throws SiteWhereException
 	 */

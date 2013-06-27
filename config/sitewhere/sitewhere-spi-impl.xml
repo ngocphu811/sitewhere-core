@@ -35,6 +35,9 @@
 	<!-- # ASSET MODULE IMPLEMENTATIONS # -->
 	<!-- ################################ -->
 
+	<!-- Default file system hardware asset module -->
+	<bean id="fileHardwareModule" class="com.sitewhere.server.asset.filesystem.FileSystemHardwareAssetModule"/>
+
 	<!-- Magento module configuration -->
 	<bean id="magentoModule" class="com.sitewhere.server.asset.magento.MagentoAssetModule">
 		<property name="baseRestUrl" value="http://54.235.148.185/magento/api/rest" />
@@ -63,7 +66,7 @@
 	<bean id="assetModuleManager" class="com.sitewhere.server.asset.AssetModuleManager">
 		<property name="modules">
 			<list>
-				<ref bean="magentoModule" />
+				<ref bean="fileHardwareModule" />
 				<ref bean="wso2Module" />
 			</list>
 		</property>
