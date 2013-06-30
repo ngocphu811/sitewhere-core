@@ -23,10 +23,10 @@ import javax.ws.rs.core.Response;
 
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.apache.log4j.Logger;
-import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.map.ObjectMapper;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sitewhere.rest.model.command.CommandResponse;
 import com.sitewhere.server.asset.AssetMatcher;
 import com.sitewhere.spi.SiteWhereException;
@@ -170,11 +170,11 @@ public class MagentoAssetModule implements IAssetModule<MagentoAsset> {
 	 */
 	protected MagentoAsset parseFrom(JsonNode json) throws SiteWhereException {
 		MagentoAsset result = new MagentoAsset();
-		Iterator<String> fieldNames = json.getFieldNames();
+		Iterator<String> fieldNames = json.fieldNames();
 		while (fieldNames.hasNext()) {
 			String fieldName = fieldNames.next();
 			JsonNode current = json.get(fieldName);
-			result.setProperty(fieldName, current.getTextValue());
+			result.setProperty(fieldName, current.textValue());
 		}
 		result.loadFromProperties();
 		return result;
@@ -204,7 +204,7 @@ public class MagentoAssetModule implements IAssetModule<MagentoAsset> {
 			Object entity = response.getEntity();
 			try {
 				JsonNode json = mapper.readTree((InputStream) entity);
-				Iterator<JsonNode> entries = json.getElements();
+				Iterator<JsonNode> entries = json.elements();
 				int assetsReturned = 0;
 				while (entries.hasNext()) {
 					JsonNode jsonAsset = entries.next();

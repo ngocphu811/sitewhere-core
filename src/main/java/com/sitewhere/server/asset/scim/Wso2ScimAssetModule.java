@@ -23,10 +23,10 @@ import javax.ws.rs.core.Response;
 
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.apache.log4j.Logger;
-import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.map.ObjectMapper;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sitewhere.rest.model.command.CommandResponse;
 import com.sitewhere.server.asset.AssetMatcher;
 import com.sitewhere.spi.SiteWhereException;
@@ -204,7 +204,7 @@ public class Wso2ScimAssetModule implements IAssetModule<Wso2ScimAsset> {
 				LOGGER.info(message);
 				return new CommandResponse(CommandResult.Failed, message);
 			}
-			Iterator<JsonNode> it = resources.getElements();
+			Iterator<JsonNode> it = resources.elements();
 			while (it.hasNext()) {
 				JsonNode resource = it.next();
 				Wso2ScimAsset asset = parse(resource);
@@ -234,16 +234,16 @@ public class Wso2ScimAssetModule implements IAssetModule<Wso2ScimAsset> {
 		if (id == null) {
 			throw new SiteWhereException("SCIM resource does not have an id.");
 		}
-		asset.setProperty(IWso2ScimFields.PROP_ASSET_ID, id.getTextValue());
+		asset.setProperty(IWso2ScimFields.PROP_ASSET_ID, id.textValue());
 
 		JsonNode username = resource.get(IScimFields.USERNAME);
 		if (username != null) {
-			asset.setProperty(IWso2ScimFields.PROP_USERNAME, username.getTextValue());
+			asset.setProperty(IWso2ScimFields.PROP_USERNAME, username.textValue());
 		}
 
 		JsonNode profileUrl = resource.get(IScimFields.PROFILE_URL);
 		if (profileUrl != null) {
-			asset.setProperty(IWso2ScimFields.PROP_PROFILE_URL, profileUrl.getTextValue());
+			asset.setProperty(IWso2ScimFields.PROP_PROFILE_URL, profileUrl.textValue());
 		}
 
 		parseName(resource, asset);
@@ -265,13 +265,13 @@ public class Wso2ScimAssetModule implements IAssetModule<Wso2ScimAsset> {
 			String full = "";
 			JsonNode given = name.get(IScimFields.GIVEN_NAME);
 			if (given != null) {
-				String givenValue = given.getTextValue();
+				String givenValue = given.textValue();
 				full += givenValue + " ";
 				asset.setProperty(IScimFields.GIVEN_NAME, givenValue);
 			}
 			JsonNode family = name.get(IScimFields.FAMILY_NAME);
 			if (family != null) {
-				String familyValue = family.getTextValue();
+				String familyValue = family.textValue();
 				full += familyValue;
 				asset.setProperty(IScimFields.FAMILY_NAME, familyValue);
 			}
@@ -289,9 +289,9 @@ public class Wso2ScimAssetModule implements IAssetModule<Wso2ScimAsset> {
 		JsonNode emails = resource.get(IScimFields.EMAILS);
 		if (emails != null) {
 			int index = 1;
-			Iterator<JsonNode> it = emails.getElements();
+			Iterator<JsonNode> it = emails.elements();
 			while (it.hasNext()) {
-				String email = it.next().getTextValue();
+				String email = it.next().textValue();
 				asset.setProperty("emailAddress" + index, email);
 			}
 		}
