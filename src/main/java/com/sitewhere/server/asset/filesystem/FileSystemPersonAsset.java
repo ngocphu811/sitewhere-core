@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * FileSystemPersonAsset.java 
  * --------------------------------------------------------------------------------------
  * Copyright (c) Reveal Technologies, LLC. All rights reserved. http://www.reveal-tech.com
  *
@@ -23,22 +23,22 @@ import javax.xml.bind.annotation.XmlElement;
  * @author Derek Adams
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-public class FileSystemHardwareAsset {
-
+public class FileSystemPersonAsset {
+	
 	@XmlAttribute
 	private String id;
+
+	@XmlAttribute
+	private String userName;
 
 	@XmlAttribute
 	private String name;
 
 	@XmlAttribute
-	private String sku;
+	private String emailAddress;
 
-	@XmlElement
-	private String description;
-
-	@XmlElement(name = "image-url")
-	private String imageUrl;
+	@XmlElement(name = "photo-url")
+	private String photoUrl;
 
 	@XmlElement(name = "property")
 	private List<FileSystemAssetProperty> properties = new ArrayList<FileSystemAssetProperty>();
@@ -51,6 +51,14 @@ public class FileSystemHardwareAsset {
 		this.id = id;
 	}
 
+	public String getUserName() {
+		return userName;
+	}
+
+	public void setUserName(String userName) {
+		this.userName = userName;
+	}
+
 	public String getName() {
 		return name;
 	}
@@ -59,28 +67,20 @@ public class FileSystemHardwareAsset {
 		this.name = name;
 	}
 
-	public String getSku() {
-		return sku;
+	public String getEmailAddress() {
+		return emailAddress;
 	}
 
-	public void setSku(String sku) {
-		this.sku = sku;
+	public void setEmailAddress(String emailAddress) {
+		this.emailAddress = emailAddress;
 	}
 
-	public String getDescription() {
-		return description;
+	public String getPhotoUrl() {
+		return photoUrl;
 	}
 
-	public void setDescription(String description) {
-		this.description = description;
-	}
-
-	public String getImageUrl() {
-		return imageUrl;
-	}
-
-	public void setImageUrl(String imageUrl) {
-		this.imageUrl = imageUrl;
+	public void setPhotoUrl(String photoUrl) {
+		this.photoUrl = photoUrl;
 	}
 
 	public List<FileSystemAssetProperty> getProperties() {

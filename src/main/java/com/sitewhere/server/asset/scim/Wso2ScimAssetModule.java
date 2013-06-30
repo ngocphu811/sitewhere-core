@@ -1,12 +1,12 @@
 /*
-* $Id$
-* --------------------------------------------------------------------------------------
-* Copyright (c) Reveal Technologies, LLC. All rights reserved. http://www.reveal-tech.com
-*
-* The software in this package is published under the terms of the CPAL v1.0
-* license, a copy of which has been included with this distribution in the
-* LICENSE.txt file.
-*/
+ * $Id$
+ * --------------------------------------------------------------------------------------
+ * Copyright (c) Reveal Technologies, LLC. All rights reserved. http://www.reveal-tech.com
+ *
+ * The software in this package is published under the terms of the CPAL v1.0
+ * license, a copy of which has been included with this distribution in the
+ * LICENSE.txt file.
+ */
 
 package com.sitewhere.server.asset.scim;
 
@@ -28,6 +28,7 @@ import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.ObjectMapper;
 
 import com.sitewhere.rest.model.command.CommandResponse;
+import com.sitewhere.server.asset.AssetMatcher;
 import com.sitewhere.spi.SiteWhereException;
 import com.sitewhere.spi.asset.AssetType;
 import com.sitewhere.spi.asset.IAssetModule;
@@ -71,6 +72,9 @@ public class Wso2ScimAssetModule implements IAssetModule<Wso2ScimAsset> {
 	/** Cached asset map */
 	private Map<String, Wso2ScimAsset> assetCache = new HashMap<String, Wso2ScimAsset>();
 
+	/** Matcher used for searches */
+	protected AssetMatcher matcher = new AssetMatcher();
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -112,8 +116,7 @@ public class Wso2ScimAssetModule implements IAssetModule<Wso2ScimAsset> {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see
-	 * com.sitewhere.spi.asset.IAssetModule#isAssetTypeSupported(com.sitewhere.spi.asset.AssetType)
+	 * @see com.sitewhere.spi.asset.IAssetModule#isAssetTypeSupported(com.sitewhere.spi.asset.AssetType)
 	 */
 	public boolean isAssetTypeSupported(AssetType type) {
 		if (type == AssetType.Person) {
@@ -144,8 +147,7 @@ public class Wso2ScimAssetModule implements IAssetModule<Wso2ScimAsset> {
 			return results;
 		}
 		for (Wso2ScimAsset asset : assetCache.values()) {
-			if ((contains(asset.getName(), criteria)) || (contains(asset.getEmailAddress(), criteria))
-					|| (contains(asset.getUserName(), criteria)) || (contains(asset.getId(), criteria))) {
+			if (matcher.isPersonMatch(asset, criteria)) {
 				results.add(asset);
 			}
 		}

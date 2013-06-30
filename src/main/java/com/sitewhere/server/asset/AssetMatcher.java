@@ -1,6 +1,7 @@
 package com.sitewhere.server.asset;
 
 import com.sitewhere.spi.asset.IHardwareAsset;
+import com.sitewhere.spi.asset.IPersonAsset;
 
 /**
  * Used for searches to find assets that match criteria.
@@ -19,6 +20,21 @@ public class AssetMatcher {
 	public boolean isHardwareMatch(IHardwareAsset asset, String criteria) {
 		if ((contains(asset.getName(), criteria)) || (contains(asset.getDescription(), criteria))
 				|| (contains(asset.getId(), criteria))) {
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Indicates if hardware asset matches the given criteria.
+	 * 
+	 * @param asset
+	 * @param criteria
+	 * @return
+	 */
+	public boolean isPersonMatch(IPersonAsset asset, String criteria) {
+		if ((contains(asset.getName(), criteria)) || (contains(asset.getEmailAddress(), criteria))
+				|| (contains(asset.getUserName(), criteria)) || (contains(asset.getId(), criteria))) {
 			return true;
 		}
 		return false;

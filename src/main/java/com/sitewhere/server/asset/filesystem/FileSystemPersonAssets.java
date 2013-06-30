@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * FileSystemPersonAssets.java 
  * --------------------------------------------------------------------------------------
  * Copyright (c) Reveal Technologies, LLC. All rights reserved. http://www.reveal-tech.com
  *
@@ -18,22 +18,22 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Object used to marshal an XML file on the filesystem so it can be used to define a list of hardware assets.
+ * Object used to marshal an XML file on the filesystem so it can be used to define a list of person assets.
  * 
  * @author Derek Adams
  */
-@XmlRootElement(name = "hardware-assets")
+@XmlRootElement(name = "person-assets")
 @XmlAccessorType(XmlAccessType.FIELD)
-public class FileSystemHardwareAssets {
+public class FileSystemPersonAssets {
 
-	@XmlElement(name = "hardware-asset")
-	private List<FileSystemHardwareAsset> hardwareAssets = new ArrayList<FileSystemHardwareAsset>();
+	@XmlElement(name = "person-asset")
+	private List<FileSystemPersonAsset> personAssets = new ArrayList<FileSystemPersonAsset>();
 
-	public List<FileSystemHardwareAsset> getHardwareAssets() {
-		return hardwareAssets;
+	public List<FileSystemPersonAsset> getPersonAssets() {
+		return personAssets;
 	}
 
-	public void setHardwareAssets(List<FileSystemHardwareAsset> hardwareAssets) {
-		this.hardwareAssets = hardwareAssets;
+	public void setPersonAssets(List<FileSystemPersonAsset> personAssets) {
+		this.personAssets = personAssets;
 	}
 }

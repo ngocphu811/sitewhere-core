@@ -20,7 +20,7 @@ import javax.xml.bind.Unmarshaller;
 
 import org.apache.log4j.Logger;
 
-import com.sitewhere.rest.model.asset.HardwareAsset;
+import com.sitewhere.rest.model.asset.PersonAsset;
 import com.sitewhere.rest.model.command.CommandResponse;
 import com.sitewhere.server.SiteWhereServer;
 import com.sitewhere.server.asset.AssetMatcher;
@@ -31,26 +31,26 @@ import com.sitewhere.spi.command.CommandResult;
 import com.sitewhere.spi.command.ICommandResponse;
 
 /**
- * Modules that loads a list of hardware assets from an XML file on the filesystem.
+ * Modules that loads a list of person assets from an XML file on the filesystem.
  * 
  * @author Derek Adams
  */
-public class FileSystemHardwareAssetModule implements IAssetModule<HardwareAsset> {
+public class FileSystemPersonAssetModule implements IAssetModule<PersonAsset> {
 
 	/** Static logger instance */
-	private static Logger LOGGER = Logger.getLogger(FileSystemHardwareAssetModule.class);
+	private static Logger LOGGER = Logger.getLogger(FileSystemPersonAssetModule.class);
 
 	/** Module id */
-	public static final String MODULE_ID = "filesystem-hardware";
+	public static final String MODULE_ID = "filesystem-person";
 
 	/** Module name */
-	public static final String MODULE_NAME = "Filesystem Hardware Asset Module";
+	public static final String MODULE_NAME = "Filesystem Person Asset Module";
 
-	/** Filename in SiteWhere config folder that contains hardware assets */
-	public static final String HARDWARE_CONFIG_FILENAME = "hardware-assets.xml";
+	/** Filename in SiteWhere config folder that contains person assets */
+	public static final String PERSON_CONFIG_FILENAME = "person-assets.xml";
 
 	/** Map of assets by unique id */
-	protected Map<String, HardwareAsset> assetsById;
+	protected Map<String, PersonAsset> assetsById;
 
 	/** Matcher used for searches */
 	protected AssetMatcher matcher = new AssetMatcher();
@@ -65,7 +65,7 @@ public class FileSystemHardwareAssetModule implements IAssetModule<HardwareAsset
 	}
 
 	/**
-	 * Reloads list of hardware assets from the filesystem.
+	 * Reloads list of person assets from the filesystem.
 	 */
 	protected void reload() throws SiteWhereException {
 		File config = SiteWhereServer.getSiteWhereConfigFolder();
@@ -74,28 +74,28 @@ public class FileSystemHardwareAssetModule implements IAssetModule<HardwareAsset
 			throw new SiteWhereException("Assets subfolder not found. Looking for: "
 					+ assetsFolder.getAbsolutePath());
 		}
-		File hardwareConfig = new File(assetsFolder, HARDWARE_CONFIG_FILENAME);
-		if (!hardwareConfig.exists()) {
-			throw new SiteWhereException("Hardware assets file missing. Looking for: "
-					+ hardwareConfig.getAbsolutePath());
+		File personConfig = new File(assetsFolder, PERSON_CONFIG_FILENAME);
+		if (!personConfig.exists()) {
+			throw new SiteWhereException("Person assets file missing. Looking for: "
+					+ personConfig.getAbsolutePath());
 		}
-		LOGGER.info("Loading hardware assets from: " + hardwareConfig.getAbsolutePath());
+		LOGGER.info("Loading hardware assets from: " + personConfig.getAbsolutePath());
 
 		// Unmarshal assets from XML file and store in data object.
-		List<HardwareAsset> assets = new ArrayList<HardwareAsset>();
-		Map<String, HardwareAsset> assetsById = new HashMap<String, HardwareAsset>();
+		List<PersonAsset> assets = new ArrayList<PersonAsset>();
+		Map<String, PersonAsset> assetsById = new HashMap<String, PersonAsset>();
 		try {
-			JAXBContext jaxbContext = JAXBContext.newInstance(FileSystemHardwareAssets.class);
+			JAXBContext jaxbContext = JAXBContext.newInstance(FileSystemPersonAssets.class);
 			Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
-			FileSystemHardwareAssets xmlAssets = (FileSystemHardwareAssets) jaxbUnmarshaller
-					.unmarshal(hardwareConfig);
-			for (FileSystemHardwareAsset xmlAsset : xmlAssets.getHardwareAssets()) {
-				HardwareAsset asset = new HardwareAsset();
+			FileSystemPersonAssets xmlAssets = (FileSystemPersonAssets) jaxbUnmarshaller
+					.unmarshal(personConfig);
+			for (FileSystemPersonAsset xmlAsset : xmlAssets.getPersonAssets()) {
+				PersonAsset asset = new PersonAsset();
 				asset.setId(xmlAsset.getId());
 				asset.setName(xmlAsset.getName());
-				asset.setDescription(xmlAsset.getDescription());
-				asset.setSku(xmlAsset.getSku());
-				asset.setImageUrl(xmlAsset.getImageUrl());
+				asset.setUserName(xmlAsset.getUserName());
+				asset.setEmailAddress(xmlAsset.getEmailAddress());
+				asset.setPhotoUrl(xmlAsset.getPhotoUrl());
 				for (FileSystemAssetProperty xmlProperty : xmlAsset.getProperties()) {
 					asset.setProperty(xmlProperty.getName(), xmlProperty.getValue());
 				}
@@ -106,7 +106,7 @@ public class FileSystemHardwareAssetModule implements IAssetModule<HardwareAsset
 			String message = "Loaded " + assetsById.size() + " assets.";
 			LOGGER.info(message);
 		} catch (Exception e) {
-			throw new SiteWhereException("Unable to unmarshal hardware assets file.", e);
+			throw new SiteWhereException("Unable to unmarshal person assets file.", e);
 		}
 	}
 
@@ -142,7 +142,7 @@ public class FileSystemHardwareAssetModule implements IAssetModule<HardwareAsset
 	 * @see com.sitewhere.spi.asset.IAssetModule#isAssetTypeSupported(com.sitewhere.spi.asset.AssetType)
 	 */
 	public boolean isAssetTypeSupported(AssetType type) {
-		if (type == AssetType.Hardware) {
+		if (type == AssetType.Person) {
 			return true;
 		}
 		return false;
@@ -153,7 +153,7 @@ public class FileSystemHardwareAssetModule implements IAssetModule<HardwareAsset
 	 * 
 	 * @see com.sitewhere.spi.asset.IAssetModule#getAssetById(java.lang.String)
 	 */
-	public HardwareAsset getAssetById(String id) throws SiteWhereException {
+	public PersonAsset getAssetById(String id) throws SiteWhereException {
 		return assetsById.get(id);
 	}
 
@@ -162,15 +162,15 @@ public class FileSystemHardwareAssetModule implements IAssetModule<HardwareAsset
 	 * 
 	 * @see com.sitewhere.spi.asset.IAssetModule#search(java.lang.String)
 	 */
-	public List<HardwareAsset> search(String criteria) throws SiteWhereException {
+	public List<PersonAsset> search(String criteria) throws SiteWhereException {
 		criteria = criteria.toLowerCase();
-		List<HardwareAsset> results = new ArrayList<HardwareAsset>();
+		List<PersonAsset> results = new ArrayList<PersonAsset>();
 		if (criteria.length() == 0) {
 			results.addAll(assetsById.values());
 			return results;
 		}
-		for (HardwareAsset asset : assetsById.values()) {
-			if (matcher.isHardwareMatch(asset, criteria)) {
+		for (PersonAsset asset : assetsById.values()) {
+			if (matcher.isPersonMatch(asset, criteria)) {
 				results.add(asset);
 			}
 		}
