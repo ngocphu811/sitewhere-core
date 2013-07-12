@@ -235,7 +235,7 @@ public class MongoDeviceManagement implements IDeviceManagement {
 		newAssignment.setDeviceHardwareId(request.getDeviceHardwareId());
 		newAssignment.setAssetType(request.getAssetType());
 		newAssignment.setAssetId(request.getAssetId());
-		newAssignment.setActiveDate(Calendar.getInstance());
+		newAssignment.setActiveDate(new Date());
 		newAssignment.setStatus(DeviceAssignmentStatus.Active);
 		newAssignment.setCreatedDate(new Date());
 		newAssignment.setCreatedBy("admin");

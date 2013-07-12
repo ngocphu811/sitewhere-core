@@ -116,14 +116,14 @@ public class MongoDeviceAssignment {
 		String siteToken = (String) source.get(PROP_SITE_TOKEN);
 
 		if (activeDate != null) {
-			target.setActiveDate(MongoDataUtils.dateAsCalendar(activeDate));
+			target.setActiveDate(activeDate);
 		}
 		target.setAssetId(assetId);
 		if ((assetType != null) && (assetType.length() > 0)) {
 			target.setAssetType(AssetType.fromCode(assetType.charAt(0)));
 		}
 		if (releasedDate != null) {
-			target.setReleasedDate(MongoDataUtils.dateAsCalendar(releasedDate));
+			target.setReleasedDate(releasedDate);
 		}
 		if ((status != null) && (status.length() == 1)) {
 			target.setStatus(DeviceAssignmentStatus.fromStatusCode(status.charAt(0)));
