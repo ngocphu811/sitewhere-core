@@ -76,7 +76,7 @@ public class MongoDeviceManagement implements IDeviceManagement {
 		newDevice.setAssetId(device.getAssetId());
 		newDevice.setHardwareId(device.getHardwareId());
 		newDevice.setComments(device.getComments());
-		newDevice.setCreatedDate(Calendar.getInstance());
+		newDevice.setCreatedDate(new Date());
 		newDevice.setCreatedBy("admin");
 		newDevice.setDeleted(false);
 
@@ -237,7 +237,7 @@ public class MongoDeviceManagement implements IDeviceManagement {
 		newAssignment.setAssetId(request.getAssetId());
 		newAssignment.setActiveDate(Calendar.getInstance());
 		newAssignment.setStatus(DeviceAssignmentStatus.Active);
-		newAssignment.setCreatedDate(Calendar.getInstance());
+		newAssignment.setCreatedDate(new Date());
 		newAssignment.setCreatedBy("admin");
 		newAssignment.setDeleted(false);
 
@@ -589,7 +589,7 @@ public class MongoDeviceManagement implements IDeviceManagement {
 		location.setDeviceAssignmentToken(assignment.getToken());
 		location.setAssetName(Utils.getAssetNameForAssignment(assignment));
 		location.setEventDate(request.getEventDate());
-		location.setReceivedDate(Calendar.getInstance());
+		location.setReceivedDate(new Date());
 		location.setLatitude(request.getLatitude());
 		location.setLongitude(request.getLongitude());
 		location.setElevation(request.getElevation());
@@ -774,7 +774,7 @@ public class MongoDeviceManagement implements IDeviceManagement {
 	public ISite createSite(ISite input) throws SiteWhereException {
 		Site newSite = Site.copy(input);
 		newSite.setToken(UUID.randomUUID().toString());
-		newSite.setCreatedDate(Calendar.getInstance());
+		newSite.setCreatedDate(new Date());
 		newSite.setCreatedBy("admin");
 		newSite.setDeleted(false);
 
@@ -864,7 +864,7 @@ public class MongoDeviceManagement implements IDeviceManagement {
 	public IZone createZone(IZone input) throws SiteWhereException {
 		Zone zone = Zone.copy(input);
 		zone.setToken(UUID.randomUUID().toString());
-		zone.setCreatedDate(Calendar.getInstance());
+		zone.setCreatedDate(new Date());
 
 		DBCollection zones = getMongoClient().getZonesCollection();
 		DBObject created = MongoZone.toDBObject(zone);

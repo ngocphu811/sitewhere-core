@@ -46,9 +46,9 @@ public class MongoSiteWhereEntity {
 	 * @param target
 	 */
 	public static void toDBObject(ISiteWhereEntity source, BasicDBObject target) {
-		target.append(PROP_CREATED_DATE, MongoDataUtils.calendarAsDate(source.getCreatedDate()));
+		target.append(PROP_CREATED_DATE, source.getCreatedDate());
 		target.append(PROP_CREATED_BY, source.getCreatedBy());
-		target.append(PROP_UPDATED_DATE, MongoDataUtils.calendarAsDate(source.getUpdatedDate()));
+		target.append(PROP_UPDATED_DATE, source.getUpdatedDate());
 		target.append(PROP_UPDATED_BY, source.getUpdatedBy());
 		target.append(PROP_DELETED, source.isDeleted());
 	}
@@ -66,9 +66,9 @@ public class MongoSiteWhereEntity {
 		String updatedBy = (String) source.get(PROP_UPDATED_BY);
 		Boolean deleted = (Boolean) source.get(PROP_DELETED);
 
-		target.setCreatedDate(MongoDataUtils.dateAsCalendar(createdDate));
+		target.setCreatedDate(createdDate);
 		target.setCreatedBy(createdBy);
-		target.setUpdatedDate(MongoDataUtils.dateAsCalendar(updatedDate));
+		target.setUpdatedDate(updatedDate);
 		target.setUpdatedBy(updatedBy);
 		target.setDeleted(false);
 		if (deleted != null) {

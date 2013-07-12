@@ -87,8 +87,8 @@ public class MongoDeviceEvent {
 		target.setSiteToken(siteToken);
 		target.setDeviceAssignmentToken(assignmentToken);
 		target.setAssetName(assetName);
-		target.setEventDate(MongoDataUtils.dateAsCalendar(eventDate));
-		target.setReceivedDate(MongoDataUtils.dateAsCalendar(receivedDate));
+		target.setEventDate(eventDate);
+		target.setReceivedDate(receivedDate);
 		target.setAlertIds(alertIds);
 
 		MongoDeviceEntityMetadata.fromDBObject(source, target);
