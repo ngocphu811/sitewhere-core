@@ -47,7 +47,7 @@ public class MongoDeviceAssignment {
 	public static final String PROP_TOKEN = "token";
 
 	/** Property for device hardware id */
-	public static final String PROP_DEVICE_HARDARE_ID = "deviceHardwareId";
+	public static final String PROP_DEVICE_HARDWARE_ID = "deviceHardwareId";
 
 	/** Property for site token */
 	public static final String PROP_SITE_TOKEN = "siteToken";
@@ -76,7 +76,7 @@ public class MongoDeviceAssignment {
 			target.append(PROP_STATUS, source.getStatus().getStatusCode());
 		}
 		target.append(PROP_TOKEN, source.getToken());
-		target.append(PROP_DEVICE_HARDARE_ID, source.getDeviceHardwareId());
+		target.append(PROP_DEVICE_HARDWARE_ID, source.getDeviceHardwareId());
 		target.append(PROP_SITE_TOKEN, source.getSiteToken());
 
 		if (source.getLastLocation() != null) {
@@ -112,7 +112,7 @@ public class MongoDeviceAssignment {
 		Date releasedDate = (Date) source.get(PROP_RELEASED_DATE);
 		String status = (String) source.get(PROP_STATUS);
 		String token = (String) source.get(PROP_TOKEN);
-		String deviceHardwareId = (String) source.get(PROP_DEVICE_HARDARE_ID);
+		String deviceHardwareId = (String) source.get(PROP_DEVICE_HARDWARE_ID);
 		String siteToken = (String) source.get(PROP_SITE_TOKEN);
 
 		if (activeDate != null) {

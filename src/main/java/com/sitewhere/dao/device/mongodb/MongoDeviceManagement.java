@@ -1,12 +1,12 @@
 /*
-* $Id$
-* --------------------------------------------------------------------------------------
-* Copyright (c) Reveal Technologies, LLC. All rights reserved. http://www.reveal-tech.com
-*
-* The software in this package is published under the terms of the CPAL v1.0
-* license, a copy of which has been included with this distribution in the
-* LICENSE.txt file.
-*/
+ * $Id$
+ * --------------------------------------------------------------------------------------
+ * Copyright (c) Reveal Technologies, LLC. All rights reserved. http://www.reveal-tech.com
+ *
+ * The software in this package is published under the terms of the CPAL v1.0
+ * license, a copy of which has been included with this distribution in the
+ * LICENSE.txt file.
+ */
 
 package com.sitewhere.dao.device.mongodb;
 
@@ -23,18 +23,21 @@ import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.WriteResult;
+import com.sitewhere.core.device.Utils;
 import com.sitewhere.dao.mongodb.SiteWhereMongoClient;
 import com.sitewhere.rest.model.device.Device;
 import com.sitewhere.rest.model.device.DeviceAssignment;
+import com.sitewhere.rest.model.device.DeviceLocation;
+import com.sitewhere.rest.model.device.MetadataProvider;
 import com.sitewhere.rest.model.device.Site;
 import com.sitewhere.rest.model.device.Zone;
 import com.sitewhere.spi.SiteWhereException;
 import com.sitewhere.spi.SiteWhereSystemException;
-import com.sitewhere.spi.asset.AssetType;
 import com.sitewhere.spi.device.DeviceAssignmentStatus;
 import com.sitewhere.spi.device.IDevice;
 import com.sitewhere.spi.device.IDeviceAlert;
 import com.sitewhere.spi.device.IDeviceAssignment;
+import com.sitewhere.spi.device.IDeviceEventBatch;
 import com.sitewhere.spi.device.IDeviceLocation;
 import com.sitewhere.spi.device.IDeviceManagement;
 import com.sitewhere.spi.device.IDeviceMeasurements;
@@ -42,6 +45,9 @@ import com.sitewhere.spi.device.IDeviceSearchCriteria;
 import com.sitewhere.spi.device.IMetadataProvider;
 import com.sitewhere.spi.device.ISite;
 import com.sitewhere.spi.device.IZone;
+import com.sitewhere.spi.device.request.IDeviceAssignmentCreateRequest;
+import com.sitewhere.spi.device.request.IDeviceCreateRequest;
+import com.sitewhere.spi.device.request.IDeviceLocationCreateRequest;
 import com.sitewhere.spi.error.ErrorCode;
 import com.sitewhere.spi.error.ErrorLevel;
 
@@ -58,9 +64,10 @@ public class MongoDeviceManagement implements IDeviceManagement {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.sitewhere.spi.device.IDeviceManagement#createDevice(com.sitewhere .spi.device.IDevice)
+	 * @see com.sitewhere.spi.device.IDeviceManagement#createDevice(com.sitewhere.spi.device.request.
+	 * IDeviceCreateRequest)
 	 */
-	public IDevice createDevice(IDevice device) throws SiteWhereException {
+	public IDevice createDevice(IDeviceCreateRequest device) throws SiteWhereException {
 		IDevice existing = getDeviceByHardwareId(device.getHardwareId());
 		if (existing != null) {
 			throw new SiteWhereSystemException(ErrorCode.DuplicateHardwareId, ErrorLevel.ERROR);
@@ -105,7 +112,7 @@ public class MongoDeviceManagement implements IDeviceManagement {
 		if (device.getAssignmentToken() == null) {
 			return null;
 		}
-		DBObject match = getDeviceAssignmentDBObjectByToken(device.getAssignmentToken());
+		DBObject match = assertDeviceAssignment(device.getAssignmentToken());
 		return MongoDeviceAssignment.fromDBObject(match);
 	}
 
@@ -118,10 +125,7 @@ public class MongoDeviceManagement implements IDeviceManagement {
 	public IDevice updateDeviceMetadata(String hardwareId, IMetadataProvider metadata)
 			throws SiteWhereException {
 		DBCollection devices = getMongoClient().getDevicesCollection();
-		DBObject match = getDeviceDBObjectByHardwareId(hardwareId);
-		if (match == null) {
-			throw new SiteWhereSystemException(ErrorCode.InvalidHardwareId, ErrorLevel.INFO);
-		}
+		DBObject match = assertDevice(hardwareId);
 		MongoDeviceEntityMetadata.toDBObject(metadata, match);
 		BasicDBObject query = new BasicDBObject(MongoDevice.PROP_HARDWARE_ID, hardwareId);
 		devices.update(query, match);
@@ -184,10 +188,7 @@ public class MongoDeviceManagement implements IDeviceManagement {
 	 * @see com.sitewhere.spi.device.IDeviceManagement#deleteDevice(java.lang.String)
 	 */
 	public IDevice deleteDevice(String hardwareId) throws SiteWhereException {
-		DBObject existing = getDeviceDBObjectByHardwareId(hardwareId);
-		if (existing == null) {
-			throw new SiteWhereSystemException(ErrorCode.InvalidHardwareId, ErrorLevel.ERROR);
-		}
+		DBObject existing = assertDevice(hardwareId);
 		MongoSiteWhereEntity.setDeleted(existing, true);
 		BasicDBObject query = new BasicDBObject(MongoDevice.PROP_HARDWARE_ID, hardwareId);
 		DBCollection devices = getMongoClient().getDevicesCollection();
@@ -212,30 +213,28 @@ public class MongoDeviceManagement implements IDeviceManagement {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.sitewhere.spi.device.IDeviceManagement#createDeviceAssignment(java .lang.String,
-	 * java.lang.String, com.sitewhere.spi.asset.AssetType, java.lang.String)
+	 * @see
+	 * com.sitewhere.spi.device.IDeviceManagement#createDeviceAssignment(com.sitewhere.spi.device.request.
+	 * IDeviceAssignmentCreateRequest)
 	 */
-	public IDeviceAssignment createDeviceAssignment(String siteToken, String hardwareId, AssetType assetType,
-			String assetId) throws SiteWhereException {
+	public IDeviceAssignment createDeviceAssignment(IDeviceAssignmentCreateRequest request)
+			throws SiteWhereException {
 		// Verify foreign references.
-		DBObject site = getSiteDBObjectByToken(siteToken);
+		DBObject site = getSiteDBObjectByToken(request.getSiteToken());
 		if (site == null) {
 			throw new SiteWhereSystemException(ErrorCode.InvalidSiteToken, ErrorLevel.ERROR);
 		}
-		DBObject device = getDeviceDBObjectByHardwareId(hardwareId);
-		if (device == null) {
-			throw new SiteWhereSystemException(ErrorCode.InvalidHardwareId, ErrorLevel.ERROR);
-		}
+		DBObject device = assertDevice(request.getDeviceHardwareId());
 		if (device.get(MongoDevice.PROP_ASSIGNMENT_TOKEN) != null) {
 			throw new SiteWhereSystemException(ErrorCode.DeviceAlreadyAssigned, ErrorLevel.ERROR);
 		}
 
 		DeviceAssignment newAssignment = new DeviceAssignment();
 		newAssignment.setToken(UUID.randomUUID().toString());
-		newAssignment.setSiteToken(siteToken);
-		newAssignment.setDeviceHardwareId(hardwareId);
-		newAssignment.setAssetType(assetType);
-		newAssignment.setAssetId(assetId);
+		newAssignment.setSiteToken(request.getSiteToken());
+		newAssignment.setDeviceHardwareId(request.getDeviceHardwareId());
+		newAssignment.setAssetType(request.getAssetType());
+		newAssignment.setAssetId(request.getAssetId());
 		newAssignment.setActiveDate(Calendar.getInstance());
 		newAssignment.setStatus(DeviceAssignmentStatus.Active);
 		newAssignment.setCreatedDate(Calendar.getInstance());
@@ -252,7 +251,7 @@ public class MongoDeviceManagement implements IDeviceManagement {
 
 		// Update device to point to created assignment.
 		DBCollection devices = getMongoClient().getDevicesCollection();
-		BasicDBObject query = new BasicDBObject(MongoDevice.PROP_HARDWARE_ID, hardwareId);
+		BasicDBObject query = new BasicDBObject(MongoDevice.PROP_HARDWARE_ID, request.getDeviceHardwareId());
 		device.put(MongoDevice.PROP_ASSIGNMENT_TOKEN, newAssignment.getToken());
 		result = devices.update(query, device);
 		if (!result.getLastError().ok()) {
@@ -270,7 +269,11 @@ public class MongoDeviceManagement implements IDeviceManagement {
 	 */
 	public IDevice getDeviceForAssignment(IDeviceAssignment assignment) throws SiteWhereException {
 		DBObject device = getDeviceDBObjectByHardwareId(assignment.getDeviceHardwareId());
-		return MongoDevice.fromDBObject(device);
+		if (device != null) {
+			return MongoDevice.fromDBObject(device);
+		} else {
+			return null;
+		}
 	}
 
 	/*
@@ -281,7 +284,11 @@ public class MongoDeviceManagement implements IDeviceManagement {
 	 */
 	public ISite getSiteForAssignment(IDeviceAssignment assignment) throws SiteWhereException {
 		DBObject site = getSiteDBObjectByToken(assignment.getSiteToken());
-		return MongoSite.fromDBObject(site);
+		if (site != null) {
+			return MongoSite.fromDBObject(site);
+		} else {
+			return null;
+		}
 	}
 
 	/*
@@ -335,10 +342,7 @@ public class MongoDeviceManagement implements IDeviceManagement {
 	 */
 	public IDeviceAssignment updateDeviceAssignmentLocation(String token, IDeviceLocation location)
 			throws SiteWhereException {
-		DBObject match = getDeviceAssignmentDBObjectByToken(token);
-		if (match == null) {
-			throw new SiteWhereSystemException(ErrorCode.InvalidDeviceAssignmentToken, ErrorLevel.ERROR);
-		}
+		DBObject match = assertDeviceAssignment(token);
 		MongoDeviceAssignment.setLocation(location, match);
 		DBCollection assignments = getMongoClient().getDeviceAssignmentsCollection();
 		BasicDBObject query = new BasicDBObject(MongoDeviceAssignment.PROP_TOKEN, token);
@@ -354,13 +358,25 @@ public class MongoDeviceManagement implements IDeviceManagement {
 	/*
 	 * (non-Javadoc)
 	 * 
+	 * @see com.sitewhere.spi.device.IDeviceManagement#addDeviceEventBatch(java.lang.String,
+	 * com.sitewhere.spi.device.IDeviceEventBatch)
+	 */
+	public void addDeviceEventBatch(String assignmentToken, IDeviceEventBatch batch)
+			throws SiteWhereException {
+		DBObject match = assertDeviceAssignment(assignmentToken);
+		DeviceAssignment assignment = MongoDeviceAssignment.fromDBObject(match);
+		for (IDeviceLocationCreateRequest location : batch.getLocations()) {
+			addDeviceLocation(assignment, location);
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see com.sitewhere.spi.device.IDeviceManagement#endDeviceAssignment(java.lang .String)
 	 */
 	public IDeviceAssignment endDeviceAssignment(String token) throws SiteWhereException {
-		DBObject match = getDeviceAssignmentDBObjectByToken(token);
-		if (match == null) {
-			throw new SiteWhereSystemException(ErrorCode.InvalidDeviceAssignmentToken, ErrorLevel.ERROR);
-		}
+		DBObject match = assertDeviceAssignment(token);
 		match.put(MongoDeviceAssignment.PROP_RELEASED_DATE, Calendar.getInstance().getTime());
 		match.put(MongoDeviceAssignment.PROP_STATUS,
 				String.valueOf(DeviceAssignmentStatus.Released.getStatusCode()));
@@ -374,7 +390,7 @@ public class MongoDeviceManagement implements IDeviceManagement {
 
 		// Remove device assignment reference.
 		DBCollection devices = getMongoClient().getDevicesCollection();
-		String hardwareId = (String) match.get(MongoDeviceAssignment.PROP_DEVICE_HARDARE_ID);
+		String hardwareId = (String) match.get(MongoDeviceAssignment.PROP_DEVICE_HARDWARE_ID);
 		DBObject deviceMatch = getDeviceDBObjectByHardwareId(hardwareId);
 		deviceMatch.removeField(MongoDevice.PROP_ASSIGNMENT_TOKEN);
 		query = new BasicDBObject(MongoDevice.PROP_HARDWARE_ID, hardwareId);
@@ -395,7 +411,7 @@ public class MongoDeviceManagement implements IDeviceManagement {
 	 */
 	public List<IDeviceAssignment> getDeviceAssignmentHistory(String hardwareId) throws SiteWhereException {
 		DBCollection assignments = getMongoClient().getDeviceAssignmentsCollection();
-		BasicDBObject query = new BasicDBObject(MongoDeviceAssignment.PROP_DEVICE_HARDARE_ID, hardwareId);
+		BasicDBObject query = new BasicDBObject(MongoDeviceAssignment.PROP_DEVICE_HARDWARE_ID, hardwareId);
 		DBCursor cursor = assignments.find(query).sort(
 				new BasicDBObject(MongoDeviceAssignment.PROP_ACTIVE_DATE, -1));
 
@@ -562,10 +578,23 @@ public class MongoDeviceManagement implements IDeviceManagement {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.sitewhere.spi.device.IDeviceManagement#addDeviceLocation(com.sitewhere .spi.device.
-	 * IDeviceLocation)
+	 * @see
+	 * com.sitewhere.spi.device.IDeviceManagement#addDeviceLocation(com.sitewhere.spi.device.IDeviceAssignment
+	 * , com.sitewhere.spi.device.request.IDeviceLocationCreateRequest)
 	 */
-	public IDeviceLocation addDeviceLocation(IDeviceLocation location) throws SiteWhereException {
+	public IDeviceLocation addDeviceLocation(IDeviceAssignment assignment,
+			IDeviceLocationCreateRequest request) throws SiteWhereException {
+		DeviceLocation location = new DeviceLocation();
+		location.setSiteToken(assignment.getSiteToken());
+		location.setDeviceAssignmentToken(assignment.getToken());
+		location.setAssetName(Utils.getAssetNameForAssignment(assignment));
+		location.setEventDate(request.getEventDate());
+		location.setReceivedDate(Calendar.getInstance());
+		location.setLatitude(request.getLatitude());
+		location.setLongitude(request.getLongitude());
+		location.setElevation(request.getElevation());
+		MetadataProvider.copy(request.getMetadata(), location);
+
 		DBCollection locationsColl = getMongoClient().getLocationsCollection();
 		DBObject locObject = MongoDeviceLocation.toDBObject(location);
 		locationsColl.insert(locObject);
@@ -898,6 +927,38 @@ public class MongoDeviceManagement implements IDeviceManagement {
 			throw new SiteWhereSystemException(ErrorCode.ZoneDeleteFailed, ErrorLevel.ERROR);
 		}
 		return existing;
+	}
+
+	/**
+	 * Return the {@link DBObject} for the device with the given hardware id. Throws an exception if the
+	 * hardware id is not found.
+	 * 
+	 * @param hardwareId
+	 * @return
+	 * @throws SiteWhereException
+	 */
+	protected DBObject assertDevice(String hardwareId) throws SiteWhereException {
+		DBObject match = getDeviceDBObjectByHardwareId(hardwareId);
+		if (match == null) {
+			throw new SiteWhereSystemException(ErrorCode.InvalidHardwareId, ErrorLevel.INFO);
+		}
+		return match;
+	}
+
+	/**
+	 * Return the {@link DBObject} for the assignment with the given token. Throws an exception if the token
+	 * is not valid.
+	 * 
+	 * @param token
+	 * @return
+	 * @throws SiteWhereException
+	 */
+	protected DBObject assertDeviceAssignment(String token) throws SiteWhereException {
+		DBObject match = getDeviceAssignmentDBObjectByToken(token);
+		if (match == null) {
+			throw new SiteWhereSystemException(ErrorCode.InvalidDeviceAssignmentToken, ErrorLevel.ERROR);
+		}
+		return match;
 	}
 
 	/**

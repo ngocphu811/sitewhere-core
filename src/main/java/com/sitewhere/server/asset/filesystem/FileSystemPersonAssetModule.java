@@ -79,7 +79,7 @@ public class FileSystemPersonAssetModule implements IAssetModule<PersonAsset> {
 			throw new SiteWhereException("Person assets file missing. Looking for: "
 					+ personConfig.getAbsolutePath());
 		}
-		LOGGER.info("Loading hardware assets from: " + personConfig.getAbsolutePath());
+		LOGGER.info("Loading person assets from: " + personConfig.getAbsolutePath());
 
 		// Unmarshal assets from XML file and store in data object.
 		List<PersonAsset> assets = new ArrayList<PersonAsset>();
