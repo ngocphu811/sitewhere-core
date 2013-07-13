@@ -1,12 +1,12 @@
 /*
-* $Id$
-* --------------------------------------------------------------------------------------
-* Copyright (c) Reveal Technologies, LLC. All rights reserved. http://www.reveal-tech.com
-*
-* The software in this package is published under the terms of the CPAL v1.0
-* license, a copy of which has been included with this distribution in the
-* LICENSE.txt file.
-*/
+ * $Id$
+ * --------------------------------------------------------------------------------------
+ * Copyright (c) Reveal Technologies, LLC. All rights reserved. http://www.reveal-tech.com
+ *
+ * The software in this package is published under the terms of the CPAL v1.0
+ * license, a copy of which has been included with this distribution in the
+ * LICENSE.txt file.
+ */
 
 package com.sitewhere.dao.device.mongodb;
 
@@ -63,14 +63,14 @@ public class MongoDeviceAssignment {
 	 */
 	public static void toDBObject(IDeviceAssignment source, BasicDBObject target) {
 		if (source.getActiveDate() != null) {
-			target.append(PROP_ACTIVE_DATE, source.getActiveDate().getTime());
+			target.append(PROP_ACTIVE_DATE, source.getActiveDate());
 		}
 		target.append(PROP_ASSET_ID, source.getAssetId());
 		if (source.getAssetType() != null) {
 			target.append(PROP_ASSET_TYPE, source.getAssetType().getCode());
 		}
 		if (source.getReleasedDate() != null) {
-			target.append(PROP_RELEASED_DATE, source.getReleasedDate().getTime());
+			target.append(PROP_RELEASED_DATE, source.getReleasedDate());
 		}
 		if (source.getStatus() != null) {
 			target.append(PROP_STATUS, source.getStatus().getStatusCode());
