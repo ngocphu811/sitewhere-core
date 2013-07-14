@@ -26,28 +26,36 @@ import com.mongodb.WriteResult;
 import com.sitewhere.core.device.Utils;
 import com.sitewhere.dao.mongodb.SiteWhereMongoClient;
 import com.sitewhere.rest.model.device.Device;
+import com.sitewhere.rest.model.device.DeviceAlert;
 import com.sitewhere.rest.model.device.DeviceAssignment;
+import com.sitewhere.rest.model.device.DeviceEventBatchResponse;
 import com.sitewhere.rest.model.device.DeviceLocation;
+import com.sitewhere.rest.model.device.DeviceMeasurements;
 import com.sitewhere.rest.model.device.MetadataProvider;
 import com.sitewhere.rest.model.device.Site;
 import com.sitewhere.rest.model.device.Zone;
 import com.sitewhere.spi.SiteWhereException;
 import com.sitewhere.spi.SiteWhereSystemException;
+import com.sitewhere.spi.device.AlertSource;
 import com.sitewhere.spi.device.DeviceAssignmentStatus;
 import com.sitewhere.spi.device.IDevice;
 import com.sitewhere.spi.device.IDeviceAlert;
 import com.sitewhere.spi.device.IDeviceAssignment;
 import com.sitewhere.spi.device.IDeviceEventBatch;
+import com.sitewhere.spi.device.IDeviceEventBatchResponse;
 import com.sitewhere.spi.device.IDeviceLocation;
 import com.sitewhere.spi.device.IDeviceManagement;
 import com.sitewhere.spi.device.IDeviceMeasurements;
 import com.sitewhere.spi.device.IDeviceSearchCriteria;
+import com.sitewhere.spi.device.IMetadataEntry;
 import com.sitewhere.spi.device.IMetadataProvider;
 import com.sitewhere.spi.device.ISite;
 import com.sitewhere.spi.device.IZone;
+import com.sitewhere.spi.device.request.IDeviceAlertCreateRequest;
 import com.sitewhere.spi.device.request.IDeviceAssignmentCreateRequest;
 import com.sitewhere.spi.device.request.IDeviceCreateRequest;
 import com.sitewhere.spi.device.request.IDeviceLocationCreateRequest;
+import com.sitewhere.spi.device.request.IDeviceMeasurementsCreateRequest;
 import com.sitewhere.spi.error.ErrorCode;
 import com.sitewhere.spi.error.ErrorLevel;
 
@@ -361,13 +369,21 @@ public class MongoDeviceManagement implements IDeviceManagement {
 	 * @see com.sitewhere.spi.device.IDeviceManagement#addDeviceEventBatch(java.lang.String,
 	 * com.sitewhere.spi.device.IDeviceEventBatch)
 	 */
-	public void addDeviceEventBatch(String assignmentToken, IDeviceEventBatch batch)
+	public IDeviceEventBatchResponse addDeviceEventBatch(String assignmentToken, IDeviceEventBatch batch)
 			throws SiteWhereException {
+		DeviceEventBatchResponse response = new DeviceEventBatchResponse();
 		DBObject match = assertDeviceAssignment(assignmentToken);
 		DeviceAssignment assignment = MongoDeviceAssignment.fromDBObject(match);
-		for (IDeviceLocationCreateRequest location : batch.getLocations()) {
-			addDeviceLocation(assignment, location);
+		for (IDeviceMeasurementsCreateRequest measurements : batch.getMeasurements()) {
+			response.getCreatedMeasurements().add(addDeviceMeasurements(assignment, measurements));
 		}
+		for (IDeviceLocationCreateRequest location : batch.getLocations()) {
+			response.getCreatedLocations().add(addDeviceLocation(assignment, location));
+		}
+		for (IDeviceAlertCreateRequest alert : batch.getAlerts()) {
+			response.getCreatedAlerts().add(addDeviceAlert(assignment, alert));
+		}
+		return response;
 	}
 
 	/*
@@ -504,11 +520,23 @@ public class MongoDeviceManagement implements IDeviceManagement {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.sitewhere.spi.device.IDeviceManagement#addDeviceMeasurements(com. sitewhere.spi.device
-	 * .IDeviceMeasurements)
+	 * @see
+	 * com.sitewhere.spi.device.IDeviceManagement#addDeviceMeasurements(com.sitewhere.spi.device.IDeviceAssignment
+	 * , com.sitewhere.spi.device.request.IDeviceMeasurementsCreateRequest)
 	 */
-	public IDeviceMeasurements addDeviceMeasurements(IDeviceMeasurements measurements)
-			throws SiteWhereException {
+	public IDeviceMeasurements addDeviceMeasurements(IDeviceAssignment assignment,
+			IDeviceMeasurementsCreateRequest request) throws SiteWhereException {
+		DeviceMeasurements measurements = new DeviceMeasurements();
+		measurements.setSiteToken(assignment.getSiteToken());
+		measurements.setDeviceAssignmentToken(assignment.getToken());
+		measurements.setAssetName(Utils.getAssetNameForAssignment(assignment));
+		measurements.setEventDate(request.getEventDate());
+		measurements.setReceivedDate(new Date());
+		for (IMetadataEntry entry : request.getMeasurements()) {
+			measurements.addOrReplaceMeasurement(entry.getName(), entry.getValue());
+		}
+		MetadataProvider.copy(request, measurements);
+
 		DBCollection measurementColl = getMongoClient().getMeasurementsCollection();
 		DBObject mObject = MongoDeviceMeasurements.toDBObject(measurements);
 		measurementColl.insert(mObject);
@@ -564,13 +592,7 @@ public class MongoDeviceManagement implements IDeviceManagement {
 		return matches;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see com.sitewhere.spi.device.IDeviceManagement#addAlertForMeasurements(java .lang.String,
-	 * com.sitewhere.spi.device.IDeviceAlert)
-	 */
-	public IDeviceAlert addAlertForMeasurements(String measurementsId, IDeviceAlert alert)
+	public void associateAlertWithMeasurements(String alertId, String measurementsId)
 			throws SiteWhereException {
 		throw new SiteWhereException("Not implemented");
 	}
@@ -681,36 +703,55 @@ public class MongoDeviceManagement implements IDeviceManagement {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.sitewhere.spi.device.IDeviceManagement#addAlertForLocation(java.lang .String,
-	 * com.sitewhere.spi.device.IDeviceAlert)
+	 * @see com.sitewhere.spi.device.IDeviceManagement#associateAlertWithLocation(java.lang.String,
+	 * java.lang.String)
 	 */
-	@SuppressWarnings("unchecked")
-	public IDeviceAlert addAlertForLocation(String locationId, IDeviceAlert alert) throws SiteWhereException {
-		DBObject location = getDeviceLocationById(locationId);
-		if (location == null) {
+	public void associateAlertWithLocation(String alertId, String locationId) throws SiteWhereException {
+		DBObject locObj = getDeviceLocationById(locationId);
+		if (locObj == null) {
 			throw new SiteWhereException("Device location not found for id: " + locationId);
 		}
-		IDeviceAlert created = addDeviceAlert(alert);
-		List<String> alertIds = (List<String>) location.get(MongoDeviceEvent.PROP_ALERT_IDS);
-		if (!alertIds.contains(created.getId())) {
-			alertIds.add(created.getId());
-			location.put(MongoDeviceEvent.PROP_ALERT_IDS, alertIds);
+		IDeviceLocation location = MongoDeviceLocation.fromDBObject(locObj);
+
+		DBObject alertObj = getDeviceAlertById(alertId);
+		if (alertObj == null) {
+			throw new SiteWhereException("Device alert not found for id: " + locationId);
+		}
+
+		List<String> alertIds = location.getAlertIds();
+		if (!alertIds.contains(alertId)) {
+			alertIds.add(alertId);
+			locObj.put(MongoDeviceEvent.PROP_ALERT_IDS, alertIds);
 			DBObject query = new BasicDBObject(MongoDeviceEvent.PROP_EVENT_ID, new ObjectId(locationId));
-			WriteResult result = getMongoClient().getLocationsCollection().update(query, location);
+			WriteResult result = getMongoClient().getLocationsCollection().update(query, locObj);
 			if (!result.getLastError().ok()) {
 				throw new SiteWhereException("Error associating alert with location: "
 						+ result.getLastError().toString());
 			}
 		}
-		return created;
 	}
 
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.sitewhere.spi.device.IDeviceManagement#addDeviceAlert(com.sitewhere .spi.device.IDeviceAlert )
+	 * @see
+	 * com.sitewhere.spi.device.IDeviceManagement#addDeviceAlert(com.sitewhere.spi.device.IDeviceAssignment,
+	 * com.sitewhere.spi.device.request.IDeviceAlertCreateRequest)
 	 */
-	public IDeviceAlert addDeviceAlert(IDeviceAlert alert) throws SiteWhereException {
+	public IDeviceAlert addDeviceAlert(IDeviceAssignment assignment, IDeviceAlertCreateRequest request)
+			throws SiteWhereException {
+		DeviceAlert alert = new DeviceAlert();
+		alert.setSiteToken(assignment.getSiteToken());
+		alert.setDeviceAssignmentToken(assignment.getToken());
+		alert.setAssetName(Utils.getAssetNameForAssignment(assignment));
+		alert.setEventDate(request.getEventDate());
+		alert.setReceivedDate(new Date());
+		alert.setSource(AlertSource.Device);
+		alert.setType(request.getType());
+		alert.setMessage(request.getMessage());
+		alert.setAcknowledged(false);
+		MetadataProvider.copy(request, alert);
+
 		DBCollection alertsColl = getMongoClient().getAlertsCollection();
 		DBObject alertObject = MongoDeviceAlert.toDBObject(alert);
 		alertsColl.insert(alertObject);
@@ -983,6 +1024,19 @@ public class MongoDeviceManagement implements IDeviceManagement {
 	 */
 	protected DBObject getDeviceMeasurementsById(String id) throws SiteWhereException {
 		DBCollection coll = getMongoClient().getMeasurementsCollection();
+		BasicDBObject query = new BasicDBObject(MongoDeviceEvent.PROP_EVENT_ID, new ObjectId(id));
+		return coll.findOne(query);
+	}
+
+	/**
+	 * Find a device alert by unique event id.
+	 * 
+	 * @param id
+	 * @return
+	 * @throws SiteWhereException
+	 */
+	protected DBObject getDeviceAlertById(String id) throws SiteWhereException {
+		DBCollection coll = getMongoClient().getAlertsCollection();
 		BasicDBObject query = new BasicDBObject(MongoDeviceEvent.PROP_EVENT_ID, new ObjectId(id));
 		return coll.findOne(query);
 	}

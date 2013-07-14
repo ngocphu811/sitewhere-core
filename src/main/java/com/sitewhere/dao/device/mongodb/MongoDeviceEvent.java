@@ -58,8 +58,8 @@ public class MongoDeviceEvent {
 		target.append(PROP_SITE_TOKEN, source.getSiteToken());
 		target.append(PROP_DEVICE_ASSIGNMENT_TOKEN, source.getDeviceAssignmentToken());
 		target.append(PROP_ASSET_NAME, source.getAssetName());
-		target.append(PROP_EVENT_DATE, source.getEventDate().getTime());
-		target.append(PROP_RECEIVED_DATE, source.getReceivedDate().getTime());
+		target.append(PROP_EVENT_DATE, source.getEventDate());
+		target.append(PROP_RECEIVED_DATE, source.getReceivedDate());
 		target.append(PROP_ALERT_IDS, source.getAlertIds());
 
 		MongoDeviceEntityMetadata.toDBObject(source, target);
