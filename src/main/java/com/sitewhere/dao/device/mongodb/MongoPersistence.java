@@ -54,6 +54,20 @@ public class MongoPersistence {
 	}
 
 	/**
+	 * Common handler for deleting objects. Assures that errors are handled in a consistent way.
+	 * 
+	 * @param collection
+	 * @param object
+	 * @throws SiteWhereException
+	 */
+	public static void delete(DBCollection collection, DBObject object) throws SiteWhereException {
+		WriteResult result = collection.remove(object);
+		if (!result.getLastError().ok()) {
+			throw new SiteWhereException("Error during delete: " + result.getLastError().toString());
+		}
+	}
+
+	/**
 	 * Initialize entity fields.
 	 * 
 	 * @param entity

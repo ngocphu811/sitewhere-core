@@ -194,15 +194,22 @@ public class MongoDeviceManagement implements IDeviceManagement {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.sitewhere.spi.device.IDeviceManagement#deleteDevice(java.lang.String)
+	 * @see com.sitewhere.spi.device.IDeviceManagement#deleteDevice(java.lang.String, boolean)
 	 */
-	public IDevice deleteDevice(String hardwareId) throws SiteWhereException {
-		DBObject existing = assertDevice(hardwareId);
-		MongoSiteWhereEntity.setDeleted(existing, true);
-		BasicDBObject query = new BasicDBObject(MongoDevice.PROP_HARDWARE_ID, hardwareId);
-		DBCollection devices = getMongoClient().getDevicesCollection();
-		MongoPersistence.update(devices, query, existing);
-		return MongoDevice.fromDBObject(existing);
+	public IDevice deleteDevice(String hardwareId, boolean force) throws SiteWhereException {
+		if (force) {
+			DBObject existing = assertDevice(hardwareId);
+			DBCollection devices = getMongoClient().getDevicesCollection();
+			MongoPersistence.delete(devices, existing);
+			return MongoDevice.fromDBObject(existing);
+		} else {
+			DBObject existing = assertDevice(hardwareId);
+			MongoSiteWhereEntity.setDeleted(existing, true);
+			BasicDBObject query = new BasicDBObject(MongoDevice.PROP_HARDWARE_ID, hardwareId);
+			DBCollection devices = getMongoClient().getDevicesCollection();
+			MongoPersistence.update(devices, query, existing);
+			return MongoDevice.fromDBObject(existing);
+		}
 	}
 
 	/**
