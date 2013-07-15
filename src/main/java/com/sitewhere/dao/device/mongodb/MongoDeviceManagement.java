@@ -110,15 +110,23 @@ public class MongoDeviceManagement implements IDeviceManagement {
 		DBObject existing = assertDevice(hardwareId);
 
 		// Can not update the hardware id on a device.
-		if (!request.getHardwareId().equals(hardwareId)) {
+		if ((request.getHardwareId() != null) && (!request.getHardwareId().equals(hardwareId))) {
 			throw new SiteWhereSystemException(ErrorCode.DeviceHardwareIdCanNotBeChanged, ErrorLevel.ERROR,
 					HttpServletResponse.SC_BAD_REQUEST);
 		}
 
+		// Copy any non-null fields.
 		Device updatedDevice = MongoDevice.fromDBObject(existing);
-		updatedDevice.setAssetId(request.getAssetId());
-		updatedDevice.setComments(request.getComments());
-		MetadataProvider.copy(request, updatedDevice);
+		if (request.getAssetId() != null) {
+			updatedDevice.setAssetId(request.getAssetId());
+		}
+		if (request.getComments() != null) {
+			updatedDevice.setComments(request.getComments());
+		}
+		if ((request.getMetadata() != null) && (request.getMetadata().size() > 0)) {
+			updatedDevice.getMetadata().clear();
+			MetadataProvider.copy(request, updatedDevice);
+		}
 		DBObject updated = MongoDevice.toDBObject(updatedDevice);
 
 		DBCollection devices = getMongoClient().getDevicesCollection();
