@@ -16,6 +16,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import javax.servlet.http.HttpServletResponse;
+
 import org.bson.types.ObjectId;
 
 import com.mongodb.BasicDBObject;
@@ -36,6 +38,7 @@ import com.sitewhere.rest.model.device.Site;
 import com.sitewhere.rest.model.device.Zone;
 import com.sitewhere.spi.SiteWhereException;
 import com.sitewhere.spi.SiteWhereSystemException;
+import com.sitewhere.spi.common.ILocation;
 import com.sitewhere.spi.device.AlertSource;
 import com.sitewhere.spi.device.DeviceAssignmentStatus;
 import com.sitewhere.spi.device.IDevice;
@@ -56,6 +59,8 @@ import com.sitewhere.spi.device.request.IDeviceAssignmentCreateRequest;
 import com.sitewhere.spi.device.request.IDeviceCreateRequest;
 import com.sitewhere.spi.device.request.IDeviceLocationCreateRequest;
 import com.sitewhere.spi.device.request.IDeviceMeasurementsCreateRequest;
+import com.sitewhere.spi.device.request.ISiteCreateRequest;
+import com.sitewhere.spi.device.request.IZoneCreateRequest;
 import com.sitewhere.spi.error.ErrorCode;
 import com.sitewhere.spi.error.ErrorLevel;
 
@@ -78,22 +83,18 @@ public class MongoDeviceManagement implements IDeviceManagement {
 	public IDevice createDevice(IDeviceCreateRequest device) throws SiteWhereException {
 		IDevice existing = getDeviceByHardwareId(device.getHardwareId());
 		if (existing != null) {
-			throw new SiteWhereSystemException(ErrorCode.DuplicateHardwareId, ErrorLevel.ERROR);
+			throw new SiteWhereSystemException(ErrorCode.DuplicateHardwareId, ErrorLevel.ERROR,
+					HttpServletResponse.SC_CONFLICT);
 		}
 		Device newDevice = new Device();
 		newDevice.setAssetId(device.getAssetId());
 		newDevice.setHardwareId(device.getHardwareId());
 		newDevice.setComments(device.getComments());
-		newDevice.setCreatedDate(new Date());
-		newDevice.setCreatedBy("admin");
-		newDevice.setDeleted(false);
+		MongoPersistence.initializeEntityMetadata(newDevice);
 
 		DBCollection devices = getMongoClient().getDevicesCollection();
 		DBObject created = MongoDevice.toDBObject(newDevice);
-		WriteResult result = devices.insert(created);
-		if (!result.getLastError().ok()) {
-			throw new SiteWhereException("Error saving device: " + result.getLastError().toString());
-		}
+		MongoPersistence.insert(devices, created);
 		return newDevice;
 	}
 
@@ -136,7 +137,7 @@ public class MongoDeviceManagement implements IDeviceManagement {
 		DBObject match = assertDevice(hardwareId);
 		MongoDeviceEntityMetadata.toDBObject(metadata, match);
 		BasicDBObject query = new BasicDBObject(MongoDevice.PROP_HARDWARE_ID, hardwareId);
-		devices.update(query, match);
+		MongoPersistence.update(devices, query, match);
 		return MongoDevice.fromDBObject(match);
 	}
 
@@ -200,7 +201,7 @@ public class MongoDeviceManagement implements IDeviceManagement {
 		MongoSiteWhereEntity.setDeleted(existing, true);
 		BasicDBObject query = new BasicDBObject(MongoDevice.PROP_HARDWARE_ID, hardwareId);
 		DBCollection devices = getMongoClient().getDevicesCollection();
-		devices.update(query, existing);
+		MongoPersistence.update(devices, query, existing);
 		return MongoDevice.fromDBObject(existing);
 	}
 
@@ -245,27 +246,19 @@ public class MongoDeviceManagement implements IDeviceManagement {
 		newAssignment.setAssetId(request.getAssetId());
 		newAssignment.setActiveDate(new Date());
 		newAssignment.setStatus(DeviceAssignmentStatus.Active);
-		newAssignment.setCreatedDate(new Date());
-		newAssignment.setCreatedBy("admin");
-		newAssignment.setDeleted(false);
 
-		DBObject created = MongoDeviceAssignment.toDBObject(newAssignment);
+		MongoPersistence.initializeEntityMetadata(newAssignment);
+		MetadataProvider.copy(request, newAssignment);
+
 		DBCollection assignments = getMongoClient().getDeviceAssignmentsCollection();
-		WriteResult result = assignments.insert(created);
-		if (!result.getLastError().ok()) {
-			throw new SiteWhereException("Error saving device assignment: "
-					+ result.getLastError().toString());
-		}
+		DBObject created = MongoDeviceAssignment.toDBObject(newAssignment);
+		MongoPersistence.insert(assignments, created);
 
 		// Update device to point to created assignment.
 		DBCollection devices = getMongoClient().getDevicesCollection();
 		BasicDBObject query = new BasicDBObject(MongoDevice.PROP_HARDWARE_ID, request.getDeviceHardwareId());
 		device.put(MongoDevice.PROP_ASSIGNMENT_TOKEN, newAssignment.getToken());
-		result = devices.update(query, device);
-		if (!result.getLastError().ok()) {
-			throw new SiteWhereException("Error updating device with new assignment: "
-					+ result.getLastError().toString());
-		}
+		MongoPersistence.update(devices, query, device);
 		return newAssignment;
 	}
 
@@ -314,7 +307,7 @@ public class MongoDeviceManagement implements IDeviceManagement {
 		MongoDeviceEntityMetadata.toDBObject(metadata, match);
 		BasicDBObject query = new BasicDBObject(MongoDeviceAssignment.PROP_TOKEN, token);
 		DBCollection assignments = getMongoClient().getDeviceAssignmentsCollection();
-		assignments.update(query, match);
+		MongoPersistence.update(assignments, query, match);
 		return MongoDeviceAssignment.fromDBObject(match);
 	}
 
@@ -333,11 +326,7 @@ public class MongoDeviceManagement implements IDeviceManagement {
 		match.put(MongoDeviceAssignment.PROP_STATUS, String.valueOf(status.getStatusCode()));
 		DBCollection assignments = getMongoClient().getDeviceAssignmentsCollection();
 		BasicDBObject query = new BasicDBObject(MongoDeviceAssignment.PROP_TOKEN, token);
-		WriteResult result = assignments.update(query, match);
-		if (!result.getLastError().ok()) {
-			throw new SiteWhereException("Error updating device assignment status: "
-					+ result.getLastError().toString());
-		}
+		MongoPersistence.update(assignments, query, match);
 		DeviceAssignment assignment = MongoDeviceAssignment.fromDBObject(match);
 		return assignment;
 	}
@@ -354,11 +343,7 @@ public class MongoDeviceManagement implements IDeviceManagement {
 		MongoDeviceAssignment.setLocation(location, match);
 		DBCollection assignments = getMongoClient().getDeviceAssignmentsCollection();
 		BasicDBObject query = new BasicDBObject(MongoDeviceAssignment.PROP_TOKEN, token);
-		WriteResult result = assignments.update(query, match);
-		if (!result.getLastError().ok()) {
-			throw new SiteWhereException("Error updating device assignment location: "
-					+ result.getLastError().toString());
-		}
+		MongoPersistence.update(assignments, query, match);
 		DeviceAssignment assignment = MongoDeviceAssignment.fromDBObject(match);
 		return assignment;
 	}
@@ -398,11 +383,7 @@ public class MongoDeviceManagement implements IDeviceManagement {
 				String.valueOf(DeviceAssignmentStatus.Released.getStatusCode()));
 		DBCollection assignments = getMongoClient().getDeviceAssignmentsCollection();
 		BasicDBObject query = new BasicDBObject(MongoDeviceAssignment.PROP_TOKEN, token);
-		WriteResult result = assignments.update(query, match);
-		if (!result.getLastError().ok()) {
-			throw new SiteWhereException("Error ending device assignment: "
-					+ result.getLastError().toString());
-		}
+		MongoPersistence.update(assignments, query, match);
 
 		// Remove device assignment reference.
 		DBCollection devices = getMongoClient().getDevicesCollection();
@@ -410,11 +391,7 @@ public class MongoDeviceManagement implements IDeviceManagement {
 		DBObject deviceMatch = getDeviceDBObjectByHardwareId(hardwareId);
 		deviceMatch.removeField(MongoDevice.PROP_ASSIGNMENT_TOKEN);
 		query = new BasicDBObject(MongoDevice.PROP_HARDWARE_ID, hardwareId);
-		result = devices.update(query, deviceMatch);
-		if (!result.getLastError().ok()) {
-			throw new SiteWhereException("Error removing assignment reference from device: "
-					+ result.getLastError().toString());
-		}
+		MongoPersistence.update(devices, query, deviceMatch);
 
 		DeviceAssignment assignment = MongoDeviceAssignment.fromDBObject(match);
 		return assignment;
@@ -539,7 +516,7 @@ public class MongoDeviceManagement implements IDeviceManagement {
 
 		DBCollection measurementColl = getMongoClient().getMeasurementsCollection();
 		DBObject mObject = MongoDeviceMeasurements.toDBObject(measurements);
-		measurementColl.insert(mObject);
+		MongoPersistence.insert(measurementColl, mObject);
 		return MongoDeviceMeasurements.fromDBObject(mObject);
 	}
 
@@ -619,7 +596,7 @@ public class MongoDeviceManagement implements IDeviceManagement {
 
 		DBCollection locationsColl = getMongoClient().getLocationsCollection();
 		DBObject locObject = MongoDeviceLocation.toDBObject(location);
-		locationsColl.insert(locObject);
+		MongoPersistence.insert(locationsColl, locObject);
 		return MongoDeviceLocation.fromDBObject(locObject);
 	}
 
@@ -723,11 +700,7 @@ public class MongoDeviceManagement implements IDeviceManagement {
 			alertIds.add(alertId);
 			locObj.put(MongoDeviceEvent.PROP_ALERT_IDS, alertIds);
 			DBObject query = new BasicDBObject(MongoDeviceEvent.PROP_EVENT_ID, new ObjectId(locationId));
-			WriteResult result = getMongoClient().getLocationsCollection().update(query, locObj);
-			if (!result.getLastError().ok()) {
-				throw new SiteWhereException("Error associating alert with location: "
-						+ result.getLastError().toString());
-			}
+			MongoPersistence.update(getMongoClient().getLocationsCollection(), query, locObj);
 		}
 	}
 
@@ -754,7 +727,7 @@ public class MongoDeviceManagement implements IDeviceManagement {
 
 		DBCollection alertsColl = getMongoClient().getAlertsCollection();
 		DBObject alertObject = MongoDeviceAlert.toDBObject(alert);
-		alertsColl.insert(alertObject);
+		MongoPersistence.insert(alertsColl, alertObject);
 		return MongoDeviceAlert.fromDBObject(alertObject);
 	}
 
@@ -810,43 +783,55 @@ public class MongoDeviceManagement implements IDeviceManagement {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.sitewhere.spi.device.IDeviceManagement#createSite(com.sitewhere.spi .device.ISite)
+	 * @see
+	 * com.sitewhere.spi.device.IDeviceManagement#createSite(com.sitewhere.spi.device.request.ISiteCreateRequest
+	 * )
 	 */
-	public ISite createSite(ISite input) throws SiteWhereException {
-		Site newSite = Site.copy(input);
-		newSite.setToken(UUID.randomUUID().toString());
-		newSite.setCreatedDate(new Date());
-		newSite.setCreatedBy("admin");
-		newSite.setDeleted(false);
+	public ISite createSite(ISiteCreateRequest request) throws SiteWhereException {
+		Site site = new Site();
+		site.setName(request.getName());
+		site.setDescription(request.getDescription());
+		site.setImageUrl(request.getImageUrl());
+		site.setMapType(request.getMapType());
+		site.setToken(UUID.randomUUID().toString());
+
+		MongoPersistence.initializeEntityMetadata(site);
+		MetadataProvider.copy(request, site);
+		MetadataProvider.copy(request.getMapMetadata(), site.getMapMetadata());
 
 		DBCollection sites = getMongoClient().getSitesCollection();
-		DBObject created = MongoSite.toDBObject(newSite);
-		WriteResult result = sites.insert(created);
-		if (!result.getLastError().ok()) {
-			throw new SiteWhereException("Error saving site: " + result.getLastError().toString());
-		}
-		return input;
+		DBObject created = MongoSite.toDBObject(site);
+		MongoPersistence.insert(sites, created);
+		return MongoSite.fromDBObject(created);
 	}
 
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.sitewhere.spi.device.IDeviceManagement#updateSite(com.sitewhere.spi .device.ISite)
+	 * @see com.sitewhere.spi.device.IDeviceManagement#updateSite(java.lang.String,
+	 * com.sitewhere.spi.device.request.ISiteCreateRequest)
 	 */
-	public ISite updateSite(ISite input) throws SiteWhereException {
+	public ISite updateSite(String token, ISiteCreateRequest request) throws SiteWhereException {
 		DBCollection sites = getMongoClient().getSitesCollection();
-		DBObject match = getSiteDBObjectByToken(input.getToken());
+		DBObject match = getSiteDBObjectByToken(token);
 		if (match == null) {
 			throw new SiteWhereSystemException(ErrorCode.InvalidSiteToken, ErrorLevel.ERROR);
 		}
-		BasicDBObject update = MongoSite.toDBObject(input);
-		update.append(MongoSiteWhereEntity.PROP_CREATED_DATE,
-				match.get(MongoSiteWhereEntity.PROP_CREATED_DATE));
-		update.append(MongoSiteWhereEntity.PROP_CREATED_BY, match.get(MongoSiteWhereEntity.PROP_CREATED_BY));
-		update.append(MongoSiteWhereEntity.PROP_UPDATED_DATE, Calendar.getInstance().getTime());
-		BasicDBObject query = new BasicDBObject(MongoSite.PROP_TOKEN, input.getToken());
-		sites.update(query, update);
-		return MongoSite.fromDBObject(update);
+
+		Site site = MongoSite.fromDBObject(match);
+		site.setName(request.getName());
+		site.setDescription(request.getDescription());
+		site.setImageUrl(request.getImageUrl());
+		site.setMapType(request.getMapType());
+
+		MetadataProvider.copy(request, site);
+		MetadataProvider.copy(request.getMapMetadata(), site.getMapMetadata());
+
+		DBObject updated = MongoSite.toDBObject(site);
+
+		BasicDBObject query = new BasicDBObject(MongoSite.PROP_TOKEN, token);
+		MongoPersistence.update(sites, query, updated);
+		return MongoSite.fromDBObject(updated);
 	}
 
 	/*
@@ -900,20 +885,29 @@ public class MongoDeviceManagement implements IDeviceManagement {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.sitewhere.spi.device.IDeviceManagement#createZone(com.sitewhere.spi .device.IZone)
+	 * @see com.sitewhere.spi.device.IDeviceManagement#createZone(com.sitewhere.spi.device.ISite,
+	 * com.sitewhere.spi.device.request.IZoneCreateRequest)
 	 */
-	public IZone createZone(IZone input) throws SiteWhereException {
-		Zone zone = Zone.copy(input);
+	public IZone createZone(ISite site, IZoneCreateRequest request) throws SiteWhereException {
+		Zone zone = new Zone();
 		zone.setToken(UUID.randomUUID().toString());
-		zone.setCreatedDate(new Date());
+		zone.setSiteToken(site.getToken());
+		zone.setName(request.getName());
+		zone.setBorderColor(request.getBorderColor());
+		zone.setFillColor(request.getFillColor());
+		zone.setOpacity(request.getOpacity());
+
+		MongoPersistence.initializeEntityMetadata(zone);
+		MetadataProvider.copy(request, zone);
+
+		for (ILocation coordinate : request.getCoordinates()) {
+			zone.getCoordinates().add(coordinate);
+		}
 
 		DBCollection zones = getMongoClient().getZonesCollection();
 		DBObject created = MongoZone.toDBObject(zone);
-		WriteResult result = zones.insert(created);
-		if (!result.getLastError().ok()) {
-			throw new SiteWhereException("Error saving zone: " + result.getLastError().toString());
-		}
-		return input;
+		MongoPersistence.insert(zones, created);
+		return MongoZone.fromDBObject(created);
 	}
 
 	/*
