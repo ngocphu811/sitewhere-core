@@ -80,22 +80,51 @@ public class MongoDeviceManagement implements IDeviceManagement {
 	 * @see com.sitewhere.spi.device.IDeviceManagement#createDevice(com.sitewhere.spi.device.request.
 	 * IDeviceCreateRequest)
 	 */
-	public IDevice createDevice(IDeviceCreateRequest device) throws SiteWhereException {
-		IDevice existing = getDeviceByHardwareId(device.getHardwareId());
+	public IDevice createDevice(IDeviceCreateRequest request) throws SiteWhereException {
+		IDevice existing = getDeviceByHardwareId(request.getHardwareId());
 		if (existing != null) {
 			throw new SiteWhereSystemException(ErrorCode.DuplicateHardwareId, ErrorLevel.ERROR,
 					HttpServletResponse.SC_CONFLICT);
 		}
 		Device newDevice = new Device();
-		newDevice.setAssetId(device.getAssetId());
-		newDevice.setHardwareId(device.getHardwareId());
-		newDevice.setComments(device.getComments());
+		newDevice.setAssetId(request.getAssetId());
+		newDevice.setHardwareId(request.getHardwareId());
+		newDevice.setComments(request.getComments());
+
+		MetadataProvider.copy(request, newDevice);
 		MongoPersistence.initializeEntityMetadata(newDevice);
 
 		DBCollection devices = getMongoClient().getDevicesCollection();
 		DBObject created = MongoDevice.toDBObject(newDevice);
 		MongoPersistence.insert(devices, created);
 		return newDevice;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.sitewhere.spi.device.IDeviceManagement#updateDevice(java.lang.String,
+	 * com.sitewhere.spi.device.request.IDeviceCreateRequest)
+	 */
+	public IDevice updateDevice(String hardwareId, IDeviceCreateRequest request) throws SiteWhereException {
+		DBObject existing = assertDevice(hardwareId);
+
+		// Can not update the hardware id on a device.
+		if (!request.getHardwareId().equals(hardwareId)) {
+			throw new SiteWhereSystemException(ErrorCode.DeviceHardwareIdCanNotBeChanged, ErrorLevel.ERROR,
+					HttpServletResponse.SC_BAD_REQUEST);
+		}
+
+		Device updatedDevice = MongoDevice.fromDBObject(existing);
+		updatedDevice.setAssetId(request.getAssetId());
+		updatedDevice.setComments(request.getComments());
+		MetadataProvider.copy(request, updatedDevice);
+		DBObject updated = MongoDevice.toDBObject(updatedDevice);
+
+		DBCollection devices = getMongoClient().getDevicesCollection();
+		BasicDBObject query = new BasicDBObject(MongoDevice.PROP_HARDWARE_ID, hardwareId);
+		MongoPersistence.update(devices, query, updated);
+		return MongoDevice.fromDBObject(updated);
 	}
 
 	/*
@@ -123,22 +152,6 @@ public class MongoDeviceManagement implements IDeviceManagement {
 		}
 		DBObject match = assertDeviceAssignment(device.getAssignmentToken());
 		return MongoDeviceAssignment.fromDBObject(match);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see com.sitewhere.spi.device.IDeviceManagement#updateDeviceMetadata(java. lang.String,
-	 * com.sitewhere.spi.device.IMetadataProvider)
-	 */
-	public IDevice updateDeviceMetadata(String hardwareId, IMetadataProvider metadata)
-			throws SiteWhereException {
-		DBCollection devices = getMongoClient().getDevicesCollection();
-		DBObject match = assertDevice(hardwareId);
-		MongoDeviceEntityMetadata.toDBObject(metadata, match);
-		BasicDBObject query = new BasicDBObject(MongoDevice.PROP_HARDWARE_ID, hardwareId);
-		MongoPersistence.update(devices, query, match);
-		return MongoDevice.fromDBObject(match);
 	}
 
 	/*
