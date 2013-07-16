@@ -707,18 +707,16 @@ public class MongoDeviceManagement implements IDeviceManagement {
 	 * @see com.sitewhere.spi.device.IDeviceManagement#associateAlertWithLocation(java.lang.String,
 	 * java.lang.String)
 	 */
-	public void associateAlertWithLocation(String alertId, String locationId) throws SiteWhereException {
-		DBObject locObj = getDeviceLocationById(locationId);
-		if (locObj == null) {
-			throw new SiteWhereException("Device location not found for id: " + locationId);
-		}
+	public IDeviceLocation associateAlertWithLocation(String alertId, String locationId)
+			throws SiteWhereException {
+		// Make sure the location id reference is valid.
+		DBObject locObj = assertDeviceLocation(locationId);
 		IDeviceLocation location = MongoDeviceLocation.fromDBObject(locObj);
 
-		DBObject alertObj = getDeviceAlertById(alertId);
-		if (alertObj == null) {
-			throw new SiteWhereException("Device alert not found for id: " + locationId);
-		}
+		// Make sure the alert id reference is valid.
+		assertDeviceAlert(alertId);
 
+		// If alert id is not already in the list, add it.
 		List<String> alertIds = location.getAlertIds();
 		if (!alertIds.contains(alertId)) {
 			alertIds.add(alertId);
@@ -726,6 +724,7 @@ public class MongoDeviceManagement implements IDeviceManagement {
 			DBObject query = new BasicDBObject(MongoDeviceEvent.PROP_EVENT_ID, new ObjectId(locationId));
 			MongoPersistence.update(getMongoClient().getLocationsCollection(), query, locObj);
 		}
+		return MongoDeviceLocation.fromDBObject(locObj);
 	}
 
 	/*
@@ -1063,6 +1062,22 @@ public class MongoDeviceManagement implements IDeviceManagement {
 	}
 
 	/**
+	 * Return the {@link DBObject} for the device measurements with the given id. Throws an exception if the
+	 * id is not valid.
+	 * 
+	 * @param id
+	 * @return
+	 * @throws SiteWhereException
+	 */
+	protected DBObject assertDeviceMeasurements(String id) throws SiteWhereException {
+		DBObject match = getDeviceMeasurementsById(id);
+		if (match == null) {
+			throw new SiteWhereSystemException(ErrorCode.InvalidDeviceMeasurementsId, ErrorLevel.ERROR);
+		}
+		return match;
+	}
+
+	/**
 	 * Find a device alert by unique event id.
 	 * 
 	 * @param id
@@ -1073,6 +1088,22 @@ public class MongoDeviceManagement implements IDeviceManagement {
 		DBCollection coll = getMongoClient().getAlertsCollection();
 		BasicDBObject query = new BasicDBObject(MongoDeviceEvent.PROP_EVENT_ID, new ObjectId(id));
 		return coll.findOne(query);
+	}
+
+	/**
+	 * Return the {@link DBObject} for the device alert with the given id. Throws an exception if the id is
+	 * not valid.
+	 * 
+	 * @param id
+	 * @return
+	 * @throws SiteWhereException
+	 */
+	protected DBObject assertDeviceAlert(String id) throws SiteWhereException {
+		DBObject match = getDeviceAlertById(id);
+		if (match == null) {
+			throw new SiteWhereSystemException(ErrorCode.InvalidDeviceAlertId, ErrorLevel.ERROR);
+		}
+		return match;
 	}
 
 	public SiteWhereMongoClient getMongoClient() {
