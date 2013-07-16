@@ -329,10 +329,7 @@ public class MongoDeviceManagement implements IDeviceManagement {
 	 */
 	public IDeviceAssignment updateDeviceAssignmentMetadata(String token, IMetadataProvider metadata)
 			throws SiteWhereException {
-		DBObject match = getDeviceAssignmentDBObjectByToken(token);
-		if (match == null) {
-			throw new SiteWhereSystemException(ErrorCode.InvalidDeviceAssignmentToken, ErrorLevel.ERROR);
-		}
+		DBObject match = assertDeviceAssignment(token);
 		MongoDeviceEntityMetadata.toDBObject(metadata, match);
 		BasicDBObject query = new BasicDBObject(MongoDeviceAssignment.PROP_TOKEN, token);
 		DBCollection assignments = getMongoClient().getDeviceAssignmentsCollection();
@@ -348,11 +345,8 @@ public class MongoDeviceManagement implements IDeviceManagement {
 	 */
 	public IDeviceAssignment updateDeviceAssignmentStatus(String token, DeviceAssignmentStatus status)
 			throws SiteWhereException {
-		DBObject match = getDeviceAssignmentDBObjectByToken(token);
-		if (match == null) {
-			throw new SiteWhereSystemException(ErrorCode.InvalidDeviceAssignmentToken, ErrorLevel.ERROR);
-		}
-		match.put(MongoDeviceAssignment.PROP_STATUS, String.valueOf(status.getStatusCode()));
+		DBObject match = assertDeviceAssignment(token);
+		match.put(MongoDeviceAssignment.PROP_STATUS, status.name());
 		DBCollection assignments = getMongoClient().getDeviceAssignmentsCollection();
 		BasicDBObject query = new BasicDBObject(MongoDeviceAssignment.PROP_TOKEN, token);
 		MongoPersistence.update(assignments, query, match);
@@ -408,8 +402,7 @@ public class MongoDeviceManagement implements IDeviceManagement {
 	public IDeviceAssignment endDeviceAssignment(String token) throws SiteWhereException {
 		DBObject match = assertDeviceAssignment(token);
 		match.put(MongoDeviceAssignment.PROP_RELEASED_DATE, Calendar.getInstance().getTime());
-		match.put(MongoDeviceAssignment.PROP_STATUS,
-				String.valueOf(DeviceAssignmentStatus.Released.getStatusCode()));
+		match.put(MongoDeviceAssignment.PROP_STATUS, DeviceAssignmentStatus.Released.name());
 		DBCollection assignments = getMongoClient().getDeviceAssignmentsCollection();
 		BasicDBObject query = new BasicDBObject(MongoDeviceAssignment.PROP_TOKEN, token);
 		MongoPersistence.update(assignments, query, match);

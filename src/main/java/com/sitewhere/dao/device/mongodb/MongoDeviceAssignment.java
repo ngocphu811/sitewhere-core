@@ -67,13 +67,13 @@ public class MongoDeviceAssignment {
 		}
 		target.append(PROP_ASSET_ID, source.getAssetId());
 		if (source.getAssetType() != null) {
-			target.append(PROP_ASSET_TYPE, source.getAssetType().getCode());
+			target.append(PROP_ASSET_TYPE, source.getAssetType().name());
 		}
 		if (source.getReleasedDate() != null) {
 			target.append(PROP_RELEASED_DATE, source.getReleasedDate());
 		}
 		if (source.getStatus() != null) {
-			target.append(PROP_STATUS, source.getStatus().getStatusCode());
+			target.append(PROP_STATUS, source.getStatus().name());
 		}
 		target.append(PROP_TOKEN, source.getToken());
 		target.append(PROP_DEVICE_HARDWARE_ID, source.getDeviceHardwareId());
@@ -120,13 +120,13 @@ public class MongoDeviceAssignment {
 		}
 		target.setAssetId(assetId);
 		if ((assetType != null) && (assetType.length() > 0)) {
-			target.setAssetType(AssetType.fromCode(assetType.charAt(0)));
+			target.setAssetType(AssetType.valueOf(assetType));
 		}
 		if (releasedDate != null) {
 			target.setReleasedDate(releasedDate);
 		}
 		if ((status != null) && (status.length() == 1)) {
-			target.setStatus(DeviceAssignmentStatus.fromStatusCode(status.charAt(0)));
+			target.setStatus(DeviceAssignmentStatus.valueOf(status));
 		}
 		target.setToken(token);
 		target.setDeviceHardwareId(deviceHardwareId);
