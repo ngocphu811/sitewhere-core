@@ -127,6 +127,7 @@ public class MongoDeviceManagement implements IDeviceManagement {
 			updatedDevice.getMetadata().clear();
 			MetadataProvider.copy(request, updatedDevice);
 		}
+		updatedDevice.setUpdatedDate(new Date());
 		DBObject updated = MongoDevice.toDBObject(updatedDevice);
 
 		DBCollection devices = getMongoClient().getDevicesCollection();
