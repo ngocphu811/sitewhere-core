@@ -357,11 +357,13 @@ public class MongoDeviceManagement implements IDeviceManagement {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.sitewhere.spi.device.IDeviceManagement#updateDeviceAssignmentLocation (java.lang.String,
-	 * com.sitewhere.spi.device.IDeviceLocation)
+	 * @see com.sitewhere.spi.device.IDeviceManagement#updateDeviceAssignmentLocation(java.lang.String,
+	 * java.lang.String)
 	 */
-	public IDeviceAssignment updateDeviceAssignmentLocation(String token, IDeviceLocation location)
+	public IDeviceAssignment updateDeviceAssignmentLocation(String token, String locationId)
 			throws SiteWhereException {
+		DBObject locationObj = assertDeviceLocation(locationId);
+		IDeviceLocation location = MongoDeviceLocation.fromDBObject(locationObj);
 		DBObject match = assertDeviceAssignment(token);
 		MongoDeviceAssignment.setLocation(location, match);
 		DBCollection assignments = getMongoClient().getDeviceAssignmentsCollection();
@@ -1029,6 +1031,22 @@ public class MongoDeviceManagement implements IDeviceManagement {
 		DBCollection coll = getMongoClient().getLocationsCollection();
 		BasicDBObject query = new BasicDBObject(MongoDeviceEvent.PROP_EVENT_ID, new ObjectId(id));
 		return coll.findOne(query);
+	}
+
+	/**
+	 * Return the {@link DBObject} for the device location with the given id. Throws an exception if the id is
+	 * not valid.
+	 * 
+	 * @param id
+	 * @return
+	 * @throws SiteWhereException
+	 */
+	protected DBObject assertDeviceLocation(String id) throws SiteWhereException {
+		DBObject match = getDeviceLocationById(id);
+		if (match == null) {
+			throw new SiteWhereSystemException(ErrorCode.InvalidDeviceLocationId, ErrorLevel.ERROR);
+		}
+		return match;
 	}
 
 	/**
