@@ -219,13 +219,12 @@ public class MongoDeviceManagement implements IDeviceManagement {
 	 * @see com.sitewhere.spi.device.IDeviceManagement#deleteDevice(java.lang.String, boolean)
 	 */
 	public IDevice deleteDevice(String hardwareId, boolean force) throws SiteWhereException {
+		DBObject existing = assertDevice(hardwareId);
 		if (force) {
-			DBObject existing = assertDevice(hardwareId);
 			DBCollection devices = getMongoClient().getDevicesCollection();
 			MongoPersistence.delete(devices, existing);
 			return MongoDevice.fromDBObject(existing);
 		} else {
-			DBObject existing = assertDevice(hardwareId);
 			MongoSiteWhereEntity.setDeleted(existing, true);
 			BasicDBObject query = new BasicDBObject(MongoDevice.PROP_HARDWARE_ID, hardwareId);
 			DBCollection devices = getMongoClient().getDevicesCollection();
@@ -289,6 +288,39 @@ public class MongoDeviceManagement implements IDeviceManagement {
 		device.put(MongoDevice.PROP_ASSIGNMENT_TOKEN, newAssignment.getToken());
 		MongoPersistence.update(devices, query, device);
 		return newAssignment;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.sitewhere.spi.device.IDeviceManagement#getDeviceAssignmentByToken (java.lang.String)
+	 */
+	public IDeviceAssignment getDeviceAssignmentByToken(String token) throws SiteWhereException {
+		DBObject match = getDeviceAssignmentDBObjectByToken(token);
+		if (match != null) {
+			return MongoDeviceAssignment.fromDBObject(match);
+		}
+		return null;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.sitewhere.spi.device.IDeviceManagement#deleteDeviceAssignment(java.lang.String, boolean)
+	 */
+	public IDeviceAssignment deleteDeviceAssignment(String token, boolean force) throws SiteWhereException {
+		DBObject existing = assertDeviceAssignment(token);
+		if (force) {
+			DBCollection assignments = getMongoClient().getDeviceAssignmentsCollection();
+			MongoPersistence.delete(assignments, existing);
+			return MongoDeviceAssignment.fromDBObject(existing);
+		} else {
+			MongoSiteWhereEntity.setDeleted(existing, true);
+			BasicDBObject query = new BasicDBObject(MongoDeviceAssignment.PROP_TOKEN, token);
+			DBCollection assignments = getMongoClient().getDeviceAssignmentsCollection();
+			MongoPersistence.update(assignments, query, existing);
+			return MongoDeviceAssignment.fromDBObject(existing);
+		}
 	}
 
 	/*
@@ -489,19 +521,6 @@ public class MongoDeviceManagement implements IDeviceManagement {
 			cursor.close();
 		}
 		return matches;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see com.sitewhere.spi.device.IDeviceManagement#getDeviceAssignmentByToken (java.lang.String)
-	 */
-	public IDeviceAssignment getDeviceAssignmentByToken(String token) throws SiteWhereException {
-		DBObject match = getDeviceAssignmentDBObjectByToken(token);
-		if (match != null) {
-			return MongoDeviceAssignment.fromDBObject(match);
-		}
-		return null;
 	}
 
 	/**
