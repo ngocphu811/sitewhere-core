@@ -33,6 +33,7 @@ import com.sitewhere.rest.model.device.DeviceAssignment;
 import com.sitewhere.rest.model.device.DeviceEventBatchResponse;
 import com.sitewhere.rest.model.device.DeviceLocation;
 import com.sitewhere.rest.model.device.DeviceMeasurements;
+import com.sitewhere.rest.model.device.MetadataEntry;
 import com.sitewhere.rest.model.device.MetadataProvider;
 import com.sitewhere.rest.model.device.Site;
 import com.sitewhere.rest.model.device.Zone;
@@ -865,6 +866,10 @@ public class MongoDeviceManagement implements IDeviceManagement {
 		site.setDescription(request.getDescription());
 		site.setImageUrl(request.getImageUrl());
 		site.setMapType(request.getMapType());
+		site.setMetadata(new ArrayList<MetadataEntry>());
+		site.setMapMetadata(new MetadataProvider());
+		site.setUpdatedDate(new Date());
+		site.setUpdatedBy("admin");
 
 		MetadataProvider.copy(request, site);
 		MetadataProvider.copy(request.getMapMetadata(), site.getMapMetadata());
