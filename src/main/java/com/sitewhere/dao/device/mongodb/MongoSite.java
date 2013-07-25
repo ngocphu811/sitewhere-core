@@ -38,7 +38,7 @@ public class MongoSite {
 	public static final String PROP_MAP_TYPE = "mapType";
 
 	/** Property for map metadata */
-	public static final String PROP_MAP_MATADATA = "mapMetadata";
+	public static final String PROP_MAP_METADATA = "mapMetadata";
 
 	/**
 	 * Copy information from SPI into Mongo DBObject.
@@ -54,7 +54,7 @@ public class MongoSite {
 		target.append(PROP_TOKEN, source.getToken());
 
 		MongoSiteWhereEntity.toDBObject(source, target);
-		MongoDeviceEntityMetadata.toDBObject(PROP_MAP_MATADATA, source.getMapMetadata(), target);
+		MongoDeviceEntityMetadata.toDBObject(PROP_MAP_METADATA, source.getMapMetadata(), target);
 		MongoDeviceEntityMetadata.toDBObject(source, target);
 	}
 
@@ -78,7 +78,7 @@ public class MongoSite {
 		target.setMapType(mapType);
 		
 		MongoSiteWhereEntity.fromDBObject(source, target);
-		MongoDeviceEntityMetadata.fromDBObject(PROP_MAP_MATADATA, source, target.getMapMetadata());
+		MongoDeviceEntityMetadata.fromDBObject(PROP_MAP_METADATA, source, target.getMapMetadata());
 		MongoDeviceEntityMetadata.fromDBObject(source, target);
 	}
 
