@@ -119,13 +119,13 @@ public class MongoDeviceAssignment {
 			target.setActiveDate(activeDate);
 		}
 		target.setAssetId(assetId);
-		if ((assetType != null) && (assetType.length() > 0)) {
+		if (assetType != null) {
 			target.setAssetType(AssetType.valueOf(assetType));
 		}
 		if (releasedDate != null) {
 			target.setReleasedDate(releasedDate);
 		}
-		if ((status != null) && (status.length() == 1)) {
+		if (status != null) {
 			target.setStatus(DeviceAssignmentStatus.valueOf(status));
 		}
 		target.setToken(token);
