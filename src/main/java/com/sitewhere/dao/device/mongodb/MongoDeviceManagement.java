@@ -894,6 +894,26 @@ public class MongoDeviceManagement implements IDeviceManagement {
 		return null;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.sitewhere.spi.device.IDeviceManagement#deleteSite(java.lang.String, boolean)
+	 */
+	public ISite deleteSite(String siteToken, boolean force) throws SiteWhereException {
+		DBObject existing = assertSite(siteToken);
+		if (force) {
+			DBCollection sites = getMongoClient().getSitesCollection();
+			MongoPersistence.delete(sites, existing);
+			return MongoSite.fromDBObject(existing);
+		} else {
+			MongoSiteWhereEntity.setDeleted(existing, true);
+			BasicDBObject query = new BasicDBObject(MongoSite.PROP_TOKEN, siteToken);
+			DBCollection sites = getMongoClient().getSitesCollection();
+			MongoPersistence.update(sites, query, existing);
+			return MongoSite.fromDBObject(existing);
+		}
+	}
+
 	/**
 	 * Get the DBObject containing site information that matches the given token.
 	 * 
@@ -1009,6 +1029,22 @@ public class MongoDeviceManagement implements IDeviceManagement {
 			throw new SiteWhereSystemException(ErrorCode.ZoneDeleteFailed, ErrorLevel.ERROR);
 		}
 		return existing;
+	}
+
+	/**
+	 * Return the {@link DBObject} for the site with the given token. Throws an exception if the token is not
+	 * found.
+	 * 
+	 * @param hardwareId
+	 * @return
+	 * @throws SiteWhereException
+	 */
+	protected DBObject assertSite(String token) throws SiteWhereException {
+		DBObject match = getSiteDBObjectByToken(token);
+		if (match == null) {
+			throw new SiteWhereSystemException(ErrorCode.InvalidSiteToken, ErrorLevel.INFO);
+		}
+		return match;
 	}
 
 	/**
