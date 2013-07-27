@@ -222,6 +222,11 @@ public class MongoDeviceManagement implements IDeviceManagement {
 	 */
 	public IDevice deleteDevice(String hardwareId, boolean force) throws SiteWhereException {
 		DBObject existing = assertDevice(hardwareId);
+		Device device = MongoDevice.fromDBObject(existing);
+		IDeviceAssignment assignment = getCurrentDeviceAssignment(device);
+		if (assignment != null) {
+			throw new SiteWhereSystemException(ErrorCode.DeviceCanNotBeDeletedIfAssigned, ErrorLevel.ERROR);
+		}
 		if (force) {
 			DBCollection devices = getMongoClient().getDevicesCollection();
 			MongoPersistence.delete(devices, existing);
