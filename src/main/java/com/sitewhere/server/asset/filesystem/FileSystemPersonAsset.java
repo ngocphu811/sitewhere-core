@@ -24,7 +24,7 @@ import javax.xml.bind.annotation.XmlElement;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 public class FileSystemPersonAsset {
-	
+
 	@XmlAttribute
 	private String id;
 
@@ -36,6 +36,9 @@ public class FileSystemPersonAsset {
 
 	@XmlAttribute
 	private String emailAddress;
+
+	@XmlElement(name = "roles")
+	private FileSystemPersonRoles roles;
 
 	@XmlElement(name = "photo-url")
 	private String photoUrl;
@@ -73,6 +76,14 @@ public class FileSystemPersonAsset {
 
 	public void setEmailAddress(String emailAddress) {
 		this.emailAddress = emailAddress;
+	}
+
+	public FileSystemPersonRoles getRoles() {
+		return roles;
+	}
+
+	public void setRoles(FileSystemPersonRoles roles) {
+		this.roles = roles;
 	}
 
 	public String getPhotoUrl() {

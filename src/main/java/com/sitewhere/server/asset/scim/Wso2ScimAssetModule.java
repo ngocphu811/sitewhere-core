@@ -27,6 +27,7 @@ import org.apache.log4j.Logger;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sitewhere.rest.model.asset.PersonAsset;
 import com.sitewhere.rest.model.command.CommandResponse;
 import com.sitewhere.server.asset.AssetMatcher;
 import com.sitewhere.spi.SiteWhereException;
@@ -40,7 +41,7 @@ import com.sitewhere.spi.command.ICommandResponse;
  * 
  * @author dadams
  */
-public class Wso2ScimAssetModule implements IAssetModule<Wso2ScimAsset> {
+public class Wso2ScimAssetModule implements IAssetModule<PersonAsset> {
 
 	/** Static logger instance */
 	private static Logger LOGGER = Logger.getLogger(Wso2ScimAssetModule.class);
@@ -70,7 +71,7 @@ public class Wso2ScimAssetModule implements IAssetModule<Wso2ScimAsset> {
 	private ObjectMapper mapper = new ObjectMapper();
 
 	/** Cached asset map */
-	private Map<String, Wso2ScimAsset> assetCache = new HashMap<String, Wso2ScimAsset>();
+	private Map<String, PersonAsset> assetCache = new HashMap<String, PersonAsset>();
 
 	/** Matcher used for searches */
 	protected AssetMatcher matcher = new AssetMatcher();
@@ -130,7 +131,7 @@ public class Wso2ScimAssetModule implements IAssetModule<Wso2ScimAsset> {
 	 * 
 	 * @see com.sitewhere.spi.asset.IAssetModule#getAssetById(java.lang.String)
 	 */
-	public Wso2ScimAsset getAssetById(String id) throws SiteWhereException {
+	public PersonAsset getAssetById(String id) throws SiteWhereException {
 		return assetCache.get(id);
 	}
 
@@ -139,14 +140,14 @@ public class Wso2ScimAssetModule implements IAssetModule<Wso2ScimAsset> {
 	 * 
 	 * @see com.sitewhere.spi.asset.IAssetModule#search(java.lang.String)
 	 */
-	public List<Wso2ScimAsset> search(String criteria) throws SiteWhereException {
+	public List<PersonAsset> search(String criteria) throws SiteWhereException {
 		criteria = criteria.toLowerCase();
-		List<Wso2ScimAsset> results = new ArrayList<Wso2ScimAsset>();
+		List<PersonAsset> results = new ArrayList<PersonAsset>();
 		if (criteria.length() == 0) {
 			results.addAll(assetCache.values());
 			return results;
 		}
-		for (Wso2ScimAsset asset : assetCache.values()) {
+		for (PersonAsset asset : assetCache.values()) {
 			if (matcher.isPersonMatch(asset, criteria)) {
 				results.add(asset);
 			}
@@ -207,7 +208,7 @@ public class Wso2ScimAssetModule implements IAssetModule<Wso2ScimAsset> {
 			Iterator<JsonNode> it = resources.elements();
 			while (it.hasNext()) {
 				JsonNode resource = it.next();
-				Wso2ScimAsset asset = parse(resource);
+				PersonAsset asset = parse(resource);
 				assetCache.put(asset.getId(), asset);
 				totalAssets++;
 			}
@@ -228,8 +229,8 @@ public class Wso2ScimAssetModule implements IAssetModule<Wso2ScimAsset> {
 	 * @param resource
 	 * @return
 	 */
-	protected Wso2ScimAsset parse(JsonNode resource) throws SiteWhereException {
-		Wso2ScimAsset asset = new Wso2ScimAsset();
+	protected PersonAsset parse(JsonNode resource) throws SiteWhereException {
+		PersonAsset asset = new PersonAsset();
 		JsonNode id = resource.get(IScimFields.ID);
 		if (id == null) {
 			throw new SiteWhereException("SCIM resource does not have an id.");
@@ -249,7 +250,12 @@ public class Wso2ScimAssetModule implements IAssetModule<Wso2ScimAsset> {
 		parseName(resource, asset);
 		parseEmail(resource, asset);
 
-		asset.loadFromProperties();
+		asset.setId(IWso2ScimFields.PROP_ASSET_ID);
+		asset.setName(IWso2ScimFields.PROP_NAME);
+		asset.setEmailAddress(IWso2ScimFields.PROP_EMAIL_ADDRESS);
+		asset.setUserName(IWso2ScimFields.PROP_USERNAME);
+		asset.setPhotoUrl(IWso2ScimFields.PROP_PROFILE_URL);
+
 		return asset;
 	}
 
@@ -259,7 +265,7 @@ public class Wso2ScimAssetModule implements IAssetModule<Wso2ScimAsset> {
 	 * @param resource
 	 * @param asset
 	 */
-	protected void parseName(JsonNode resource, Wso2ScimAsset asset) {
+	protected void parseName(JsonNode resource, PersonAsset asset) {
 		JsonNode name = resource.get(IScimFields.NAME);
 		if (name != null) {
 			String full = "";
@@ -285,7 +291,7 @@ public class Wso2ScimAssetModule implements IAssetModule<Wso2ScimAsset> {
 	 * @param resource
 	 * @param asset
 	 */
-	protected void parseEmail(JsonNode resource, Wso2ScimAsset asset) {
+	protected void parseEmail(JsonNode resource, PersonAsset asset) {
 		JsonNode emails = resource.get(IScimFields.EMAILS);
 		if (emails != null) {
 			int index = 1;

@@ -27,6 +27,7 @@ import org.apache.log4j.Logger;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sitewhere.rest.model.asset.HardwareAsset;
 import com.sitewhere.rest.model.command.CommandResponse;
 import com.sitewhere.server.asset.AssetMatcher;
 import com.sitewhere.spi.SiteWhereException;
@@ -40,7 +41,7 @@ import com.sitewhere.spi.command.ICommandResponse;
  * 
  * @author dadams
  */
-public class MagentoAssetModule implements IAssetModule<MagentoAsset> {
+public class MagentoAssetModule implements IAssetModule<HardwareAsset> {
 
 	/** Static logger instance */
 	private static Logger LOGGER = Logger.getLogger(MagentoAssetModule.class);
@@ -64,7 +65,7 @@ public class MagentoAssetModule implements IAssetModule<MagentoAsset> {
 	private ObjectMapper mapper = new ObjectMapper();
 
 	/** Cached asset map */
-	private Map<String, MagentoAsset> assetCache = new HashMap<String, MagentoAsset>();
+	private Map<String, HardwareAsset> assetCache = new HashMap<String, HardwareAsset>();
 
 	/** Matcher used for searches */
 	protected AssetMatcher matcher = new AssetMatcher();
@@ -124,7 +125,7 @@ public class MagentoAssetModule implements IAssetModule<MagentoAsset> {
 	 * 
 	 * @see com.sitewhere.spi.asset.IAssetModule#getAssetById(java.lang.String)
 	 */
-	public MagentoAsset getAssetById(String id) throws SiteWhereException {
+	public HardwareAsset getAssetById(String id) throws SiteWhereException {
 		return assetCache.get(id);
 	}
 
@@ -133,14 +134,14 @@ public class MagentoAssetModule implements IAssetModule<MagentoAsset> {
 	 * 
 	 * @see com.sitewhere.spi.asset.IAssetModule#search(java.lang.String)
 	 */
-	public List<MagentoAsset> search(String criteria) throws SiteWhereException {
+	public List<HardwareAsset> search(String criteria) throws SiteWhereException {
 		criteria = criteria.toLowerCase();
-		List<MagentoAsset> results = new ArrayList<MagentoAsset>();
+		List<HardwareAsset> results = new ArrayList<HardwareAsset>();
 		if (criteria.length() == 0) {
 			results.addAll(assetCache.values());
 			return results;
 		}
-		for (MagentoAsset asset : assetCache.values()) {
+		for (HardwareAsset asset : assetCache.values()) {
 			if (matcher.isHardwareMatch(asset, criteria)) {
 				results.add(asset);
 			}
@@ -168,15 +169,19 @@ public class MagentoAssetModule implements IAssetModule<MagentoAsset> {
 	 * @return
 	 * @throws SiteWhereException
 	 */
-	protected MagentoAsset parseFrom(JsonNode json) throws SiteWhereException {
-		MagentoAsset result = new MagentoAsset();
+	protected HardwareAsset parseFrom(JsonNode json) throws SiteWhereException {
+		HardwareAsset result = new HardwareAsset();
 		Iterator<String> fieldNames = json.fieldNames();
 		while (fieldNames.hasNext()) {
 			String fieldName = fieldNames.next();
 			JsonNode current = json.get(fieldName);
 			result.setProperty(fieldName, current.textValue());
 		}
-		result.loadFromProperties();
+		result.setId(result.getProperty(IMagentoFields.PROP_ASSET_ID));
+		result.setName(result.getProperty(IMagentoFields.PROP_NAME));
+		result.setDescription(result.getProperty(IMagentoFields.PROP_DESCRIPTION));
+		result.setSku(result.getProperty(IMagentoFields.PROP_SKU));
+		result.setImageUrl(result.getProperty(IMagentoFields.PROP_IMAGE_URL));
 		return result;
 	}
 
@@ -208,7 +213,7 @@ public class MagentoAssetModule implements IAssetModule<MagentoAsset> {
 				int assetsReturned = 0;
 				while (entries.hasNext()) {
 					JsonNode jsonAsset = entries.next();
-					MagentoAsset asset = parseFrom(jsonAsset);
+					HardwareAsset asset = parseFrom(jsonAsset);
 					assetCache.put(asset.getId(), asset);
 					assetsReturned++;
 					totalAssets++;

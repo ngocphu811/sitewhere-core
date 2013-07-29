@@ -99,6 +99,12 @@ public class FileSystemPersonAssetModule implements IAssetModule<PersonAsset> {
 				for (FileSystemAssetProperty xmlProperty : xmlAsset.getProperties()) {
 					asset.setProperty(xmlProperty.getName(), xmlProperty.getValue());
 				}
+				if (xmlAsset.getRoles() != null) {
+					List<String> roles = xmlAsset.getRoles().getRoles();
+					for (String role : roles) {
+						asset.getRoles().add(role);
+					}
+				}
 				assets.add(asset);
 				assetsById.put(asset.getId(), asset);
 			}

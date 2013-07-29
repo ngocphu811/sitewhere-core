@@ -21,6 +21,7 @@ import com.sitewhere.spi.asset.AssetType;
 import com.sitewhere.spi.asset.IAsset;
 import com.sitewhere.spi.asset.IAssetModule;
 import com.sitewhere.spi.asset.IAssetModuleManager;
+import com.sitewhere.spi.command.ICommandResponse;
 
 /**
  * Manages the list of modules
@@ -100,6 +101,19 @@ public class AssetModuleManager implements IAssetModuleManager {
 			}
 		}
 		return new ArrayList<Asset>();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.sitewhere.spi.asset.IAssetModuleManager#refreshModules()
+	 */
+	public List<ICommandResponse> refreshModules() throws SiteWhereException {
+		List<ICommandResponse> responses = new ArrayList<ICommandResponse>();
+		for (IAssetModule<?> module : modules) {
+			responses.add(module.refresh());
+		}
+		return responses;
 	}
 
 	/*
