@@ -517,7 +517,8 @@ public class MongoDeviceManagement implements IDeviceManagement {
 	public List<IDeviceAssignment> getDeviceAssignmentsForSite(String siteToken) throws SiteWhereException {
 		DBCollection assignments = getMongoClient().getDeviceAssignmentsCollection();
 		BasicDBObject query = new BasicDBObject(MongoDeviceAssignment.PROP_SITE_TOKEN, siteToken);
-		DBCursor cursor = assignments.find(query);
+		DBCursor cursor = assignments.find(query).sort(
+				new BasicDBObject(MongoDeviceAssignment.PROP_ACTIVE_DATE, -1));
 		List<IDeviceAssignment> matches = new ArrayList<IDeviceAssignment>();
 		try {
 			while (cursor.hasNext()) {
