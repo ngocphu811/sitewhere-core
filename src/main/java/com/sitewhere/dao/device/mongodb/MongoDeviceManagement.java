@@ -370,9 +370,11 @@ public class MongoDeviceManagement implements IDeviceManagement {
 			throws SiteWhereException {
 		DBObject match = assertDeviceAssignment(token);
 		MongoDeviceEntityMetadata.toDBObject(metadata, match);
+		DeviceAssignment assignment = MongoDeviceAssignment.fromDBObject(match);
+		MongoPersistence.setUpdatedEntityMetadata(assignment);
 		BasicDBObject query = new BasicDBObject(MongoDeviceAssignment.PROP_TOKEN, token);
 		DBCollection assignments = getMongoClient().getDeviceAssignmentsCollection();
-		MongoPersistence.update(assignments, query, match);
+		MongoPersistence.update(assignments, query, MongoDeviceAssignment.toDBObject(assignment));
 		return MongoDeviceAssignment.fromDBObject(match);
 	}
 

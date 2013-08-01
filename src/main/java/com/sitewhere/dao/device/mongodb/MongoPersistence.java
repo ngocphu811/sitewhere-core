@@ -77,4 +77,14 @@ public class MongoPersistence {
 		entity.setCreatedBy("admin");
 		entity.setDeleted(false);
 	}
+
+	/**
+	 * Set updated fields.
+	 * 
+	 * @param entity
+	 */
+	public static void setUpdatedEntityMetadata(MetadataProviderEntity entity) {
+		entity.setUpdatedDate(new Date());
+		entity.setUpdatedBy("admin");
+	}
 }
