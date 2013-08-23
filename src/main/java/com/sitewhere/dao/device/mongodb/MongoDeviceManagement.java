@@ -24,7 +24,6 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
-import com.mongodb.WriteResult;
 import com.sitewhere.core.device.Utils;
 import com.sitewhere.dao.mongodb.SiteWhereMongoClient;
 import com.sitewhere.rest.model.device.Device;
@@ -992,12 +991,7 @@ public class MongoDeviceManagement implements IDeviceManagement {
 	 * @see com.sitewhere.spi.device.IDeviceManagement#getZone(java.lang.String)
 	 */
 	public IZone getZone(String zoneToken) throws SiteWhereException {
-		DBCollection zones = getMongoClient().getZonesCollection();
-		BasicDBObject query = new BasicDBObject(MongoZone.PROP_TOKEN, zoneToken);
-		DBObject found = zones.findOne(query);
-		if (found == null) {
-			throw new SiteWhereSystemException(ErrorCode.InvalidZoneToken, ErrorLevel.ERROR);
-		}
+		DBObject found = assertZone(zoneToken);
 		return MongoZone.fromDBObject(found);
 	}
 
@@ -1027,17 +1021,21 @@ public class MongoDeviceManagement implements IDeviceManagement {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.sitewhere.spi.device.IDeviceManagement#deleteZone(java.lang.String)
+	 * @see com.sitewhere.spi.device.IDeviceManagement#deleteZone(java.lang.String, boolean)
 	 */
-	public IZone deleteZone(String zoneToken) throws SiteWhereException {
-		IZone existing = getZone(zoneToken);
-		DBCollection zones = getMongoClient().getZonesCollection();
-		BasicDBObject query = new BasicDBObject(MongoZone.PROP_TOKEN, zoneToken);
-		WriteResult result = zones.remove(query);
-		if (!result.getLastError().ok()) {
-			throw new SiteWhereSystemException(ErrorCode.ZoneDeleteFailed, ErrorLevel.ERROR);
+	public IZone deleteZone(String zoneToken, boolean force) throws SiteWhereException {
+		DBObject existing = assertZone(zoneToken);
+		if (force) {
+			DBCollection zones = getMongoClient().getZonesCollection();
+			MongoPersistence.delete(zones, existing);
+			return MongoZone.fromDBObject(existing);
+		} else {
+			MongoSiteWhereEntity.setDeleted(existing, true);
+			BasicDBObject query = new BasicDBObject(MongoZone.PROP_TOKEN, zoneToken);
+			DBCollection zones = getMongoClient().getZonesCollection();
+			MongoPersistence.update(zones, query, existing);
+			return MongoZone.fromDBObject(existing);
 		}
-		return existing;
 	}
 
 	/**
@@ -1084,6 +1082,36 @@ public class MongoDeviceManagement implements IDeviceManagement {
 		DBObject match = getDeviceAssignmentDBObjectByToken(token);
 		if (match == null) {
 			throw new SiteWhereSystemException(ErrorCode.InvalidDeviceAssignmentToken, ErrorLevel.ERROR);
+		}
+		return match;
+	}
+
+	/**
+	 * Return the {@link DBObject} for the zone with the given token.
+	 * 
+	 * @param token
+	 * @return
+	 * @throws SiteWhereException
+	 */
+	protected DBObject getZoneDBObjectByToken(String token) throws SiteWhereException {
+		DBCollection zones = getMongoClient().getZonesCollection();
+		BasicDBObject query = new BasicDBObject(MongoZone.PROP_TOKEN, token);
+		DBObject result = zones.findOne(query);
+		return result;
+	}
+
+	/**
+	 * Return the {@link DBObject} for the zone with the given token. Throws an exception if the token is not
+	 * valid.
+	 * 
+	 * @param token
+	 * @return
+	 * @throws SiteWhereException
+	 */
+	protected DBObject assertZone(String token) throws SiteWhereException {
+		DBObject match = getZoneDBObjectByToken(token);
+		if (match == null) {
+			throw new SiteWhereSystemException(ErrorCode.InvalidZoneToken, ErrorLevel.ERROR);
 		}
 		return match;
 	}
