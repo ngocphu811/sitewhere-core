@@ -988,6 +988,37 @@ public class MongoDeviceManagement implements IDeviceManagement {
 	/*
 	 * (non-Javadoc)
 	 * 
+	 * @see com.sitewhere.spi.device.IDeviceManagement#updateZone(java.lang.String,
+	 * com.sitewhere.spi.device.request.IZoneCreateRequest)
+	 */
+	public IZone updateZone(String token, IZoneCreateRequest request) throws SiteWhereException {
+		DBCollection zones = getMongoClient().getZonesCollection();
+		DBObject match = assertZone(token);
+
+		Zone zone = MongoZone.fromDBObject(match);
+		zone.setName(request.getName());
+		zone.setBorderColor(request.getBorderColor());
+		zone.setFillColor(request.getFillColor());
+		zone.setOpacity(request.getOpacity());
+
+		zone.getCoordinates().clear();
+		for (ILocation coordinate : request.getCoordinates()) {
+			zone.getCoordinates().add(coordinate);
+		}
+
+		MongoPersistence.setUpdatedEntityMetadata(zone);
+		MetadataProvider.copy(request, zone);
+
+		DBObject updated = MongoZone.toDBObject(zone);
+
+		BasicDBObject query = new BasicDBObject(MongoSite.PROP_TOKEN, token);
+		MongoPersistence.update(zones, query, updated);
+		return MongoZone.fromDBObject(updated);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see com.sitewhere.spi.device.IDeviceManagement#getZone(java.lang.String)
 	 */
 	public IZone getZone(String zoneToken) throws SiteWhereException {
