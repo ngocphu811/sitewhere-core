@@ -11,6 +11,7 @@
 package com.sitewhere.server.asset;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -97,7 +98,9 @@ public class AssetModuleManager implements IAssetModuleManager {
 	public List<? extends IAsset> search(AssetType type, String criteria) throws SiteWhereException {
 		for (IAssetModule<?> module : modules) {
 			if (module.isAssetTypeSupported(type)) {
-				return module.search(criteria);
+				List<? extends IAsset> results = module.search(criteria);
+				Collections.sort(results);
+				return results;
 			}
 		}
 		return new ArrayList<Asset>();
