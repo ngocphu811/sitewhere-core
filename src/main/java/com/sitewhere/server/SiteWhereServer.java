@@ -1,18 +1,21 @@
 /*
-* $Id$
-* --------------------------------------------------------------------------------------
-* Copyright (c) Reveal Technologies, LLC. All rights reserved. http://www.reveal-tech.com
-*
-* The software in this package is published under the terms of the CPAL v1.0
-* license, a copy of which has been included with this distribution in the
-* LICENSE.txt file.
-*/
+ * $Id$
+ * --------------------------------------------------------------------------------------
+ * Copyright (c) Reveal Technologies, LLC. All rights reserved. http://www.reveal-tech.com
+ *
+ * The software in this package is published under the terms of the CPAL v1.0
+ * license, a copy of which has been included with this distribution in the
+ * LICENSE.txt file.
+ */
 
 package com.sitewhere.server;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.mule.util.StringMessageUtils;
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.GenericApplicationContext;
@@ -23,6 +26,8 @@ import com.sitewhere.spi.SiteWhereException;
 import com.sitewhere.spi.asset.IAssetModuleManager;
 import com.sitewhere.spi.device.IDeviceManagement;
 import com.sitewhere.spi.user.IUserManagement;
+import com.sitewhere.version.IVersion;
+import com.sitewhere.version.VersionHelper;
 
 /**
  * MBean that manages a SiteWhere server.
@@ -157,6 +162,15 @@ public class SiteWhereServer {
 		if (assetModuleManager == null) {
 			throw new SiteWhereException("No asset module manager implementation configured.");
 		}
+		IVersion version = VersionHelper.getVersion();
+		List<String> messages = new ArrayList<String>();
+		messages.add("SiteWhere Server");
+		messages.add("");
+		messages.add("Version: " + version.getVersionIdentifier() + "." + version.getBuildTimestamp());
+		messages.add("");
+		messages.add("Copyright (c) 2013 Reveal Technologies, LLC");
+		String message = StringMessageUtils.getBoilerPlate(messages, '*', 60);
+		LOGGER.info("\n" + message + "\n");
 	}
 
 	/**
