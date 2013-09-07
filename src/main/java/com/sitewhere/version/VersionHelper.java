@@ -24,17 +24,17 @@ public class VersionHelper {
 	 * @return
 	 * @throws SiteWhereException
 	 */
-	public static IVersion getVersion() throws SiteWhereException {
+	public static IVersion getVersion() {
 		try {
 			Class<?> clazz = Class.forName("com.sitewhere.Version");
 			IVersion version = (IVersion) clazz.newInstance();
 			return version;
 		} catch (ClassNotFoundException e) {
-			throw new SiteWhereException(e);
+			throw new RuntimeException(e);
 		} catch (InstantiationException e) {
-			throw new SiteWhereException(e);
+			throw new RuntimeException(e);
 		} catch (IllegalAccessException e) {
-			throw new SiteWhereException(e);
+			throw new RuntimeException(e);
 		}
 	}
 }
