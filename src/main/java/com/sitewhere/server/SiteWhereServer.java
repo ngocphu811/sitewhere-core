@@ -112,7 +112,7 @@ public class SiteWhereServer {
 	 * @throws SiteWhereException
 	 */
 	public static File getSiteWhereConfigFolder() throws SiteWhereException {
-		String catalina = System.getenv("CATALINA_HOME");
+		String catalina = System.getProperty("catalina.base");
 		if (catalina == null) {
 			throw new SiteWhereException("CATALINA_HOME not set.");
 		}
