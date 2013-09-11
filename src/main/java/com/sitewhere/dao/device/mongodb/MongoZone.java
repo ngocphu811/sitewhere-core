@@ -16,6 +16,8 @@ import java.util.List;
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
+import com.sitewhere.dao.common.mongodb.MongoMetadataProvider;
+import com.sitewhere.dao.common.mongodb.MongoSiteWhereEntity;
 import com.sitewhere.rest.model.common.Location;
 import com.sitewhere.rest.model.device.Zone;
 import com.sitewhere.spi.common.ILocation;
@@ -81,7 +83,7 @@ public class MongoZone {
 		target.append(PROP_COORDINATES, coords);
 
 		MongoSiteWhereEntity.toDBObject(source, target);
-		MongoDeviceEntityMetadata.toDBObject(source, target);
+		MongoMetadataProvider.toDBObject(source, target);
 	}
 
 	/**
@@ -121,7 +123,7 @@ public class MongoZone {
 		target.setCoordinates(locs);
 
 		MongoSiteWhereEntity.fromDBObject(source, target);
-		MongoDeviceEntityMetadata.fromDBObject(source, target);
+		MongoMetadataProvider.fromDBObject(source, target);
 	}
 
 	/**

@@ -31,6 +31,10 @@
 	<bean id="deviceManagement" class="com.sitewhere.dao.device.mongodb.MongoDeviceManagement">
 		<property name="mongoClient" ref="mongo" />
 	</bean>
+	
+	<bean id="userManagement" class="com.sitewhere.dao.user.mongodb.MongoUserManagement">
+		<property name="mongoClient" ref="mongo" />
+	</bean>
 
 	<!-- ############################ -->
 	<!-- # MONGO DATASTORE SETTINGS # -->

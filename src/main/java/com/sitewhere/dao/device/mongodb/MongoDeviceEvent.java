@@ -17,6 +17,7 @@ import org.bson.types.ObjectId;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
+import com.sitewhere.dao.common.mongodb.MongoMetadataProvider;
 import com.sitewhere.rest.model.device.DeviceEvent;
 import com.sitewhere.spi.device.IDeviceEvent;
 
@@ -62,7 +63,7 @@ public class MongoDeviceEvent {
 		target.append(PROP_RECEIVED_DATE, source.getReceivedDate());
 		target.append(PROP_ALERT_IDS, source.getAlertIds());
 
-		MongoDeviceEntityMetadata.toDBObject(source, target);
+		MongoMetadataProvider.toDBObject(source, target);
 	}
 
 	/**
@@ -91,6 +92,6 @@ public class MongoDeviceEvent {
 		target.setReceivedDate(receivedDate);
 		target.setAlertIds(alertIds);
 
-		MongoDeviceEntityMetadata.fromDBObject(source, target);
+		MongoMetadataProvider.fromDBObject(source, target);
 	}
 }

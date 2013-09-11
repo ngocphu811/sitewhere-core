@@ -155,6 +155,13 @@ public class SiteWhereServer {
 			throw new SiteWhereException("No location management implementation configured.");
 		}
 
+		// Load user management.
+		userManagement = (IUserManagement) SERVER_SPRING_CONTEXT
+				.getBean(SiteWhereServerBeans.BEAN_USER_MANAGEMENT);
+		if (userManagement == null) {
+			throw new SiteWhereException("No user management implementation configured.");
+		}
+
 		// Load the asset module manager.
 		assetModuleManager = (IAssetModuleManager) SERVER_SPRING_CONTEXT
 				.getBean(SiteWhereServerBeans.BEAN_ASSET_MODULE_MANAGER);

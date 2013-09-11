@@ -12,6 +12,8 @@ package com.sitewhere.dao.device.mongodb;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
+import com.sitewhere.dao.common.mongodb.MongoMetadataProvider;
+import com.sitewhere.dao.common.mongodb.MongoSiteWhereEntity;
 import com.sitewhere.rest.model.device.Site;
 import com.sitewhere.spi.device.ISite;
 
@@ -54,8 +56,8 @@ public class MongoSite {
 		target.append(PROP_TOKEN, source.getToken());
 
 		MongoSiteWhereEntity.toDBObject(source, target);
-		MongoDeviceEntityMetadata.toDBObject(PROP_MAP_METADATA, source.getMapMetadata(), target);
-		MongoDeviceEntityMetadata.toDBObject(source, target);
+		MongoMetadataProvider.toDBObject(PROP_MAP_METADATA, source.getMapMetadata(), target);
+		MongoMetadataProvider.toDBObject(source, target);
 	}
 
 	/**
@@ -78,8 +80,8 @@ public class MongoSite {
 		target.setMapType(mapType);
 		
 		MongoSiteWhereEntity.fromDBObject(source, target);
-		MongoDeviceEntityMetadata.fromDBObject(PROP_MAP_METADATA, source, target.getMapMetadata());
-		MongoDeviceEntityMetadata.fromDBObject(source, target);
+		MongoMetadataProvider.fromDBObject(PROP_MAP_METADATA, source, target.getMapMetadata());
+		MongoMetadataProvider.fromDBObject(source, target);
 	}
 
 	/**

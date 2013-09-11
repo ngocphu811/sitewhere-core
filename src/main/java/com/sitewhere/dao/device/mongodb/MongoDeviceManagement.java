@@ -25,6 +25,9 @@ import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.sitewhere.core.device.Utils;
+import com.sitewhere.dao.common.mongodb.MongoMetadataProvider;
+import com.sitewhere.dao.common.mongodb.MongoPersistence;
+import com.sitewhere.dao.common.mongodb.MongoSiteWhereEntity;
 import com.sitewhere.dao.mongodb.SiteWhereMongoClient;
 import com.sitewhere.rest.model.common.MetadataEntry;
 import com.sitewhere.rest.model.common.MetadataProvider;
@@ -368,7 +371,7 @@ public class MongoDeviceManagement implements IDeviceManagement {
 	public IDeviceAssignment updateDeviceAssignmentMetadata(String token, IMetadataProvider metadata)
 			throws SiteWhereException {
 		DBObject match = assertDeviceAssignment(token);
-		MongoDeviceEntityMetadata.toDBObject(metadata, match);
+		MongoMetadataProvider.toDBObject(metadata, match);
 		DeviceAssignment assignment = MongoDeviceAssignment.fromDBObject(match);
 		MongoPersistence.setUpdatedEntityMetadata(assignment);
 		BasicDBObject query = new BasicDBObject(MongoDeviceAssignment.PROP_TOKEN, token);

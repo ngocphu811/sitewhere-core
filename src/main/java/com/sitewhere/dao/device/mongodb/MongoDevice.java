@@ -12,6 +12,8 @@ package com.sitewhere.dao.device.mongodb;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
+import com.sitewhere.dao.common.mongodb.MongoMetadataProvider;
+import com.sitewhere.dao.common.mongodb.MongoSiteWhereEntity;
 import com.sitewhere.rest.model.device.Device;
 import com.sitewhere.spi.device.IDevice;
 
@@ -46,7 +48,7 @@ public class MongoDevice {
 		target.append(PROP_COMMENTS, source.getComments());
 		target.append(PROP_ASSIGNMENT_TOKEN, source.getAssignmentToken());
 		MongoSiteWhereEntity.toDBObject(source, target);
-		MongoDeviceEntityMetadata.toDBObject(source, target);
+		MongoMetadataProvider.toDBObject(source, target);
 	}
 
 	/**
@@ -66,7 +68,7 @@ public class MongoDevice {
 		target.setComments(comments);
 		target.setAssignmentToken(assignmentToken);
 		MongoSiteWhereEntity.fromDBObject(source, target);
-		MongoDeviceEntityMetadata.fromDBObject(source, target);
+		MongoMetadataProvider.fromDBObject(source, target);
 	}
 
 	/**

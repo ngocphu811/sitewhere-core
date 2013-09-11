@@ -1,14 +1,14 @@
 /*
-* $Id$
-* --------------------------------------------------------------------------------------
-* Copyright (c) Reveal Technologies, LLC. All rights reserved. http://www.reveal-tech.com
-*
-* The software in this package is published under the terms of the CPAL v1.0
-* license, a copy of which has been included with this distribution in the
-* LICENSE.txt file.
-*/
+ * $Id$
+ * --------------------------------------------------------------------------------------
+ * Copyright (c) Reveal Technologies, LLC. All rights reserved. http://www.reveal-tech.com
+ *
+ * The software in this package is published under the terms of the CPAL v1.0
+ * license, a copy of which has been included with this distribution in the
+ * LICENSE.txt file.
+ */
 
-package com.sitewhere.dao.device.mongodb;
+package com.sitewhere.dao.mongodb;
 
 /**
  * Constants for default MongoDB collection names.
@@ -37,4 +37,10 @@ public interface IMongoCollectionNames {
 
 	/** Default collection name for SiteWhere alerts */
 	public static final String DEFAULT_ALERTS_COLLECTION_NAME = "alerts";
+
+	/** Default collection name for SiteWhere users */
+	public static final String DEFAULT_USERS_COLLECTION_NAME = "users";
+
+	/** Default collection name for SiteWhere granted authorities */
+	public static final String DEFAULT_AUTHORITIES_COLLECTION_NAME = "authorities";
 }

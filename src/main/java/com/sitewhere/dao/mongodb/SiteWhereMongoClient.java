@@ -1,22 +1,25 @@
 /*
-* $Id$
-* --------------------------------------------------------------------------------------
-* Copyright (c) Reveal Technologies, LLC. All rights reserved. http://www.reveal-tech.com
-*
-* The software in this package is published under the terms of the CPAL v1.0
-* license, a copy of which has been included with this distribution in the
-* LICENSE.txt file.
-*/
+ * $Id$
+ * --------------------------------------------------------------------------------------
+ * Copyright (c) Reveal Technologies, LLC. All rights reserved. http://www.reveal-tech.com
+ *
+ * The software in this package is published under the terms of the CPAL v1.0
+ * license, a copy of which has been included with this distribution in the
+ * LICENSE.txt file.
+ */
 
 package com.sitewhere.dao.mongodb;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.log4j.Logger;
+import org.mule.util.StringMessageUtils;
 import org.springframework.beans.factory.InitializingBean;
 
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.MongoClient;
-import com.sitewhere.dao.device.mongodb.IMongoCollectionNames;
 
 /**
  * Spring wrapper for initializing a Mongo client used by SiteWhere components.
@@ -70,6 +73,12 @@ public class SiteWhereMongoClient implements InitializingBean {
 	/** Injected name used for alerts collection */
 	private String alertsCollectionName = IMongoCollectionNames.DEFAULT_ALERTS_COLLECTION_NAME;
 
+	/** Injected name used for users collection */
+	private String usersCollectionName = IMongoCollectionNames.DEFAULT_USERS_COLLECTION_NAME;
+
+	/** Injected name used for authorities collection */
+	private String authoritiesCollectionName = IMongoCollectionNames.DEFAULT_AUTHORITIES_COLLECTION_NAME;
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -77,14 +86,23 @@ public class SiteWhereMongoClient implements InitializingBean {
 	 */
 	public void afterPropertiesSet() throws Exception {
 		this.client = new MongoClient(getHostname(), getPort());
-		LOGGER.info("Mongo client initialized. Version: " + client.getVersion());
-		LOGGER.info("Devices collection name: " + getDevicesCollectionName());
-		LOGGER.info("Device assignments collection name: " + getDeviceAssignmentsCollectionName());
-		LOGGER.info("Sites collection name: " + getSitesCollectionName());
-		LOGGER.info("Zones collection name: " + getZonesCollectionName());
-		LOGGER.info("Measurements collection name: " + getMeasurementsCollectionName());
-		LOGGER.info("Locations collection name: " + getLocationsCollectionName());
-		LOGGER.info("Alerts collection name: " + getAlertsCollectionName());
+		List<String> messages = new ArrayList<String>();
+		messages.add("Mongo client initialized. Version: " + client.getVersion());
+		messages.add("Hostname: " + hostname);
+		messages.add("Port: " + port);
+		messages.add("Database Name: " + databaseName);
+		messages.add("");
+		messages.add("Devices collection name: " + getDevicesCollectionName());
+		messages.add("Device assignments collection name: " + getDeviceAssignmentsCollectionName());
+		messages.add("Sites collection name: " + getSitesCollectionName());
+		messages.add("Zones collection name: " + getZonesCollectionName());
+		messages.add("Measurements collection name: " + getMeasurementsCollectionName());
+		messages.add("Locations collection name: " + getLocationsCollectionName());
+		messages.add("Alerts collection name: " + getAlertsCollectionName());
+		messages.add("Users collection name: " + getUsersCollectionName());
+		messages.add("Authorities collection name: " + getAuthoritiesCollectionName());
+		String message = StringMessageUtils.getBoilerPlate(messages, '*', 60);
+		LOGGER.info("\n" + message + "\n");
 	}
 
 	/**
@@ -126,6 +144,14 @@ public class SiteWhereMongoClient implements InitializingBean {
 
 	public DBCollection getAlertsCollection() {
 		return getSiteWhereDatabase().getCollection(getAlertsCollectionName());
+	}
+
+	public DBCollection getUsersCollection() {
+		return getSiteWhereDatabase().getCollection(getUsersCollectionName());
+	}
+
+	public DBCollection getAuthoritiesCollection() {
+		return getSiteWhereDatabase().getCollection(getAuthoritiesCollectionName());
 	}
 
 	public String getHostname() {
@@ -206,5 +232,21 @@ public class SiteWhereMongoClient implements InitializingBean {
 
 	public void setAlertsCollectionName(String alertsCollectionName) {
 		this.alertsCollectionName = alertsCollectionName;
+	}
+
+	public String getUsersCollectionName() {
+		return usersCollectionName;
+	}
+
+	public void setUsersCollectionName(String usersCollectionName) {
+		this.usersCollectionName = usersCollectionName;
+	}
+
+	public String getAuthoritiesCollectionName() {
+		return authoritiesCollectionName;
+	}
+
+	public void setAuthoritiesCollectionName(String authoritiesCollectionName) {
+		this.authoritiesCollectionName = authoritiesCollectionName;
 	}
 }

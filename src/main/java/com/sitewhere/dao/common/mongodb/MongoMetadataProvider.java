@@ -8,7 +8,7 @@
 * LICENSE.txt file.
 */
 
-package com.sitewhere.dao.device.mongodb;
+package com.sitewhere.dao.common.mongodb;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,7 +23,7 @@ import com.sitewhere.spi.common.IMetadataProvider;
  * 
  * @author dadams
  */
-public class MongoDeviceEntityMetadata {
+public class MongoMetadataProvider {
 
 	/** Property for entity metadata */
 	public static final String PROP_METADATA = "metadata";
@@ -41,7 +41,7 @@ public class MongoDeviceEntityMetadata {
 	 * @param target
 	 */
 	public static void toDBObject(IMetadataProvider source, DBObject target) {
-		MongoDeviceEntityMetadata.toDBObject(PROP_METADATA, source, target);
+		MongoMetadataProvider.toDBObject(PROP_METADATA, source, target);
 	}
 
 	/**
@@ -69,7 +69,7 @@ public class MongoDeviceEntityMetadata {
 	 * @param target
 	 */
 	public static void fromDBObject(DBObject source, IMetadataProvider target) {
-		MongoDeviceEntityMetadata.fromDBObject(PROP_METADATA, source, target);
+		MongoMetadataProvider.fromDBObject(PROP_METADATA, source, target);
 	}
 
 	/**
