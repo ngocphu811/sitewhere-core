@@ -15,8 +15,8 @@ import java.util.List;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
-import com.sitewhere.spi.device.IMetadataEntry;
-import com.sitewhere.spi.device.IMetadataProvider;
+import com.sitewhere.spi.common.IMetadataEntry;
+import com.sitewhere.spi.common.IMetadataProvider;
 
 /**
  * Used to load or save device entity metdata to MongoDB.

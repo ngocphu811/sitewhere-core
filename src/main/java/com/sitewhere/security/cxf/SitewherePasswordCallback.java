@@ -1,12 +1,12 @@
 /*
-* $Id$
-* --------------------------------------------------------------------------------------
-* Copyright (c) Reveal Technologies, LLC. All rights reserved. http://www.reveal-tech.com
-*
-* The software in this package is published under the terms of the CPAL v1.0
-* license, a copy of which has been included with this distribution in the
-* LICENSE.txt file.
-*/
+ * $Id$
+ * --------------------------------------------------------------------------------------
+ * Copyright (c) Reveal Technologies, LLC. All rights reserved. http://www.reveal-tech.com
+ *
+ * The software in this package is published under the terms of the CPAL v1.0
+ * license, a copy of which has been included with this distribution in the
+ * LICENSE.txt file.
+ */
 
 package com.sitewhere.security.cxf;
 
@@ -41,18 +41,16 @@ public class SitewherePasswordCallback implements CallbackHandler {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see
-	 * javax.security.auth.callback.CallbackHandler#handle(javax.security.auth.callback.Callback[])
+	 * @see javax.security.auth.callback.CallbackHandler#handle(javax.security.auth.callback.Callback[])
 	 */
 	public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
 		WSPasswordCallback callback = (WSPasswordCallback) callbacks[0];
 		String username = callback.getIdentifer();
 		String password = getPasswordEncoder().encodePassword(callback.getPassword(), null);
 		try {
-			IUser user = SiteWhereServer.getInstance().getUserManagement()
-					.authenticate(username, password);
+			IUser user = SiteWhereServer.getInstance().getUserManagement().authenticate(username, password);
 			List<IGrantedAuthority> auths = SiteWhereServer.getInstance().getUserManagement()
-					.getAllGrantedAuthorities(username);
+					.getGrantedAuthorities(username);
 			SitewhereSecurity.setAuthenticatedUser(user, auths);
 		} catch (SiteWhereException e) {
 			throw new SitewhereFault(e);

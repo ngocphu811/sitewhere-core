@@ -17,19 +17,4 @@
 
 	<!-- Enable Spring security annotations on loaded classes -->
 	<sec:global-method-security secured-annotations="enabled" />
-
-	<!-- Used to establish identity for Atlas SOAP requests via WSS4J -->
-	<bean id="sitewhereWsSecAuth" class="com.sitewhere.security.cxf.SitewhereWss4jInInterceptor">
-		<constructor-arg>
-			<map>
-				<entry key="action" value="UsernameToken" />
-				<entry key="passwordType" value="PasswordText" />
-				<entry key="passwordCallbackRef">
-					<bean class="com.sitewhere.security.cxf.SitewherePasswordCallback" />
-				</entry>
-			</map>
-		</constructor-arg>
-		<property name="useFallbackAccount" value="false" />
-		<property name="fallbackUser" value="anonymous" />
-	</bean>
 </beans>

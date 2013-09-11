@@ -21,7 +21,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.core.io.FileSystemResource;
 
-import com.sitewhere.server.user.UserModelInitializer;
 import com.sitewhere.spi.SiteWhereException;
 import com.sitewhere.spi.asset.IAssetModuleManager;
 import com.sitewhere.spi.device.IDeviceManagement;
@@ -30,7 +29,7 @@ import com.sitewhere.version.IVersion;
 import com.sitewhere.version.VersionHelper;
 
 /**
- * MBean that manages a SiteWhere server.
+ * Singleton SiteWhere server instance.
  * 
  * @author Derek Adams
  */
@@ -187,11 +186,6 @@ public class SiteWhereServer {
 	 */
 	protected void startServerComponents() throws SiteWhereException {
 		assetModuleManager.start();
-	}
-
-	public void initializeUserModel() throws SiteWhereException {
-		UserModelInitializer initializer = new UserModelInitializer(getUserManagement());
-		initializer.initialize();
 	}
 
 	/**

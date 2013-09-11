@@ -14,7 +14,7 @@ import java.util.Date;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
 import com.mongodb.WriteResult;
-import com.sitewhere.rest.model.device.MetadataProviderEntity;
+import com.sitewhere.rest.model.common.MetadataProviderEntity;
 import com.sitewhere.spi.SiteWhereException;
 
 /**

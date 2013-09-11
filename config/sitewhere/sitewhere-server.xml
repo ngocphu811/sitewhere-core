@@ -54,28 +54,34 @@
 	<bean id="filePersonModule" class="com.sitewhere.server.asset.filesystem.FileSystemPersonAssetModule"/>
 
 	<!-- Magento module configuration -->
+	<!--
 	<bean id="magentoModule" class="com.sitewhere.server.asset.magento.MagentoAssetModule">
 		<property name="baseRestUrl" value="http://54.235.148.185/magento/api/rest" />
 	</bean>
+	-->
 
 	<!-- SSL configuration for WSO2 Identity Server -->
-	<http:conduit name="https://54.235.148.185:9443.*">
+	<!-- Add  disableCNCheck="true" if server hostname not same as on certificate -->
+	<!--
+	<http:conduit name="https://wso2serverUrl:9443.*">
 		<http:client ConnectionTimeout="3000000" ReceiveTimeout="3000000" />
-		<!-- Add  disableCNCheck="true" if server hostname not same as cert -->
 		<http:tlsClientParameters disableCNCheck="true">
 			<sec:keyManagers keyPassword="wso2carbon">
-				<sec:keyStore file="/apache-tomcat-7.0.26/conf/sitewhere/wso2carbon.jks" password="wso2carbon" type="JKS" />
+				<sec:keyStore file="/localpathforkeystores/wso2carbon.jks" password="wso2carbon" type="JKS" />
 			</sec:keyManagers>
 			<sec:trustManagers>
-				<sec:keyStore file="/apache-tomcat-7.0.26/conf/sitewhere/client-truststore.jks" password="wso2carbon" type="JKS" />
+				<sec:keyStore file="/localpathforkeystores/client-truststore.jks" password="wso2carbon" type="JKS" />
 			</sec:trustManagers>
 		</http:tlsClientParameters>
 	</http:conduit>
+	-->
 
 	<!-- WSO2 Identity Server module configuration -->
+	<!--
 	<bean id="wso2Module" class="com.sitewhere.server.asset.scim.Wso2ScimAssetModule">
-		<property name="userUrl" value="https://54.235.148.185:9443/wso2/scim/Users" />
+		<property name="userUrl" value="https://wso2serverUrl:9443/wso2/scim/Users" />
 	</bean>
+	-->
 
 	<!-- Asset module manager configuration -->
 	<bean id="assetModuleManager" class="com.sitewhere.server.asset.AssetModuleManager">
