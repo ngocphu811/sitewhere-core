@@ -55,7 +55,7 @@ public class MongoUser {
 		target.append(PROP_HASHED_PASSWORD, source.getHashedPassword());
 		target.append(PROP_FIRST_NAME, source.getFirstName());
 		target.append(PROP_LAST_NAME, source.getLastName());
-		target.append(PROP_LAST_LOGIN, source.getLastName());
+		target.append(PROP_LAST_LOGIN, source.getLastLogin());
 		if (source.getStatus() != null) {
 			target.append(PROP_STATUS, source.getStatus().name());
 		}
