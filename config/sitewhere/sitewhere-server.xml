@@ -20,9 +20,6 @@
 	<import resource="classpath:META-INF/cxf/cxf-extension-soap.xml" />
 	<import resource="classpath:META-INF/cxf/cxf-extension-jaxrs-binding.xml" />
 	<import resource="classpath:META-INF/cxf/cxf-extension-http-jetty.xml" />
-
-	<!-- SiteWhere imports -->
-	<import resource="sitewhere-security.xml" />
 	
 	<!-- #################################### -->
 	<!-- # SERVICE PROVIDER IMPLEMENTATIONS # -->

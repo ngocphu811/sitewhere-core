@@ -1,12 +1,12 @@
 /*
-* $Id$
-* --------------------------------------------------------------------------------------
-* Copyright (c) Reveal Technologies, LLC. All rights reserved. http://www.reveal-tech.com
-*
-* The software in this package is published under the terms of the CPAL v1.0
-* license, a copy of which has been included with this distribution in the
-* LICENSE.txt file.
-*/
+ * $Id$
+ * --------------------------------------------------------------------------------------
+ * Copyright (c) Reveal Technologies, LLC. All rights reserved. http://www.reveal-tech.com
+ *
+ * The software in this package is published under the terms of the CPAL v1.0
+ * license, a copy of which has been included with this distribution in the
+ * LICENSE.txt file.
+ */
 
 package com.sitewhere.security;
 
@@ -30,11 +30,15 @@ public class SitewhereAuthentication implements Authentication {
 	/** Spring UserDetails */
 	private SitewhereUserDetails userDetails;
 
+	/** Unhashed password */
+	private String password;
+
 	/** Authenticated flag */
 	private boolean authenticated;
 
-	public SitewhereAuthentication(SitewhereUserDetails details) throws SiteWhereException {
+	public SitewhereAuthentication(SitewhereUserDetails details, String password) throws SiteWhereException {
 		this.userDetails = details;
+		this.password = password;
 	}
 
 	/*
@@ -52,7 +56,7 @@ public class SitewhereAuthentication implements Authentication {
 	 * @see org.springframework.security.Authentication#getCredentials()
 	 */
 	public Object getCredentials() {
-		return userDetails.getPassword();
+		return password;
 	}
 
 	/*

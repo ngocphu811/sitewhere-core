@@ -9,6 +9,7 @@
  */
 package com.sitewhere.dao.user.mongodb;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
@@ -22,6 +23,7 @@ import com.mongodb.DBObject;
 import com.sitewhere.dao.common.mongodb.MongoPersistence;
 import com.sitewhere.dao.mongodb.SiteWhereMongoClient;
 import com.sitewhere.rest.model.common.MetadataProvider;
+import com.sitewhere.rest.model.user.GrantedAuthority;
 import com.sitewhere.rest.model.user.User;
 import com.sitewhere.spi.SiteWhereException;
 import com.sitewhere.spi.SiteWhereSystemException;
@@ -124,7 +126,12 @@ public class MongoUserManagement implements IUserManagement {
 	 * @see com.sitewhere.spi.user.IUserManagement#getGrantedAuthorities(java.lang.String)
 	 */
 	public List<IGrantedAuthority> getGrantedAuthorities(String username) throws SiteWhereException {
-		throw new SiteWhereException("Not implmented.");
+		GrantedAuthority auth = new GrantedAuthority();
+		auth.setAuthority("ROLE_USER");
+		auth.setDescription("Authenticated User");
+		List<IGrantedAuthority> auths = new ArrayList<IGrantedAuthority>();
+		auths.add(auth);
+		return auths;
 	}
 
 	/*

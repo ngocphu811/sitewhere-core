@@ -43,7 +43,7 @@ public class SitewhereAuthenticationProvider implements AuthenticationProvider {
 			List<IGrantedAuthority> auths = SiteWhereServer.getInstance().getUserManagement()
 					.getGrantedAuthorities(username);
 			SitewhereUserDetails details = new SitewhereUserDetails(user, auths);
-			return new SitewhereAuthentication(details);
+			return new SitewhereAuthentication(details, password);
 		} catch (SiteWhereException e) {
 			throw new BadCredentialsException("Unable to authenticate.", e);
 		}
