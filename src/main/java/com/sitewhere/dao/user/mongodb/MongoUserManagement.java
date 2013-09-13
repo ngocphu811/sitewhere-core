@@ -19,8 +19,10 @@ import org.springframework.security.authentication.encoding.ShaPasswordEncoder;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
+import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.sitewhere.dao.common.mongodb.MongoPersistence;
+import com.sitewhere.dao.common.mongodb.MongoSiteWhereEntity;
 import com.sitewhere.dao.mongodb.SiteWhereMongoClient;
 import com.sitewhere.rest.model.common.MetadataProvider;
 import com.sitewhere.rest.model.user.GrantedAuthority;
@@ -31,8 +33,11 @@ import com.sitewhere.spi.error.ErrorCode;
 import com.sitewhere.spi.error.ErrorLevel;
 import com.sitewhere.spi.user.AccountStatus;
 import com.sitewhere.spi.user.IGrantedAuthority;
+import com.sitewhere.spi.user.IGrantedAuthoritySearchCriteria;
 import com.sitewhere.spi.user.IUser;
 import com.sitewhere.spi.user.IUserManagement;
+import com.sitewhere.spi.user.IUserSearchCriteria;
+import com.sitewhere.spi.user.request.IGrantedAuthorityCreateRequest;
 import com.sitewhere.spi.user.request.IUserCreateRequest;
 
 /**
@@ -157,10 +162,26 @@ public class MongoUserManagement implements IUserManagement {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.sitewhere.spi.user.IUserManagement#listUsers()
+	 * @see
+	 * com.sitewhere.spi.user.IUserManagement#listUsers(com.sitewhere.spi.user.request.IUserSearchCriteria)
 	 */
-	public List<IUser> listUsers() throws SiteWhereException {
-		throw new SiteWhereException("Not implmented.");
+	public List<IUser> listUsers(IUserSearchCriteria criteria) throws SiteWhereException {
+		DBCollection users = getMongoClient().getUsersCollection();
+		DBObject dbCriteria = new BasicDBObject();
+		if (!criteria.isIncludeDeleted()) {
+			MongoSiteWhereEntity.setDeleted(dbCriteria, false);
+		}
+		DBCursor cursor = users.find(dbCriteria).sort(new BasicDBObject(MongoUser.PROP_USERNAME, 1));
+		List<IUser> matches = new ArrayList<IUser>();
+		try {
+			while (cursor.hasNext()) {
+				DBObject match = cursor.next();
+				matches.add(MongoUser.fromDBObject(match));
+			}
+		} finally {
+			cursor.close();
+		}
+		return matches;
 	}
 
 	/*
@@ -175,11 +196,24 @@ public class MongoUserManagement implements IUserManagement {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see
-	 * com.sitewhere.spi.user.IUserManagement#createGrantedAuthority(com.sitewhere.spi.user.IGrantedAuthority)
+	 * @see com.sitewhere.spi.user.IUserManagement#createGrantedAuthority(com.sitewhere.spi.user.request.
+	 * IGrantedAuthorityCreateRequest)
 	 */
-	public IGrantedAuthority createGrantedAuthority(IGrantedAuthority auth) throws SiteWhereException {
-		throw new SiteWhereException("Not implmented.");
+	public IGrantedAuthority createGrantedAuthority(IGrantedAuthorityCreateRequest request)
+			throws SiteWhereException {
+		IGrantedAuthority existing = getGrantedAuthorityByName(request.getAuthority());
+		if (existing != null) {
+			throw new SiteWhereSystemException(ErrorCode.DuplicateAuthority, ErrorLevel.ERROR,
+					HttpServletResponse.SC_CONFLICT);
+		}
+		GrantedAuthority auth = new GrantedAuthority();
+		auth.setAuthority(request.getAuthority());
+		auth.setDescription(request.getDescription());
+
+		DBCollection auths = getMongoClient().getAuthoritiesCollection();
+		DBObject created = MongoGrantedAuthority.toDBObject(auth);
+		MongoPersistence.insert(auths, created);
+		return auth;
 	}
 
 	/*
@@ -188,16 +222,20 @@ public class MongoUserManagement implements IUserManagement {
 	 * @see com.sitewhere.spi.user.IUserManagement#getGrantedAuthorityByName(java.lang.String)
 	 */
 	public IGrantedAuthority getGrantedAuthorityByName(String name) throws SiteWhereException {
-		throw new SiteWhereException("Not implmented.");
+		DBObject dbAuth = getGrantedAuthorityObjectByName(name);
+		if (dbAuth != null) {
+			return MongoGrantedAuthority.fromDBObject(dbAuth);
+		}
+		return null;
 	}
 
 	/*
 	 * (non-Javadoc)
 	 * 
 	 * @see com.sitewhere.spi.user.IUserManagement#updateGrantedAuthority(java.lang.String,
-	 * com.sitewhere.spi.user.IGrantedAuthority)
+	 * com.sitewhere.spi.user.request.IGrantedAuthorityCreateRequest)
 	 */
-	public IGrantedAuthority updateGrantedAuthority(String name, IGrantedAuthority auth)
+	public IGrantedAuthority updateGrantedAuthority(String name, IGrantedAuthorityCreateRequest request)
 			throws SiteWhereException {
 		throw new SiteWhereException("Not implmented.");
 	}
@@ -205,10 +243,23 @@ public class MongoUserManagement implements IUserManagement {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.sitewhere.spi.user.IUserManagement#listGrantedAuthorities()
+	 * @see com.sitewhere.spi.user.IUserManagement#listGrantedAuthorities(com.sitewhere.spi.user.
+	 * IGrantedAuthoritySearchCriteria)
 	 */
-	public List<IGrantedAuthority> listGrantedAuthorities() throws SiteWhereException {
-		throw new SiteWhereException("Not implmented.");
+	public List<IGrantedAuthority> listGrantedAuthorities(IGrantedAuthoritySearchCriteria criteria)
+			throws SiteWhereException {
+		DBCollection auths = getMongoClient().getAuthoritiesCollection();
+		DBCursor cursor = auths.find().sort(new BasicDBObject(MongoGrantedAuthority.PROP_AUTHORITY, 1));
+		List<IGrantedAuthority> matches = new ArrayList<IGrantedAuthority>();
+		try {
+			while (cursor.hasNext()) {
+				DBObject match = cursor.next();
+				matches.add(MongoGrantedAuthority.fromDBObject(match));
+			}
+		} finally {
+			cursor.close();
+		}
+		return matches;
 	}
 
 	/*
@@ -247,6 +298,35 @@ public class MongoUserManagement implements IUserManagement {
 		DBCollection users = getMongoClient().getUsersCollection();
 		BasicDBObject query = new BasicDBObject(MongoUser.PROP_USERNAME, username);
 		return users.findOne(query);
+	}
+
+	/**
+	 * Get the {@link DBObject} for a GrantedAuthority given name. Throw an exception if not found.
+	 * 
+	 * @param name
+	 * @return
+	 * @throws SiteWhereException
+	 */
+	protected DBObject assertGrantedAuthority(String name) throws SiteWhereException {
+		DBObject match = getGrantedAuthorityObjectByName(name);
+		if (match == null) {
+			throw new SiteWhereSystemException(ErrorCode.InvalidAuthority, ErrorLevel.ERROR,
+					HttpServletResponse.SC_NOT_FOUND);
+		}
+		return match;
+	}
+
+	/**
+	 * Get the DBObject for a GrantedAuthority given unique name.
+	 * 
+	 * @param name
+	 * @return
+	 * @throws SiteWhereException
+	 */
+	protected DBObject getGrantedAuthorityObjectByName(String name) throws SiteWhereException {
+		DBCollection auths = getMongoClient().getAuthoritiesCollection();
+		BasicDBObject query = new BasicDBObject(MongoGrantedAuthority.PROP_AUTHORITY, name);
+		return auths.findOne(query);
 	}
 
 	public SiteWhereMongoClient getMongoClient() {
