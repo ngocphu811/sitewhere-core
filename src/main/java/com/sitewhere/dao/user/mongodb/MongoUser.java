@@ -10,6 +10,7 @@
 package com.sitewhere.dao.user.mongodb;
 
 import java.util.Date;
+import java.util.List;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
@@ -44,6 +45,9 @@ public class MongoUser {
 	/** Property for account status */
 	public static final String PROP_STATUS = "status";
 
+	/** List of granted authority names */
+	public static final String PROP_AUTHORITIES = "authorities";
+
 	/**
 	 * Copy information from SPI into Mongo DBObject.
 	 * 
@@ -56,6 +60,7 @@ public class MongoUser {
 		target.append(PROP_FIRST_NAME, source.getFirstName());
 		target.append(PROP_LAST_NAME, source.getLastName());
 		target.append(PROP_LAST_LOGIN, source.getLastLogin());
+		target.append(PROP_AUTHORITIES, source.getAuthorities());
 		if (source.getStatus() != null) {
 			target.append(PROP_STATUS, source.getStatus().name());
 		}
@@ -69,6 +74,7 @@ public class MongoUser {
 	 * @param source
 	 * @param target
 	 */
+	@SuppressWarnings("unchecked")
 	public static void fromDBObject(DBObject source, User target) {
 		String username = (String) source.get(PROP_USERNAME);
 		String hashedPassword = (String) source.get(PROP_HASHED_PASSWORD);
@@ -76,12 +82,14 @@ public class MongoUser {
 		String lastName = (String) source.get(PROP_LAST_NAME);
 		Date lastLogin = (Date) source.get(PROP_LAST_LOGIN);
 		String status = (String) source.get(PROP_STATUS);
+		List<String> authorities = (List<String>) source.get(PROP_AUTHORITIES);
 
 		target.setUsername(username);
 		target.setHashedPassword(hashedPassword);
 		target.setFirstName(firstName);
 		target.setLastName(lastName);
 		target.setLastLogin(lastLogin);
+		target.setAuthorities(authorities);
 		if (status != null) {
 			target.setStatus(AccountStatus.valueOf(status));
 		}

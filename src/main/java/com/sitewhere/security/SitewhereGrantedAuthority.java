@@ -23,12 +23,15 @@ public class SitewhereGrantedAuthority implements GrantedAuthority {
 
 	/** Serial verison UID */
 	private static final long serialVersionUID = 1L;
+	
+	/** Prefix Spring Security expects for role authorities */
+	public static final String ROLE_VOTER_PREFIX = "ROLE_";
 
 	/** Authority */
 	private String authority;
 
 	public SitewhereGrantedAuthority(IGrantedAuthority auth) {
-		this.authority = auth.getAuthority();
+		this.authority = ROLE_VOTER_PREFIX + auth.getAuthority();
 	}
 
 	/*

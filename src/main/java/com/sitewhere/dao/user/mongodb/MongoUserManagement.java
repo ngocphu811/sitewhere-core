@@ -26,6 +26,7 @@ import com.sitewhere.dao.common.mongodb.MongoSiteWhereEntity;
 import com.sitewhere.dao.mongodb.SiteWhereMongoClient;
 import com.sitewhere.rest.model.common.MetadataProvider;
 import com.sitewhere.rest.model.user.GrantedAuthority;
+import com.sitewhere.rest.model.user.GrantedAuthoritySearchCriteria;
 import com.sitewhere.rest.model.user.User;
 import com.sitewhere.spi.SiteWhereException;
 import com.sitewhere.spi.SiteWhereSystemException;
@@ -65,6 +66,10 @@ public class MongoUserManagement implements IUserManagement {
 			throw new SiteWhereSystemException(ErrorCode.DuplicateUser, ErrorLevel.ERROR,
 					HttpServletResponse.SC_CONFLICT);
 		}
+		if (request.getStatus() != AccountStatus.Active) {
+			throw new SiteWhereSystemException(ErrorCode.InvalidNewUserStatus, ErrorLevel.ERROR,
+					HttpServletResponse.SC_BAD_REQUEST);
+		}
 		User user = new User();
 		user.setUsername(request.getUsername());
 		user.setHashedPassword(passwordEncoder.encodePassword(request.getPassword(), null));
@@ -72,6 +77,7 @@ public class MongoUserManagement implements IUserManagement {
 		user.setLastName(request.getLastName());
 		user.setLastLogin(null);
 		user.setStatus(AccountStatus.Active);
+		user.setAuthorities(request.getAuthorities());
 
 		MetadataProvider.copy(request, user);
 		MongoPersistence.initializeEntityMetadata(user);
@@ -109,7 +115,7 @@ public class MongoUserManagement implements IUserManagement {
 	 * com.sitewhere.spi.user.request.IUserCreateRequest)
 	 */
 	public IUser updateUser(String username, IUserCreateRequest request) throws SiteWhereException {
-		throw new SiteWhereException("Not implmented.");
+		throw new SiteWhereException("Not implemented.");
 	}
 
 	/*
@@ -131,12 +137,16 @@ public class MongoUserManagement implements IUserManagement {
 	 * @see com.sitewhere.spi.user.IUserManagement#getGrantedAuthorities(java.lang.String)
 	 */
 	public List<IGrantedAuthority> getGrantedAuthorities(String username) throws SiteWhereException {
-		GrantedAuthority auth = new GrantedAuthority();
-		auth.setAuthority("ROLE_USER");
-		auth.setDescription("Authenticated User");
-		List<IGrantedAuthority> auths = new ArrayList<IGrantedAuthority>();
-		auths.add(auth);
-		return auths;
+		IUser user = getUserByUsername(username);
+		List<String> userAuths = user.getAuthorities();
+		List<IGrantedAuthority> all = listGrantedAuthorities(new GrantedAuthoritySearchCriteria());
+		List<IGrantedAuthority> matched = new ArrayList<IGrantedAuthority>();
+		for (IGrantedAuthority auth : all) {
+			if (userAuths.contains(auth.getAuthority())) {
+				matched.add(auth);
+			}
+		}
+		return matched;
 	}
 
 	/*
@@ -146,7 +156,7 @@ public class MongoUserManagement implements IUserManagement {
 	 */
 	public List<IGrantedAuthority> addGrantedAuthorities(String username, List<String> authorities)
 			throws SiteWhereException {
-		throw new SiteWhereException("Not implmented.");
+		throw new SiteWhereException("Not implemented.");
 	}
 
 	/*
@@ -156,7 +166,7 @@ public class MongoUserManagement implements IUserManagement {
 	 */
 	public List<IGrantedAuthority> removeGrantedAuthorities(String username, List<String> authorities)
 			throws SiteWhereException {
-		throw new SiteWhereException("Not implmented.");
+		throw new SiteWhereException("Not implemented.");
 	}
 
 	/*
@@ -190,7 +200,7 @@ public class MongoUserManagement implements IUserManagement {
 	 * @see com.sitewhere.spi.user.IUserManagement#deleteUser(java.lang.String)
 	 */
 	public void deleteUser(String username) throws SiteWhereException {
-		throw new SiteWhereException("Not implmented.");
+		throw new SiteWhereException("Not implemented.");
 	}
 
 	/*
@@ -237,7 +247,7 @@ public class MongoUserManagement implements IUserManagement {
 	 */
 	public IGrantedAuthority updateGrantedAuthority(String name, IGrantedAuthorityCreateRequest request)
 			throws SiteWhereException {
-		throw new SiteWhereException("Not implmented.");
+		throw new SiteWhereException("Not implemented.");
 	}
 
 	/*
@@ -268,7 +278,7 @@ public class MongoUserManagement implements IUserManagement {
 	 * @see com.sitewhere.spi.user.IUserManagement#deleteGrantedAuthority(java.lang.String)
 	 */
 	public void deleteGrantedAuthority(String authority) throws SiteWhereException {
-		throw new SiteWhereException("Not implmented.");
+		throw new SiteWhereException("Not implemented.");
 	}
 
 	/**

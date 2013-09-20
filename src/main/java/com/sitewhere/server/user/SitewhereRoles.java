@@ -17,6 +17,9 @@ package com.sitewhere.server.user;
  */
 public interface SitewhereRoles {
 
-	/** Role for creating user management entities */
-	public static final String ROLE_USER_MGMT_ADMIN = "ROLE_USER_MGMT_ADMIN";
+	/** Role for site adminstration (edit/delete) */
+	public static final String ROLE_ADMINISTER_SITES = "ROLE_ADMINISTER_SITES";
+
+	/** Role for administering user accounts and authorities */
+	public static final String ROLE_ADMINISTER_USERS = "ROLE_ADMINISTER_USERS";
 }
