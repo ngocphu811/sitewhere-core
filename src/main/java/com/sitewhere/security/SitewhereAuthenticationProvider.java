@@ -13,7 +13,9 @@ package com.sitewhere.security;
 import java.util.List;
 
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 
@@ -36,14 +38,22 @@ public class SitewhereAuthenticationProvider implements AuthenticationProvider {
 	 * springframework.security. Authentication)
 	 */
 	public Authentication authenticate(Authentication input) throws AuthenticationException {
-		String username = (String) input.getPrincipal();
-		String password = (String) input.getCredentials();
 		try {
-			IUser user = SiteWhereServer.getInstance().getUserManagement().authenticate(username, password);
-			List<IGrantedAuthority> auths = SiteWhereServer.getInstance().getUserManagement()
-					.getGrantedAuthorities(username);
-			SitewhereUserDetails details = new SitewhereUserDetails(user, auths);
-			return new SitewhereAuthentication(details, password);
+			if (input instanceof UsernamePasswordAuthenticationToken) {
+				String username = (String) input.getPrincipal();
+				String password = (String) input.getCredentials();
+				IUser user = SiteWhereServer.getInstance().getUserManagement()
+						.authenticate(username, password);
+				List<IGrantedAuthority> auths = SiteWhereServer.getInstance().getUserManagement()
+						.getGrantedAuthorities(user.getUsername());
+				SitewhereUserDetails details = new SitewhereUserDetails(user, auths);
+				return new SitewhereAuthentication(details, password);
+			} else if (input instanceof SitewhereAuthentication) {
+				return input;
+			} else {
+				throw new AuthenticationServiceException("Unknown authentication: "
+						+ input.getClass().getName());
+			}
 		} catch (SiteWhereException e) {
 			throw new BadCredentialsException("Unable to authenticate.", e);
 		}

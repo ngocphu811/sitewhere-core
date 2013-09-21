@@ -74,7 +74,7 @@ public class SitewhereAuthentication implements Authentication {
 	 * @see org.springframework.security.Authentication#getPrincipal()
 	 */
 	public Object getPrincipal() {
-		return userDetails.getUsername();
+		return userDetails.getUser();
 	}
 
 	/*

@@ -32,23 +32,14 @@ public class SitewhereUserDetails implements UserDetails {
 	/** Serial version UID */
 	private static final long serialVersionUID = 1L;
 
-	/** Username */
-	private String username;
-
-	/** Password */
-	private String password;
-
-	/** Account status */
-	private AccountStatus status;
+	/** User */
+	private IUser user;
 
 	/** Granted authorities */
 	private Collection<GrantedAuthority> grantedAuthorities;
 
-	public SitewhereUserDetails(IUser user, List<IGrantedAuthority> authorities)
-			throws SiteWhereException {
-		this.username = user.getUsername();
-		this.password = user.getHashedPassword();
-		this.status = user.getStatus();
+	public SitewhereUserDetails(IUser user, List<IGrantedAuthority> authorities) throws SiteWhereException {
+		this.user = user;
 		this.grantedAuthorities = convertAuthorities(authorities);
 	}
 
@@ -73,7 +64,7 @@ public class SitewhereUserDetails implements UserDetails {
 	 * @see org.springframework.security.userdetails.UserDetails#getUsername()
 	 */
 	public String getUsername() {
-		return username;
+		return user.getUsername();
 	}
 
 	/*
@@ -82,7 +73,7 @@ public class SitewhereUserDetails implements UserDetails {
 	 * @see org.springframework.security.userdetails.UserDetails#getPassword()
 	 */
 	public String getPassword() {
-		return password;
+		return user.getHashedPassword();
 	}
 
 	/*
@@ -100,7 +91,7 @@ public class SitewhereUserDetails implements UserDetails {
 	 * @see org.springframework.security.userdetails.UserDetails#isAccountNonExpired()
 	 */
 	public boolean isAccountNonExpired() {
-		return !(status == AccountStatus.Expired);
+		return !(user.getStatus() == AccountStatus.Expired);
 	}
 
 	/*
@@ -109,7 +100,7 @@ public class SitewhereUserDetails implements UserDetails {
 	 * @see org.springframework.security.userdetails.UserDetails#isAccountNonLocked()
 	 */
 	public boolean isAccountNonLocked() {
-		return !(status == AccountStatus.Locked);
+		return !(user.getStatus() == AccountStatus.Locked);
 	}
 
 	/*
@@ -127,6 +118,15 @@ public class SitewhereUserDetails implements UserDetails {
 	 * @see org.springframework.security.userdetails.UserDetails#isEnabled()
 	 */
 	public boolean isEnabled() {
-		return (status == AccountStatus.Active);
+		return (user.getStatus() == AccountStatus.Active);
+	}
+
+	/**
+	 * Get the underlying user object.
+	 * 
+	 * @return
+	 */
+	public IUser getUser() {
+		return user;
 	}
 }
