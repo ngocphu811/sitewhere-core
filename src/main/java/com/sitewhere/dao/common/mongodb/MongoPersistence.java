@@ -11,21 +11,12 @@ package com.sitewhere.dao.common.mongodb;
 
 import java.util.Date;
 
-import javax.servlet.http.HttpServletResponse;
-
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
 import com.mongodb.WriteResult;
 import com.sitewhere.rest.model.common.MetadataProviderEntity;
-import com.sitewhere.security.SitewhereAuthentication;
+import com.sitewhere.security.LoginManager;
 import com.sitewhere.spi.SiteWhereException;
-import com.sitewhere.spi.SiteWhereSystemException;
-import com.sitewhere.spi.error.ErrorCode;
-import com.sitewhere.spi.error.ErrorLevel;
-import com.sitewhere.spi.user.IUser;
 
 /**
  * Common handlers for persisting Mongo data.
@@ -85,7 +76,7 @@ public class MongoPersistence {
 	 */
 	public static void initializeEntityMetadata(MetadataProviderEntity entity) throws SiteWhereException {
 		entity.setCreatedDate(new Date());
-		entity.setCreatedBy(getCurrentlyLoggedInUser().getUsername());
+		entity.setCreatedBy(LoginManager.getCurrentlyLoggedInUser().getUsername());
 		entity.setDeleted(false);
 	}
 
@@ -97,25 +88,6 @@ public class MongoPersistence {
 	 */
 	public static void setUpdatedEntityMetadata(MetadataProviderEntity entity) throws SiteWhereException {
 		entity.setUpdatedDate(new Date());
-		entity.setUpdatedBy(getCurrentlyLoggedInUser().getUsername());
-	}
-
-	/**
-	 * Get the currently logged in user from Spring Security.
-	 * 
-	 * @return
-	 * @throws SiteWhereException
-	 */
-	public static IUser getCurrentlyLoggedInUser() throws SiteWhereException {
-		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-		if (auth == null) {
-			throw new SiteWhereSystemException(ErrorCode.NotLoggedIn, ErrorLevel.ERROR,
-					HttpServletResponse.SC_FORBIDDEN);
-		}
-		if (!(auth instanceof SitewhereAuthentication)) {
-			throw new SiteWhereException("Authentication was not of expected type: "
-					+ SitewhereAuthentication.class.getName());
-		}
-		return (IUser) ((SitewhereAuthentication) auth).getPrincipal();
+		entity.setUpdatedBy(LoginManager.getCurrentlyLoggedInUser().getUsername());
 	}
 }
