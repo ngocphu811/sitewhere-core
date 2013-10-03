@@ -66,10 +66,6 @@ public class MongoUserManagement implements IUserManagement {
 			throw new SiteWhereSystemException(ErrorCode.DuplicateUser, ErrorLevel.ERROR,
 					HttpServletResponse.SC_CONFLICT);
 		}
-		if (request.getStatus() != AccountStatus.Active) {
-			throw new SiteWhereSystemException(ErrorCode.InvalidNewUserStatus, ErrorLevel.ERROR,
-					HttpServletResponse.SC_BAD_REQUEST);
-		}
 		User user = new User();
 		user.setUsername(request.getUsername());
 		user.setHashedPassword(passwordEncoder.encodePassword(request.getPassword(), null));
