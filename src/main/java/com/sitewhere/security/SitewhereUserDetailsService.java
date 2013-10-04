@@ -70,7 +70,7 @@ public class SitewhereUserDetailsService implements UserDetailsManager {
 	 */
 	public void deleteUser(String username) {
 		try {
-			SiteWhereServer.getInstance().getUserManagement().deleteUser(username);
+			SiteWhereServer.getInstance().getUserManagement().deleteUser(username, true);
 		} catch (SiteWhereException e) {
 			throw new RuntimeException("Unable to delete user.", e);
 		}

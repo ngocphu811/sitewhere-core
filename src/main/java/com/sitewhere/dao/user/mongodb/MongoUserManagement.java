@@ -101,14 +101,14 @@ public class MongoUserManagement implements IUserManagement {
 			throw new SiteWhereSystemException(ErrorCode.InvalidPassword, ErrorLevel.ERROR,
 					HttpServletResponse.SC_UNAUTHORIZED);
 		}
-		
+
 		// Update last login date.
 		match.setLastLogin(new Date());
 		DBObject updated = MongoUser.toDBObject(match);
 		DBCollection users = getMongoClient().getUsersCollection();
 		BasicDBObject query = new BasicDBObject(MongoUser.PROP_USERNAME, username);
 		MongoPersistence.update(users, query, updated);
-		
+
 		return match;
 	}
 
@@ -233,10 +233,21 @@ public class MongoUserManagement implements IUserManagement {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.sitewhere.spi.user.IUserManagement#deleteUser(java.lang.String)
+	 * @see com.sitewhere.spi.user.IUserManagement#deleteUser(java.lang.String, boolean)
 	 */
-	public void deleteUser(String username) throws SiteWhereException {
-		throw new SiteWhereException("Not implemented.");
+	public IUser deleteUser(String username, boolean force) throws SiteWhereException {
+		DBObject existing = assertUser(username);
+		if (force) {
+			DBCollection users = getMongoClient().getUsersCollection();
+			MongoPersistence.delete(users, existing);
+			return MongoUser.fromDBObject(existing);
+		} else {
+			MongoSiteWhereEntity.setDeleted(existing, true);
+			BasicDBObject query = new BasicDBObject(MongoUser.PROP_USERNAME, username);
+			DBCollection users = getMongoClient().getUsersCollection();
+			MongoPersistence.update(users, query, existing);
+			return MongoUser.fromDBObject(existing);
+		}
 	}
 
 	/*
