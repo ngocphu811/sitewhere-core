@@ -10,6 +10,7 @@
 package com.sitewhere.dao.user.mongodb;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
@@ -32,7 +33,6 @@ import com.sitewhere.spi.SiteWhereException;
 import com.sitewhere.spi.SiteWhereSystemException;
 import com.sitewhere.spi.error.ErrorCode;
 import com.sitewhere.spi.error.ErrorLevel;
-import com.sitewhere.spi.user.AccountStatus;
 import com.sitewhere.spi.user.IGrantedAuthority;
 import com.sitewhere.spi.user.IGrantedAuthoritySearchCriteria;
 import com.sitewhere.spi.user.IUser;
@@ -72,7 +72,7 @@ public class MongoUserManagement implements IUserManagement {
 		user.setFirstName(request.getFirstName());
 		user.setLastName(request.getLastName());
 		user.setLastLogin(null);
-		user.setStatus(AccountStatus.Active);
+		user.setStatus(request.getStatus());
 		user.setAuthorities(request.getAuthorities());
 
 		MetadataProvider.copy(request, user);
@@ -96,11 +96,19 @@ public class MongoUserManagement implements IUserManagement {
 		}
 		DBObject userObj = assertUser(username);
 		String inPassword = passwordEncoder.encodePassword(password, null);
-		IUser match = MongoUser.fromDBObject(userObj);
+		User match = MongoUser.fromDBObject(userObj);
 		if (!match.getHashedPassword().equals(inPassword)) {
 			throw new SiteWhereSystemException(ErrorCode.InvalidPassword, ErrorLevel.ERROR,
 					HttpServletResponse.SC_UNAUTHORIZED);
 		}
+		
+		// Update last login date.
+		match.setLastLogin(new Date());
+		DBObject updated = MongoUser.toDBObject(match);
+		DBCollection users = getMongoClient().getUsersCollection();
+		BasicDBObject query = new BasicDBObject(MongoUser.PROP_USERNAME, username);
+		MongoPersistence.update(users, query, updated);
+		
 		return match;
 	}
 
@@ -111,7 +119,39 @@ public class MongoUserManagement implements IUserManagement {
 	 * com.sitewhere.spi.user.request.IUserCreateRequest)
 	 */
 	public IUser updateUser(String username, IUserCreateRequest request) throws SiteWhereException {
-		throw new SiteWhereException("Not implemented.");
+		DBObject existing = assertUser(username);
+
+		// Copy any non-null fields.
+		User updatedUser = MongoUser.fromDBObject(existing);
+		if (request.getUsername() != null) {
+			updatedUser.setUsername(request.getUsername());
+		}
+		if (request.getPassword() != null) {
+			updatedUser.setHashedPassword(passwordEncoder.encodePassword(request.getPassword(), null));
+		}
+		if (request.getFirstName() != null) {
+			updatedUser.setFirstName(request.getFirstName());
+		}
+		if (request.getLastName() != null) {
+			updatedUser.setLastName(request.getLastName());
+		}
+		if (request.getStatus() != null) {
+			updatedUser.setStatus(request.getStatus());
+		}
+		if (request.getAuthorities() != null) {
+			updatedUser.setAuthorities(request.getAuthorities());
+		}
+		if ((request.getMetadata() != null) && (request.getMetadata().size() > 0)) {
+			updatedUser.getMetadata().clear();
+			MetadataProvider.copy(request, updatedUser);
+		}
+		MongoPersistence.setUpdatedEntityMetadata(updatedUser);
+		DBObject updated = MongoUser.toDBObject(updatedUser);
+
+		DBCollection users = getMongoClient().getUsersCollection();
+		BasicDBObject query = new BasicDBObject(MongoUser.PROP_USERNAME, username);
+		MongoPersistence.update(users, query, updated);
+		return MongoUser.fromDBObject(updated);
 	}
 
 	/*

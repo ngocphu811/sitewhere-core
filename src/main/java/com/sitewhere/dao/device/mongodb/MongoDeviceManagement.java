@@ -130,8 +130,7 @@ public class MongoDeviceManagement implements IDeviceManagement {
 			updatedDevice.getMetadata().clear();
 			MetadataProvider.copy(request, updatedDevice);
 		}
-		updatedDevice.setUpdatedDate(new Date());
-		updatedDevice.setUpdatedBy("admin");
+		MongoPersistence.setUpdatedEntityMetadata(updatedDevice);
 		DBObject updated = MongoDevice.toDBObject(updatedDevice);
 
 		DBCollection devices = getMongoClient().getDevicesCollection();
