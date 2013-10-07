@@ -584,8 +584,11 @@ public class MongoDeviceManagement implements IDeviceManagement {
 		DBCollection measurementColl = getMongoClient().getMeasurementsCollection();
 		BasicDBObject query = new BasicDBObject(MongoDeviceEvent.PROP_DEVICE_ASSIGNMENT_TOKEN,
 				assignmentToken);
-		DBCursor cursor = measurementColl.find(query).limit(maxCount)
-				.sort(new BasicDBObject(MongoDeviceEvent.PROP_EVENT_DATE, -1));
+		DBCursor cursor = measurementColl
+				.find(query)
+				.limit(maxCount)
+				.sort(new BasicDBObject(MongoDeviceEvent.PROP_EVENT_DATE, -1).append(
+						MongoDeviceEvent.PROP_RECEIVED_DATE, -1));
 
 		List<IDeviceMeasurements> matches = new ArrayList<IDeviceMeasurements>();
 		try {
@@ -608,8 +611,11 @@ public class MongoDeviceManagement implements IDeviceManagement {
 			throws SiteWhereException {
 		DBCollection measurementColl = getMongoClient().getMeasurementsCollection();
 		BasicDBObject query = new BasicDBObject(MongoDeviceEvent.PROP_SITE_TOKEN, siteToken);
-		DBCursor cursor = measurementColl.find(query).limit(maxCount)
-				.sort(new BasicDBObject(MongoDeviceEvent.PROP_EVENT_DATE, -1));
+		DBCursor cursor = measurementColl
+				.find(query)
+				.limit(maxCount)
+				.sort(new BasicDBObject(MongoDeviceEvent.PROP_EVENT_DATE, -1).append(
+						MongoDeviceEvent.PROP_RECEIVED_DATE, -1));
 
 		List<IDeviceMeasurements> matches = new ArrayList<IDeviceMeasurements>();
 		try {
@@ -664,8 +670,11 @@ public class MongoDeviceManagement implements IDeviceManagement {
 		DBCollection locationsColl = getMongoClient().getLocationsCollection();
 		BasicDBObject query = new BasicDBObject(MongoDeviceEvent.PROP_DEVICE_ASSIGNMENT_TOKEN,
 				assignmentToken);
-		DBCursor cursor = locationsColl.find(query).limit(maxCount)
-				.sort(new BasicDBObject(MongoDeviceEvent.PROP_EVENT_DATE, -1));
+		DBCursor cursor = locationsColl
+				.find(query)
+				.limit(maxCount)
+				.sort(new BasicDBObject(MongoDeviceEvent.PROP_EVENT_DATE, -1).append(
+						MongoDeviceEvent.PROP_RECEIVED_DATE, -1));
 
 		List<IDeviceLocation> matches = new ArrayList<IDeviceLocation>();
 		try {
@@ -688,8 +697,11 @@ public class MongoDeviceManagement implements IDeviceManagement {
 			throws SiteWhereException {
 		DBCollection locationsColl = getMongoClient().getLocationsCollection();
 		BasicDBObject query = new BasicDBObject(MongoDeviceEvent.PROP_SITE_TOKEN, siteToken);
-		DBCursor cursor = locationsColl.find(query).limit(maxCount)
-				.sort(new BasicDBObject(MongoDeviceEvent.PROP_EVENT_DATE, -1));
+		DBCursor cursor = locationsColl
+				.find(query)
+				.limit(maxCount)
+				.sort(new BasicDBObject(MongoDeviceEvent.PROP_EVENT_DATE, -1).append(
+						MongoDeviceEvent.PROP_RECEIVED_DATE, -1));
 
 		List<IDeviceLocation> matches = new ArrayList<IDeviceLocation>();
 		try {
@@ -717,7 +729,8 @@ public class MongoDeviceManagement implements IDeviceManagement {
 		BasicDBObject dateClause = new BasicDBObject("$gte", start).append("$lte", end);
 		query.put(MongoDeviceEvent.PROP_EVENT_DATE, dateClause);
 		DBCursor cursor = locationsColl.find(query).sort(
-				new BasicDBObject(MongoDeviceEvent.PROP_EVENT_DATE, -1));
+				new BasicDBObject(MongoDeviceEvent.PROP_EVENT_DATE, -1).append(
+						MongoDeviceEvent.PROP_RECEIVED_DATE, -1));
 
 		List<IDeviceLocation> matches = new ArrayList<IDeviceLocation>();
 		try {
@@ -794,8 +807,11 @@ public class MongoDeviceManagement implements IDeviceManagement {
 		DBCollection alerts = getMongoClient().getAlertsCollection();
 		BasicDBObject query = new BasicDBObject(MongoDeviceEvent.PROP_DEVICE_ASSIGNMENT_TOKEN,
 				assignmentToken);
-		DBCursor cursor = alerts.find(query).limit(maxCount)
-				.sort(new BasicDBObject(MongoDeviceEvent.PROP_EVENT_DATE, -1));
+		DBCursor cursor = alerts
+				.find(query)
+				.limit(maxCount)
+				.sort(new BasicDBObject(MongoDeviceEvent.PROP_EVENT_DATE, -1).append(
+						MongoDeviceEvent.PROP_RECEIVED_DATE, -1));
 
 		List<IDeviceAlert> matches = new ArrayList<IDeviceAlert>();
 		try {
@@ -818,8 +834,11 @@ public class MongoDeviceManagement implements IDeviceManagement {
 			throws SiteWhereException {
 		DBCollection alerts = getMongoClient().getAlertsCollection();
 		BasicDBObject query = new BasicDBObject(MongoDeviceEvent.PROP_SITE_TOKEN, siteToken);
-		DBCursor cursor = alerts.find(query).limit(maxCount)
-				.sort(new BasicDBObject(MongoDeviceEvent.PROP_EVENT_DATE, -1));
+		DBCursor cursor = alerts
+				.find(query)
+				.limit(maxCount)
+				.sort(new BasicDBObject(MongoDeviceEvent.PROP_EVENT_DATE, -1).append(
+						MongoDeviceEvent.PROP_RECEIVED_DATE, -1));
 
 		List<IDeviceAlert> matches = new ArrayList<IDeviceAlert>();
 		try {
