@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>sitewhere</groupId>
 	<artifactId>sitewhere-core</artifactId>
-	<version>0.9.1</version>
+	<version>0.9.2</version>
 	<packaging>jar</packaging>
 	<name>SiteWhere Core Library</name>
 	<url>http://www.reveal-tech.com</url>
@@ -12,7 +12,7 @@
 		<dependency>
 			<groupId>sitewhere</groupId>
 			<artifactId>sitewhere-client</artifactId>
-			<version>0.9.1</version>
+			<version>0.9.2</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
