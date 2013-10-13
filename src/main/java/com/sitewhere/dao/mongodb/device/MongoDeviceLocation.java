@@ -1,17 +1,18 @@
 /*
-* $Id$
-* --------------------------------------------------------------------------------------
-* Copyright (c) Reveal Technologies, LLC. All rights reserved. http://www.reveal-tech.com
-*
-* The software in this package is published under the terms of the CPAL v1.0
-* license, a copy of which has been included with this distribution in the
-* LICENSE.txt file.
-*/
+ * $Id$
+ * --------------------------------------------------------------------------------------
+ * Copyright (c) Reveal Technologies, LLC. All rights reserved. http://www.reveal-tech.com
+ *
+ * The software in this package is published under the terms of the CPAL v1.0
+ * license, a copy of which has been included with this distribution in the
+ * LICENSE.txt file.
+ */
 
 package com.sitewhere.dao.mongodb.device;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
+import com.sitewhere.dao.mongodb.MongoConverter;
 import com.sitewhere.rest.model.device.DeviceLocation;
 import com.sitewhere.spi.device.IDeviceLocation;
 
@@ -20,7 +21,7 @@ import com.sitewhere.spi.device.IDeviceLocation;
  * 
  * @author dadams
  */
-public class MongoDeviceLocation {
+public class MongoDeviceLocation implements MongoConverter<IDeviceLocation> {
 
 	/** Element that holds location information */
 	public static final String PROP_LATLONG = "latLong";
@@ -33,6 +34,24 @@ public class MongoDeviceLocation {
 
 	/** Property for elevation */
 	public static final String PROP_ELEVATION = "elevation";
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.sitewhere.dao.mongodb.MongoConverter#convert(java.lang.Object)
+	 */
+	public BasicDBObject convert(IDeviceLocation source) {
+		return MongoDeviceLocation.toDBObject(source);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.sitewhere.dao.mongodb.MongoConverter#convert(com.mongodb.DBObject)
+	 */
+	public IDeviceLocation convert(DBObject source) {
+		return MongoDeviceLocation.fromDBObject(source);
+	}
 
 	/**
 	 * Copy information from SPI into Mongo DBObject.
@@ -77,7 +96,7 @@ public class MongoDeviceLocation {
 	 * @param source
 	 * @return
 	 */
-	public static DBObject toDBObject(IDeviceLocation source) {
+	public static BasicDBObject toDBObject(IDeviceLocation source) {
 		BasicDBObject result = new BasicDBObject();
 		MongoDeviceLocation.toDBObject(source, result);
 		return result;
@@ -89,7 +108,7 @@ public class MongoDeviceLocation {
 	 * @param source
 	 * @return
 	 */
-	public static IDeviceLocation fromDBObject(DBObject source) {
+	public static DeviceLocation fromDBObject(DBObject source) {
 		DeviceLocation result = new DeviceLocation();
 		MongoDeviceLocation.fromDBObject(source, result);
 		return result;

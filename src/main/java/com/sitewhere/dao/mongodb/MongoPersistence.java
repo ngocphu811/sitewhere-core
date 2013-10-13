@@ -7,16 +7,21 @@
  * license, a copy of which has been included with this distribution in the
  * LICENSE.txt file.
  */
-package com.sitewhere.dao.mongodb.common;
+package com.sitewhere.dao.mongodb;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import com.mongodb.DBCollection;
+import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.WriteResult;
 import com.sitewhere.rest.model.common.MetadataProviderEntity;
+import com.sitewhere.rest.service.search.SearchResults;
 import com.sitewhere.security.LoginManager;
 import com.sitewhere.spi.SiteWhereException;
+import com.sitewhere.spi.common.ISearchCriteria;
 
 /**
  * Common handlers for persisting Mongo data.
@@ -26,7 +31,8 @@ import com.sitewhere.spi.SiteWhereException;
 public class MongoPersistence {
 
 	/**
-	 * Common handler for creating new objects. Assures that errors are handled in a consistent way.
+	 * Common handler for creating new objects. Assures that errors are handled in a
+	 * consistent way.
 	 * 
 	 * @param collection
 	 * @param object
@@ -40,7 +46,8 @@ public class MongoPersistence {
 	}
 
 	/**
-	 * Common handler for updating existing objects. Assures that errors are handled in a consistent way.
+	 * Common handler for updating existing objects. Assures that errors are handled in a
+	 * consistent way.
 	 * 
 	 * @param collection
 	 * @param object
@@ -55,7 +62,8 @@ public class MongoPersistence {
 	}
 
 	/**
-	 * Common handler for deleting objects. Assures that errors are handled in a consistent way.
+	 * Common handler for deleting objects. Assures that errors are handled in a
+	 * consistent way.
 	 * 
 	 * @param collection
 	 * @param object
@@ -66,6 +74,37 @@ public class MongoPersistence {
 		if (!result.getLastError().ok()) {
 			throw new SiteWhereException("Error during delete: " + result.getLastError().toString());
 		}
+	}
+
+	/**
+	 * Search the given collection using the provided query and sort. Return the paged
+	 * seaerch results.
+	 * 
+	 * @param api
+	 * @param collection
+	 * @param query
+	 * @param sort
+	 * @param pageNumber
+	 * @param pageSize
+	 * @return
+	 */
+	public static <T> SearchResults<T> search(Class<T> api, DBCollection collection, DBObject query,
+			DBObject sort, ISearchCriteria criteria) {
+		int offset = Math.max(0, criteria.getPageNumber() - 1) * criteria.getPageSize();
+		DBCursor cursor = collection.find(query).skip(offset).limit(criteria.getPageSize()).sort(sort);
+		List<T> matches = new ArrayList<T>();
+		SearchResults<T> results = new SearchResults<T>(matches);
+		MongoConverter<T> converter = MongoConverters.getConverterFor(api);
+		try {
+			results.setNumResults(cursor.count());
+			while (cursor.hasNext()) {
+				DBObject match = cursor.next();
+				matches.add(converter.convert(match));
+			}
+		} finally {
+			cursor.close();
+		}
+		return results;
 	}
 
 	/**

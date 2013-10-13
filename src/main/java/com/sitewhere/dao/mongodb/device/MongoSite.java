@@ -1,17 +1,18 @@
 /*
-* $Id$
-* --------------------------------------------------------------------------------------
-* Copyright (c) Reveal Technologies, LLC. All rights reserved. http://www.reveal-tech.com
-*
-* The software in this package is published under the terms of the CPAL v1.0
-* license, a copy of which has been included with this distribution in the
-* LICENSE.txt file.
-*/
+ * $Id$
+ * --------------------------------------------------------------------------------------
+ * Copyright (c) Reveal Technologies, LLC. All rights reserved. http://www.reveal-tech.com
+ *
+ * The software in this package is published under the terms of the CPAL v1.0
+ * license, a copy of which has been included with this distribution in the
+ * LICENSE.txt file.
+ */
 
 package com.sitewhere.dao.mongodb.device;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
+import com.sitewhere.dao.mongodb.MongoConverter;
 import com.sitewhere.dao.mongodb.common.MongoMetadataProvider;
 import com.sitewhere.dao.mongodb.common.MongoSiteWhereEntity;
 import com.sitewhere.rest.model.device.Site;
@@ -22,7 +23,7 @@ import com.sitewhere.spi.device.ISite;
  * 
  * @author dadams
  */
-public class MongoSite {
+public class MongoSite implements MongoConverter<ISite> {
 
 	/** Property for name */
 	public static final String PROP_NAME = "name";
@@ -41,6 +42,24 @@ public class MongoSite {
 
 	/** Property for map metadata */
 	public static final String PROP_MAP_METADATA = "mapMetadata";
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.sitewhere.dao.mongodb.MongoConverter#convert(java.lang.Object)
+	 */
+	public BasicDBObject convert(ISite source) {
+		return MongoSite.toDBObject(source);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.sitewhere.dao.mongodb.MongoConverter#convert(com.mongodb.DBObject)
+	 */
+	public ISite convert(DBObject source) {
+		return MongoSite.fromDBObject(source);
+	}
 
 	/**
 	 * Copy information from SPI into Mongo DBObject.
@@ -78,7 +97,7 @@ public class MongoSite {
 		target.setImageUrl(imageUrl);
 		target.setToken(token);
 		target.setMapType(mapType);
-		
+
 		MongoSiteWhereEntity.fromDBObject(source, target);
 		MongoMetadataProvider.fromDBObject(PROP_MAP_METADATA, source, target.getMapMetadata());
 		MongoMetadataProvider.fromDBObject(source, target);

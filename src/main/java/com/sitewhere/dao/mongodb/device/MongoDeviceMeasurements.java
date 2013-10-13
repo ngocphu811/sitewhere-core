@@ -15,6 +15,7 @@ import java.util.List;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
+import com.sitewhere.dao.mongodb.MongoConverter;
 import com.sitewhere.rest.model.device.DeviceMeasurements;
 import com.sitewhere.spi.common.IMetadataEntry;
 import com.sitewhere.spi.device.IDeviceMeasurements;
@@ -24,7 +25,7 @@ import com.sitewhere.spi.device.IDeviceMeasurements;
  * 
  * @author dadams
  */
-public class MongoDeviceMeasurements {
+public class MongoDeviceMeasurements implements MongoConverter<IDeviceMeasurements> {
 
 	/** Element that holds measurements */
 	private static final String PROP_MEASUREMENTS = "measurements";
@@ -34,6 +35,24 @@ public class MongoDeviceMeasurements {
 
 	/** Attribute name for measurement value */
 	private static final String PROP_VALUE = "value";
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.sitewhere.dao.mongodb.MongoConverter#convert(java.lang.Object)
+	 */
+	public BasicDBObject convert(IDeviceMeasurements source) {
+		return MongoDeviceMeasurements.toDBObject(source);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.sitewhere.dao.mongodb.MongoConverter#convert(com.mongodb.DBObject)
+	 */
+	public DeviceMeasurements convert(DBObject source) {
+		return MongoDeviceMeasurements.fromDBObject(source);
+	}
 
 	/**
 	 * Copy information from SPI into Mongo DBObject.
@@ -82,7 +101,7 @@ public class MongoDeviceMeasurements {
 	 * @param source
 	 * @return
 	 */
-	public static DBObject toDBObject(IDeviceMeasurements source) {
+	public static BasicDBObject toDBObject(IDeviceMeasurements source) {
 		BasicDBObject result = new BasicDBObject();
 		MongoDeviceMeasurements.toDBObject(source, result);
 		return result;
@@ -94,7 +113,7 @@ public class MongoDeviceMeasurements {
 	 * @param source
 	 * @return
 	 */
-	public static IDeviceMeasurements fromDBObject(DBObject source) {
+	public static DeviceMeasurements fromDBObject(DBObject source) {
 		DeviceMeasurements result = new DeviceMeasurements();
 		MongoDeviceMeasurements.fromDBObject(source, result);
 		return result;

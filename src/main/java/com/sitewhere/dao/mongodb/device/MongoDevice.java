@@ -1,17 +1,18 @@
 /*
-* $Id$
-* --------------------------------------------------------------------------------------
-* Copyright (c) Reveal Technologies, LLC. All rights reserved. http://www.reveal-tech.com
-*
-* The software in this package is published under the terms of the CPAL v1.0
-* license, a copy of which has been included with this distribution in the
-* LICENSE.txt file.
-*/
+ * $Id$
+ * --------------------------------------------------------------------------------------
+ * Copyright (c) Reveal Technologies, LLC. All rights reserved. http://www.reveal-tech.com
+ *
+ * The software in this package is published under the terms of the CPAL v1.0
+ * license, a copy of which has been included with this distribution in the
+ * LICENSE.txt file.
+ */
 
 package com.sitewhere.dao.mongodb.device;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
+import com.sitewhere.dao.mongodb.MongoConverter;
 import com.sitewhere.dao.mongodb.common.MongoMetadataProvider;
 import com.sitewhere.dao.mongodb.common.MongoSiteWhereEntity;
 import com.sitewhere.rest.model.device.Device;
@@ -22,7 +23,7 @@ import com.sitewhere.spi.device.IDevice;
  * 
  * @author dadams
  */
-public class MongoDevice {
+public class MongoDevice implements MongoConverter<IDevice> {
 
 	/** Property for hardware id */
 	public static final String PROP_HARDWARE_ID = "hardwareId";
@@ -35,6 +36,24 @@ public class MongoDevice {
 
 	/** Property for current assignment */
 	public static final String PROP_ASSIGNMENT_TOKEN = "assignmentToken";
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.sitewhere.dao.mongodb.MongoConverter#convert(java.lang.Object)
+	 */
+	public BasicDBObject convert(IDevice source) {
+		return MongoDevice.toDBObject(source);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.sitewhere.dao.mongodb.MongoConverter#convert(com.mongodb.DBObject)
+	 */
+	public Device convert(DBObject source) {
+		return MongoDevice.fromDBObject(source);
+	}
 
 	/**
 	 * Copy information from SPI into Mongo DBObject.

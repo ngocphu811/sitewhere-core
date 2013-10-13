@@ -1,17 +1,18 @@
 /*
-* $Id$
-* --------------------------------------------------------------------------------------
-* Copyright (c) Reveal Technologies, LLC. All rights reserved. http://www.reveal-tech.com
-*
-* The software in this package is published under the terms of the CPAL v1.0
-* license, a copy of which has been included with this distribution in the
-* LICENSE.txt file.
-*/
+ * $Id$
+ * --------------------------------------------------------------------------------------
+ * Copyright (c) Reveal Technologies, LLC. All rights reserved. http://www.reveal-tech.com
+ *
+ * The software in this package is published under the terms of the CPAL v1.0
+ * license, a copy of which has been included with this distribution in the
+ * LICENSE.txt file.
+ */
 
 package com.sitewhere.dao.mongodb.device;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
+import com.sitewhere.dao.mongodb.MongoConverter;
 import com.sitewhere.rest.model.device.DeviceAlert;
 import com.sitewhere.spi.device.AlertSource;
 import com.sitewhere.spi.device.IDeviceAlert;
@@ -21,7 +22,7 @@ import com.sitewhere.spi.device.IDeviceAlert;
  * 
  * @author dadams
  */
-public class MongoDeviceAlert {
+public class MongoDeviceAlert implements MongoConverter<IDeviceAlert> {
 
 	/** Property for source */
 	public static final String PROP_SOURCE = "source";
@@ -34,6 +35,24 @@ public class MongoDeviceAlert {
 
 	/** Property for acknowledged */
 	public static final String PROP_ACKNOWLEDGED = "acknowledged";
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.sitewhere.dao.mongodb.MongoConverter#convert(java.lang.Object)
+	 */
+	public BasicDBObject convert(IDeviceAlert source) {
+		return MongoDeviceAlert.toDBObject(source);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.sitewhere.dao.mongodb.MongoConverter#convert(com.mongodb.DBObject)
+	 */
+	public IDeviceAlert convert(DBObject source) {
+		return MongoDeviceAlert.fromDBObject(source);
+	}
 
 	/**
 	 * Copy information from SPI into Mongo DBObject.
@@ -78,7 +97,7 @@ public class MongoDeviceAlert {
 	 * @param source
 	 * @return
 	 */
-	public static DBObject toDBObject(IDeviceAlert source) {
+	public static BasicDBObject toDBObject(IDeviceAlert source) {
 		BasicDBObject result = new BasicDBObject();
 		MongoDeviceAlert.toDBObject(source, result);
 		return result;
@@ -90,7 +109,7 @@ public class MongoDeviceAlert {
 	 * @param source
 	 * @return
 	 */
-	public static IDeviceAlert fromDBObject(DBObject source) {
+	public static DeviceAlert fromDBObject(DBObject source) {
 		DeviceAlert result = new DeviceAlert();
 		MongoDeviceAlert.fromDBObject(source, result);
 		return result;

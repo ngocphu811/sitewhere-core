@@ -14,6 +14,7 @@ import java.util.Date;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
+import com.sitewhere.dao.mongodb.MongoConverter;
 import com.sitewhere.dao.mongodb.common.MongoMetadataProvider;
 import com.sitewhere.dao.mongodb.common.MongoSiteWhereEntity;
 import com.sitewhere.rest.model.device.DeviceAssignment;
@@ -28,7 +29,7 @@ import com.sitewhere.spi.device.IDeviceLocation;
  * 
  * @author dadams
  */
-public class MongoDeviceAssignment {
+public class MongoDeviceAssignment implements MongoConverter<IDeviceAssignment> {
 
 	/** Property for active date */
 	public static final String PROP_ACTIVE_DATE = "activeDate";
@@ -56,6 +57,24 @@ public class MongoDeviceAssignment {
 
 	/** Property for last location */
 	public static final String PROP_LAST_LOCATION = "lastLocation";
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.sitewhere.dao.mongodb.MongoConverter#convert(java.lang.Object)
+	 */
+	public BasicDBObject convert(IDeviceAssignment source) {
+		return MongoDeviceAssignment.toDBObject(source);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.sitewhere.dao.mongodb.MongoConverter#convert(com.mongodb.DBObject)
+	 */
+	public IDeviceAssignment convert(DBObject source) {
+		return MongoDeviceAssignment.fromDBObject(source);
+	}
 
 	/**
 	 * Copy information from SPI into Mongo DBObject.

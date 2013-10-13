@@ -1,12 +1,12 @@
 /*
-* $Id$
-* --------------------------------------------------------------------------------------
-* Copyright (c) Reveal Technologies, LLC. All rights reserved. http://www.reveal-tech.com
-*
-* The software in this package is published under the terms of the CPAL v1.0
-* license, a copy of which has been included with this distribution in the
-* LICENSE.txt file.
-*/
+ * $Id$
+ * --------------------------------------------------------------------------------------
+ * Copyright (c) Reveal Technologies, LLC. All rights reserved. http://www.reveal-tech.com
+ *
+ * The software in this package is published under the terms of the CPAL v1.0
+ * license, a copy of which has been included with this distribution in the
+ * LICENSE.txt file.
+ */
 
 package com.sitewhere.dao.mongodb.device;
 
@@ -16,6 +16,7 @@ import java.util.List;
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
+import com.sitewhere.dao.mongodb.MongoConverter;
 import com.sitewhere.dao.mongodb.common.MongoMetadataProvider;
 import com.sitewhere.dao.mongodb.common.MongoSiteWhereEntity;
 import com.sitewhere.rest.model.common.Location;
@@ -28,7 +29,7 @@ import com.sitewhere.spi.device.IZone;
  * 
  * @author dadams
  */
-public class MongoZone {
+public class MongoZone implements MongoConverter<IZone> {
 
 	/** Property for unique token */
 	public static final String PROP_TOKEN = "token";
@@ -51,6 +52,24 @@ public class MongoZone {
 	/** Property for coordinates */
 	public static final String PROP_COORDINATES = "coordinates";
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.sitewhere.dao.mongodb.MongoConverter#convert(java.lang.Object)
+	 */
+	public BasicDBObject convert(IZone source) {
+		return MongoZone.toDBObject(source);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.sitewhere.dao.mongodb.MongoConverter#convert(com.mongodb.DBObject)
+	 */
+	public IZone convert(DBObject source) {
+		return MongoZone.fromDBObject(source);
+	}
+
 	/**
 	 * Copy information from SPI into Mongo DBObject.
 	 * 
@@ -69,13 +88,10 @@ public class MongoZone {
 		if (source.getCoordinates() != null) {
 			for (ILocation location : source.getCoordinates()) {
 				BasicDBObject coord = new BasicDBObject();
-				coord.put(MongoDeviceLocation.PROP_LATITUDE,
-						location.getLatitude());
-				coord.put(MongoDeviceLocation.PROP_LONGITUDE,
-						location.getLongitude());
+				coord.put(MongoDeviceLocation.PROP_LATITUDE, location.getLatitude());
+				coord.put(MongoDeviceLocation.PROP_LONGITUDE, location.getLongitude());
 				if (location.getElevation() != null) {
-					coord.put(MongoDeviceLocation.PROP_ELEVATION,
-							location.getElevation());
+					coord.put(MongoDeviceLocation.PROP_ELEVATION, location.getElevation());
 				}
 				coords.add(coord);
 			}
@@ -112,12 +128,9 @@ public class MongoZone {
 		for (int i = 0; i < coords.size(); i++) {
 			DBObject coord = (DBObject) coords.get(i);
 			Location loc = new Location();
-			loc.setLatitude((Double) coord
-					.get(MongoDeviceLocation.PROP_LATITUDE));
-			loc.setLongitude((Double) coord
-					.get(MongoDeviceLocation.PROP_LONGITUDE));
-			loc.setElevation((Double) coord
-					.get(MongoDeviceLocation.PROP_ELEVATION));
+			loc.setLatitude((Double) coord.get(MongoDeviceLocation.PROP_LATITUDE));
+			loc.setLongitude((Double) coord.get(MongoDeviceLocation.PROP_LONGITUDE));
+			loc.setElevation((Double) coord.get(MongoDeviceLocation.PROP_ELEVATION));
 			locs.add(loc);
 		}
 		target.setCoordinates(locs);
