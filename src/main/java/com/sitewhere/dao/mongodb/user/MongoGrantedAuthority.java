@@ -7,7 +7,7 @@
  * license, a copy of which has been included with this distribution in the
  * LICENSE.txt file.
  */
-package com.sitewhere.dao.user.mongodb;
+package com.sitewhere.dao.mongodb.user;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;

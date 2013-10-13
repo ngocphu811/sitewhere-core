@@ -7,7 +7,7 @@
  * license, a copy of which has been included with this distribution in the
  * LICENSE.txt file.
  */
-package com.sitewhere.dao.user.mongodb;
+package com.sitewhere.dao.mongodb.user;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -22,9 +22,9 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
-import com.sitewhere.dao.common.mongodb.MongoPersistence;
-import com.sitewhere.dao.common.mongodb.MongoSiteWhereEntity;
 import com.sitewhere.dao.mongodb.SiteWhereMongoClient;
+import com.sitewhere.dao.mongodb.common.MongoPersistence;
+import com.sitewhere.dao.mongodb.common.MongoSiteWhereEntity;
 import com.sitewhere.rest.model.common.MetadataProvider;
 import com.sitewhere.rest.model.user.GrantedAuthority;
 import com.sitewhere.rest.model.user.GrantedAuthoritySearchCriteria;

@@ -8,14 +8,14 @@
  * LICENSE.txt file.
  */
 
-package com.sitewhere.dao.device.mongodb;
+package com.sitewhere.dao.mongodb.device;
 
 import java.util.Date;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
-import com.sitewhere.dao.common.mongodb.MongoMetadataProvider;
-import com.sitewhere.dao.common.mongodb.MongoSiteWhereEntity;
+import com.sitewhere.dao.mongodb.common.MongoMetadataProvider;
+import com.sitewhere.dao.mongodb.common.MongoSiteWhereEntity;
 import com.sitewhere.rest.model.device.DeviceAssignment;
 import com.sitewhere.rest.model.device.DeviceLocation;
 import com.sitewhere.spi.asset.AssetType;

@@ -8,7 +8,7 @@
 * LICENSE.txt file.
 */
 
-package com.sitewhere.dao.common.mongodb;
+package com.sitewhere.dao.mongodb.common;
 
 import java.util.Date;
 

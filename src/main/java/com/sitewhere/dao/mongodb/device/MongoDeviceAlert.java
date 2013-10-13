@@ -8,7 +8,7 @@
 * LICENSE.txt file.
 */
 
-package com.sitewhere.dao.device.mongodb;
+package com.sitewhere.dao.mongodb.device;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;

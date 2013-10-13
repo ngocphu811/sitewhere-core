@@ -25,11 +25,11 @@
 	<!-- # SERVICE PROVIDER IMPLEMENTATIONS # -->
 	<!-- #################################### -->
 	
-	<bean id="deviceManagement" class="com.sitewhere.dao.device.mongodb.MongoDeviceManagement">
+	<bean id="deviceManagement" class="com.sitewhere.dao.mongodb.device.MongoDeviceManagement">
 		<property name="mongoClient" ref="mongo" />
 	</bean>
 	
-	<bean id="userManagement" class="com.sitewhere.dao.user.mongodb.MongoUserManagement">
+	<bean id="userManagement" class="com.sitewhere.dao.mongodb.user.MongoUserManagement">
 		<property name="mongoClient" ref="mongo" />
 	</bean>
 
