@@ -22,5 +22,7 @@
 	<classpathentry kind="var" path="M2_REPO/org/springframework/spring-context/3.2.1.RELEASE/spring-context-3.2.1.RELEASE.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/springframework/spring-tx/3.2.1.RELEASE/spring-tx-3.2.1.RELEASE.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/mule/mule-core/3.4.0/mule-core-3.4.0.jar"/>
+	<classpathentry kind="var" path="M2_REPO/com/codahale/metrics/metrics-core/3.0.1/metrics-core-3.0.1.jar"/>
+	<classpathentry kind="var" path="M2_REPO/com/codahale/metrics/metrics-healthchecks/3.0.1/metrics-healthchecks-3.0.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

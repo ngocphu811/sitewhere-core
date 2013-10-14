@@ -21,6 +21,9 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.core.io.FileSystemResource;
 
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.health.HealthCheckRegistry;
+import com.sitewhere.server.metrics.DeviceManagementMetricsFacade;
 import com.sitewhere.spi.SiteWhereException;
 import com.sitewhere.spi.asset.IAssetModuleManager;
 import com.sitewhere.spi.device.IDeviceManagement;
@@ -55,6 +58,12 @@ public class SiteWhereServer {
 
 	/** Interface for the asset module manager */
 	private IAssetModuleManager assetModuleManager;
+
+	/** Metric regsitry */
+	private MetricRegistry metricRegistry = new MetricRegistry();
+
+	/** Health check registry */
+	private HealthCheckRegistry healthCheckRegistry = new HealthCheckRegistry();
 
 	/**
 	 * Get the singleton server instance.
@@ -105,6 +114,24 @@ public class SiteWhereServer {
 	}
 
 	/**
+	 * Get the metrics registry.
+	 * 
+	 * @return
+	 */
+	public MetricRegistry getMetricRegistry() {
+		return metricRegistry;
+	}
+
+	/**
+	 * Get the health check registry.
+	 * 
+	 * @return
+	 */
+	public HealthCheckRegistry getHealthCheckRegistry() {
+		return healthCheckRegistry;
+	}
+
+	/**
 	 * Gets the CATALINA/conf/sitewhere folder where configs are stored.
 	 * 
 	 * @return
@@ -148,12 +175,13 @@ public class SiteWhereServer {
 		}
 		SERVER_SPRING_CONTEXT = loadServerApplicationContext(serverConfigFile);
 
-		// Load device management.
-		deviceManagement = (IDeviceManagement) SERVER_SPRING_CONTEXT
+		// Load device management and wrap it for metrics.
+		IDeviceManagement deviceManagementImpl = (IDeviceManagement) SERVER_SPRING_CONTEXT
 				.getBean(SiteWhereServerBeans.BEAN_DEVICE_MANAGEMENT);
-		if (deviceManagement == null) {
+		if (deviceManagementImpl == null) {
 			throw new SiteWhereException("No location management implementation configured.");
 		}
+		deviceManagement = new DeviceManagementMetricsFacade(deviceManagementImpl);
 
 		// Load user management.
 		userManagement = (IUserManagement) SERVER_SPRING_CONTEXT
