@@ -12,7 +12,6 @@ package com.sitewhere.server.metrics;
 import java.util.Date;
 import java.util.List;
 
-import com.codahale.metrics.Counter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.sitewhere.rest.service.search.SearchResults;
@@ -50,14 +49,50 @@ public class DeviceManagementMetricsFacade implements IDeviceManagement {
 	/** Delgate instance that actually does the work */
 	private IDeviceManagement delegate;
 
-	/** Counts calls to addDeviceEventBatch() */
-	private final Counter addDeviceEventBatchCounter = getMetrics().counter(
-			MetricRegistry.name(IDeviceManagement.class, "addDeviceEventBatch", "count"));
-
 	/** Times invocations of addDeviceEventBatch() */
 	private final Timer addDeviceEventBatchTimer = getMetrics().timer(
 			MetricRegistry.name(IDeviceManagement.class, "addDeviceEventBatch", "timer"));
-
+	
+	/** Times invocations of getDeviceAssignmentsForSite() */
+	private final Timer getDeviceAssignmentsForSiteTimer = getMetrics().timer(
+			MetricRegistry.name(IDeviceManagement.class, "getDeviceAssignmentsForSite", "timer"));
+	
+	/** Times invocations of addDeviceMeasurements() */
+	private final Timer addDeviceMeasurementsTimer = getMetrics().timer(
+			MetricRegistry.name(IDeviceManagement.class, "addDeviceMeasurements", "timer"));
+	
+	/** Times invocations of listDeviceMeasurements() */
+	private final Timer listDeviceMeasurementsTimer = getMetrics().timer(
+			MetricRegistry.name(IDeviceManagement.class, "listDeviceMeasurements", "timer"));
+	
+	/** Times invocations of listDeviceMeasurementsForSite() */
+	private final Timer listDeviceMeasurementsForSiteTimer = getMetrics().timer(
+			MetricRegistry.name(IDeviceManagement.class, "listDeviceMeasurementsForSite", "timer"));
+	
+	/** Times invocations of addDeviceLocation() */
+	private final Timer addDeviceLocationTimer = getMetrics().timer(
+			MetricRegistry.name(IDeviceManagement.class, "addDeviceLocation", "timer"));
+	
+	/** Times invocations of listDeviceLocations() */
+	private final Timer listDeviceLocationsTimer = getMetrics().timer(
+			MetricRegistry.name(IDeviceManagement.class, "listDeviceLocations", "timer"));
+	
+	/** Times invocations of listDeviceLocationsForSite() */
+	private final Timer listDeviceLocationsForSiteTimer = getMetrics().timer(
+			MetricRegistry.name(IDeviceManagement.class, "listDeviceLocationsForSite", "timer"));
+	
+	/** Times invocations of addDeviceAlert() */
+	private final Timer addDeviceAlertTimer = getMetrics().timer(
+			MetricRegistry.name(IDeviceManagement.class, "addDeviceAlert", "timer"));
+	
+	/** Times invocations of listDeviceAlerts() */
+	private final Timer listDeviceAlertsTimer = getMetrics().timer(
+			MetricRegistry.name(IDeviceManagement.class, "listDeviceAlerts", "timer"));
+	
+	/** Times invocations of listDeviceAlertsForSite() */
+	private final Timer listDeviceAlertsForSiteTimer = getMetrics().timer(
+			MetricRegistry.name(IDeviceManagement.class, "listDeviceAlertsForSite", "timer"));
+	
 	public DeviceManagementMetricsFacade(IDeviceManagement delegate) {
 		this.delegate = delegate;
 	}
@@ -248,7 +283,6 @@ public class DeviceManagementMetricsFacade implements IDeviceManagement {
 			throws SiteWhereException {
 		final Timer.Context context = addDeviceEventBatchTimer.time();
 		try {
-			addDeviceEventBatchCounter.inc();
 			return delegate.addDeviceEventBatch(assignmentToken, batch);
 		} finally {
 			context.stop();
@@ -286,7 +320,12 @@ public class DeviceManagementMetricsFacade implements IDeviceManagement {
 	 */
 	public SearchResults<IDeviceAssignment> getDeviceAssignmentsForSite(String siteToken,
 			ISearchCriteria criteria) throws SiteWhereException {
-		return delegate.getDeviceAssignmentsForSite(siteToken, criteria);
+		final Timer.Context context = getDeviceAssignmentsForSiteTimer.time();
+		try {
+			return delegate.getDeviceAssignmentsForSite(siteToken, criteria);
+		} finally {
+			context.stop();
+		}
 	}
 
 	/*
@@ -310,7 +349,12 @@ public class DeviceManagementMetricsFacade implements IDeviceManagement {
 	 */
 	public IDeviceMeasurements addDeviceMeasurements(IDeviceAssignment assignment,
 			IDeviceMeasurementsCreateRequest measurements) throws SiteWhereException {
-		return delegate.addDeviceMeasurements(assignment, measurements);
+		final Timer.Context context = addDeviceMeasurementsTimer.time();
+		try {
+			return delegate.addDeviceMeasurements(assignment, measurements);
+		} finally {
+			context.stop();
+		}
 	}
 
 	/*
@@ -322,7 +366,12 @@ public class DeviceManagementMetricsFacade implements IDeviceManagement {
 	 */
 	public SearchResults<IDeviceMeasurements> listDeviceMeasurements(String siteToken,
 			ISearchCriteria criteria) throws SiteWhereException {
-		return delegate.listDeviceMeasurements(siteToken, criteria);
+		final Timer.Context context = listDeviceMeasurementsTimer.time();
+		try {
+			return delegate.listDeviceMeasurements(siteToken, criteria);
+		} finally {
+			context.stop();
+		}
 	}
 
 	/*
@@ -334,7 +383,12 @@ public class DeviceManagementMetricsFacade implements IDeviceManagement {
 	 */
 	public SearchResults<IDeviceMeasurements> listDeviceMeasurementsForSite(String siteToken,
 			ISearchCriteria criteria) throws SiteWhereException {
-		return delegate.listDeviceMeasurementsForSite(siteToken, criteria);
+		final Timer.Context context = listDeviceMeasurementsForSiteTimer.time();
+		try {
+			return delegate.listDeviceMeasurementsForSite(siteToken, criteria);
+		} finally {
+			context.stop();
+		}
 	}
 
 	/*
@@ -359,7 +413,12 @@ public class DeviceManagementMetricsFacade implements IDeviceManagement {
 	 */
 	public IDeviceLocation addDeviceLocation(IDeviceAssignment assignment,
 			IDeviceLocationCreateRequest request) throws SiteWhereException {
-		return delegate.addDeviceLocation(assignment, request);
+		final Timer.Context context = addDeviceLocationTimer.time();
+		try {
+			return delegate.addDeviceLocation(assignment, request);
+		} finally {
+			context.stop();
+		}
 	}
 
 	/*
@@ -371,7 +430,12 @@ public class DeviceManagementMetricsFacade implements IDeviceManagement {
 	 */
 	public SearchResults<IDeviceLocation> listDeviceLocations(String assignmentToken, ISearchCriteria criteria)
 			throws SiteWhereException {
-		return delegate.listDeviceLocations(assignmentToken, criteria);
+		final Timer.Context context = listDeviceLocationsTimer.time();
+		try {
+			return delegate.listDeviceLocations(assignmentToken, criteria);
+		} finally {
+			context.stop();
+		}
 	}
 
 	/*
@@ -383,7 +447,12 @@ public class DeviceManagementMetricsFacade implements IDeviceManagement {
 	 */
 	public SearchResults<IDeviceLocation> listDeviceLocationsForSite(String siteToken,
 			ISearchCriteria criteria) throws SiteWhereException {
-		return delegate.listDeviceLocationsForSite(siteToken, criteria);
+		final Timer.Context context = listDeviceLocationsForSiteTimer.time();
+		try {
+			return delegate.listDeviceLocationsForSite(siteToken, criteria);
+		} finally {
+			context.stop();
+		}
 	}
 
 	/*
@@ -418,7 +487,12 @@ public class DeviceManagementMetricsFacade implements IDeviceManagement {
 	 */
 	public IDeviceAlert addDeviceAlert(IDeviceAssignment assignment, IDeviceAlertCreateRequest request)
 			throws SiteWhereException {
-		return delegate.addDeviceAlert(assignment, request);
+		final Timer.Context context = addDeviceAlertTimer.time();
+		try {
+			return delegate.addDeviceAlert(assignment, request);
+		} finally {
+			context.stop();
+		}
 	}
 
 	/*
@@ -429,7 +503,12 @@ public class DeviceManagementMetricsFacade implements IDeviceManagement {
 	 */
 	public SearchResults<IDeviceAlert> listDeviceAlerts(String assignmentToken, ISearchCriteria criteria)
 			throws SiteWhereException {
-		return delegate.listDeviceAlerts(assignmentToken, criteria);
+		final Timer.Context context = listDeviceAlertsTimer.time();
+		try {
+			return delegate.listDeviceAlerts(assignmentToken, criteria);
+		} finally {
+			context.stop();
+		}
 	}
 
 	/*
@@ -441,7 +520,12 @@ public class DeviceManagementMetricsFacade implements IDeviceManagement {
 	 */
 	public SearchResults<IDeviceAlert> listDeviceAlertsForSite(String siteToken, ISearchCriteria criteria)
 			throws SiteWhereException {
-		return delegate.listDeviceAlertsForSite(siteToken, criteria);
+		final Timer.Context context = listDeviceAlertsForSiteTimer.time();
+		try {
+			return delegate.listDeviceAlertsForSite(siteToken, criteria);
+		} finally {
+			context.stop();
+		}
 	}
 
 	/*
