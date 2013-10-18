@@ -8,7 +8,6 @@
 	<classpathentry kind="var" path="M2_REPO/commons-logging/commons-logging/1.1.1/commons-logging-1.1.1.jar"/>
 	<classpathentry kind="var" path="M2_REPO/commons-io/commons-io/1.4/commons-io-1.4.jar"/>
 	<classpathentry kind="var" path="M2_REPO/javax/mail/mail/1.4/mail-1.4.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/apache/cxf/cxf-bundle/2.3.1/cxf-bundle-2.3.1.jar"/>
 	<classpathentry kind="var" path="M2_REPO/javax/ws/rs/jsr311-api/1.1.1/jsr311-api-1.1.1.jar"/>
 	<classpathentry kind="var" path="M2_REPO/javax/servlet/servlet-api/2.3/servlet-api-2.3.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/sitewhere-client"/>
@@ -24,5 +23,6 @@
 	<classpathentry kind="var" path="M2_REPO/org/mule/mule-core/3.4.0/mule-core-3.4.0.jar"/>
 	<classpathentry kind="var" path="M2_REPO/com/codahale/metrics/metrics-core/3.0.1/metrics-core-3.0.1.jar"/>
 	<classpathentry kind="var" path="M2_REPO/com/codahale/metrics/metrics-healthchecks/3.0.1/metrics-healthchecks-3.0.1.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/apache/cxf/cxf-bundle/2.7.7/cxf-bundle-2.7.7.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

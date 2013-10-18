@@ -50,6 +50,9 @@ public class AssetModuleManager implements IAssetModuleManager {
 				LOGGER.info("Started asset module: " + module.getName());
 			} catch (SiteWhereException e) {
 				LOGGER.error("Unable to start asset module: " + module.getName(), e);
+			} catch (Throwable t) {
+				LOGGER.error("Unhandled exception in asset module: " + module.getName(), t);
+				t.printStackTrace();
 			}
 		}
 	}
@@ -74,8 +77,9 @@ public class AssetModuleManager implements IAssetModuleManager {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.sitewhere.spi.asset.IAssetModuleManager#getAssetById(com.sitewhere.spi.asset.AssetType,
-	 * java.lang.String)
+	 * @see
+	 * com.sitewhere.spi.asset.IAssetModuleManager#getAssetById(com.sitewhere.spi.asset
+	 * .AssetType, java.lang.String)
 	 */
 	public IAsset getAssetById(AssetType type, String id) throws SiteWhereException {
 		for (IAssetModule<?> module : modules) {
@@ -92,8 +96,9 @@ public class AssetModuleManager implements IAssetModuleManager {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.sitewhere.spi.asset.IAssetModuleManager#search(com.sitewhere.spi.asset.AssetType,
-	 * java.lang.String)
+	 * @see
+	 * com.sitewhere.spi.asset.IAssetModuleManager#search(com.sitewhere.spi.asset.AssetType
+	 * , java.lang.String)
 	 */
 	public List<? extends IAsset> search(AssetType type, String criteria) throws SiteWhereException {
 		for (IAssetModule<?> module : modules) {
