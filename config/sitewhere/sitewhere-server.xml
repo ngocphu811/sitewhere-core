@@ -33,20 +33,20 @@
 	<!-- ################################ -->
 
 	<!-- Default file system hardware asset module -->
-	<!--
 	<bean id="fileHardwareModule" class="com.sitewhere.server.asset.filesystem.FileSystemHardwareAssetModule"/>
-	-->
 
 	<!-- Default file system person asset module -->
 	<bean id="filePersonModule" class="com.sitewhere.server.asset.filesystem.FileSystemPersonAssetModule"/>
 
 	<!-- Magento module configuration -->
+	<!--
 	<bean id="magentoModule" class="com.sitewhere.assetmodule.magento.MagentoAssetModule">
 		<property name="magentoUrl" value="http://magento1.com/magento/index.php/api/v2_soap?wsdl" />
 		<property name="magentoUsername" value="sitewhere" />
 		<property name="magentoPassword" value="sitewhere" />
 		<property name="debugSoap" value="false" />
 	</bean>
+	-->
 
 	<!-- SSL configuration for WSO2 Identity Server -->
 	<!-- Add  disableCNCheck="true" if server hostname not same as on certificate -->
@@ -75,7 +75,7 @@
 	<bean id="assetModuleManager" class="com.sitewhere.server.asset.AssetModuleManager">
 		<property name="modules">
 			<list>
-				<ref bean="magentoModule" />
+				<ref bean="fileHardwareModule" />
 				<ref bean="filePersonModule" />
 			</list>
 		</property>
