@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
@@ -21,6 +22,7 @@ import com.sitewhere.rest.model.common.MetadataProviderEntity;
 import com.sitewhere.rest.service.search.SearchResults;
 import com.sitewhere.security.LoginManager;
 import com.sitewhere.spi.SiteWhereException;
+import com.sitewhere.spi.common.IDateRangeSearchCriteria;
 import com.sitewhere.spi.common.ISearchCriteria;
 
 /**
@@ -105,6 +107,27 @@ public class MongoPersistence {
 			cursor.close();
 		}
 		return results;
+	}
+
+	/**
+	 * Appends filter criteria onto exiting query based on the given date range.
+	 * 
+	 * @param query
+	 * @param criteria
+	 */
+	public static void addDateSearchCriteria(BasicDBObject query, String dateField,
+			IDateRangeSearchCriteria criteria) {
+		if ((criteria.getStartDate() == null) && (criteria.getEndDate() == null)) {
+			return;
+		}
+		BasicDBObject dateClause = new BasicDBObject();
+		if (criteria.getStartDate() != null) {
+			dateClause.append("$gte", criteria.getStartDate());
+		}
+		if (criteria.getEndDate() != null) {
+			dateClause.append("$lte", criteria.getEndDate());
+		}
+		query.put(dateField, dateClause);
 	}
 
 	/**
