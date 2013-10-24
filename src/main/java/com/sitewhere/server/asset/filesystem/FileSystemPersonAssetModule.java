@@ -109,11 +109,18 @@ public class FileSystemPersonAssetModule implements IAssetModule<PersonAsset> {
 				assetsById.put(asset.getId(), asset);
 			}
 			this.assetsById = assetsById;
-			String message = "Loaded " + assetsById.size() + " assets.";
-			LOGGER.info(message);
+			showLoadResults();
 		} catch (Exception e) {
 			throw new SiteWhereException("Unable to unmarshal person assets file.", e);
 		}
+	}
+
+	/**
+	 * Log the number of assets loaded for each type.
+	 */
+	protected void showLoadResults() {
+		String message = "Loaded " + assetsById.size() + " assets.";
+		LOGGER.info(message);
 	}
 
 	/*
@@ -145,7 +152,9 @@ public class FileSystemPersonAssetModule implements IAssetModule<PersonAsset> {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.sitewhere.spi.asset.IAssetModule#isAssetTypeSupported(com.sitewhere.spi.asset.AssetType)
+	 * @see
+	 * com.sitewhere.spi.asset.IAssetModule#isAssetTypeSupported(com.sitewhere.spi.asset
+	 * .AssetType)
 	 */
 	public boolean isAssetTypeSupported(AssetType type) {
 		if (type == AssetType.Person) {
@@ -157,18 +166,21 @@ public class FileSystemPersonAssetModule implements IAssetModule<PersonAsset> {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.sitewhere.spi.asset.IAssetModule#getAssetById(java.lang.String)
+	 * @see
+	 * com.sitewhere.spi.asset.IAssetModule#getAssetById(com.sitewhere.spi.asset.AssetType
+	 * , java.lang.String)
 	 */
-	public PersonAsset getAssetById(String id) throws SiteWhereException {
+	public PersonAsset getAssetById(AssetType type, String id) throws SiteWhereException {
 		return assetsById.get(id);
 	}
 
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.sitewhere.spi.asset.IAssetModule#search(java.lang.String)
+	 * @see com.sitewhere.spi.asset.IAssetModule#search(com.sitewhere.spi.asset.AssetType,
+	 * java.lang.String)
 	 */
-	public List<PersonAsset> search(String criteria) throws SiteWhereException {
+	public List<PersonAsset> search(AssetType type, String criteria) throws SiteWhereException {
 		criteria = criteria.toLowerCase();
 		List<PersonAsset> results = new ArrayList<PersonAsset>();
 		if (criteria.length() == 0) {
@@ -191,8 +203,8 @@ public class FileSystemPersonAssetModule implements IAssetModule<PersonAsset> {
 	public ICommandResponse refresh() throws SiteWhereException {
 		try {
 			reload();
-			String message = "Loaded " + assetsById.size() + " assets.";
-			return new CommandResponse(CommandResult.Successful, message);
+			showLoadResults();
+			return new CommandResponse(CommandResult.Successful, "Refresh successful.");
 		} catch (SiteWhereException e) {
 			return new CommandResponse(CommandResult.Failed, e.getMessage());
 		}

@@ -11,6 +11,7 @@ package com.sitewhere.server.asset.filesystem;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,8 +50,11 @@ public class FileSystemHardwareAssetModule implements IAssetModule<HardwareAsset
 	/** Filename in SiteWhere config folder that contains hardware assets */
 	public static final String HARDWARE_CONFIG_FILENAME = "hardware-assets.xml";
 
-	/** Map of assets by unique id */
-	protected Map<String, HardwareAsset> assetsById;
+	/** Map of device assets by unique id */
+	protected Map<String, HardwareAsset> deviceAssetsById;
+
+	/** Map of hardware assets by unique id */
+	protected Map<String, HardwareAsset> hardwareAssetsById;
 
 	/** Matcher used for searches */
 	protected AssetMatcher matcher = new AssetMatcher();
@@ -83,7 +87,8 @@ public class FileSystemHardwareAssetModule implements IAssetModule<HardwareAsset
 
 		// Unmarshal assets from XML file and store in data object.
 		List<HardwareAsset> assets = new ArrayList<HardwareAsset>();
-		Map<String, HardwareAsset> assetsById = new HashMap<String, HardwareAsset>();
+		this.deviceAssetsById = new HashMap<String, HardwareAsset>();
+		this.hardwareAssetsById = new HashMap<String, HardwareAsset>();
 		try {
 			JAXBContext jaxbContext = JAXBContext.newInstance(FileSystemHardwareAssets.class);
 			Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
@@ -100,14 +105,26 @@ public class FileSystemHardwareAssetModule implements IAssetModule<HardwareAsset
 					asset.setProperty(xmlProperty.getName(), xmlProperty.getValue());
 				}
 				assets.add(asset);
-				assetsById.put(asset.getId(), asset);
+				if (xmlAsset.isDevice()) {
+					deviceAssetsById.put(asset.getId(), asset);
+				} else {
+					hardwareAssetsById.put(asset.getId(), asset);
+				}
 			}
-			this.assetsById = assetsById;
-			String message = "Loaded " + assetsById.size() + " assets.";
-			LOGGER.info(message);
+			showLoadResults();
 		} catch (Exception e) {
 			throw new SiteWhereException("Unable to unmarshal hardware assets file.", e);
 		}
+	}
+
+	/**
+	 * Log the number of assets loaded for each type.
+	 */
+	protected void showLoadResults() {
+		String message = "Loaded " + deviceAssetsById.size() + " device assets.";
+		LOGGER.info(message);
+		message = "Loaded " + hardwareAssetsById.size() + " hardware assets.";
+		LOGGER.info(message);
 	}
 
 	/*
@@ -139,10 +156,12 @@ public class FileSystemHardwareAssetModule implements IAssetModule<HardwareAsset
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.sitewhere.spi.asset.IAssetModule#isAssetTypeSupported(com.sitewhere.spi.asset.AssetType)
+	 * @see
+	 * com.sitewhere.spi.asset.IAssetModule#isAssetTypeSupported(com.sitewhere.spi.asset
+	 * .AssetType)
 	 */
 	public boolean isAssetTypeSupported(AssetType type) {
-		if (type == AssetType.Hardware) {
+		if ((type == AssetType.Hardware) || (type == AssetType.Device)) {
 			return true;
 		}
 		return false;
@@ -151,29 +170,37 @@ public class FileSystemHardwareAssetModule implements IAssetModule<HardwareAsset
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.sitewhere.spi.asset.IAssetModule#getAssetById(java.lang.String)
+	 * @see
+	 * com.sitewhere.spi.asset.IAssetModule#getAssetById(com.sitewhere.spi.asset.AssetType
+	 * , java.lang.String)
 	 */
-	public HardwareAsset getAssetById(String id) throws SiteWhereException {
-		return assetsById.get(id);
+	public HardwareAsset getAssetById(AssetType type, String id) throws SiteWhereException {
+		if (type == AssetType.Device) {
+			return deviceAssetsById.get(id);
+		}
+		return hardwareAssetsById.get(id);
 	}
 
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.sitewhere.spi.asset.IAssetModule#search(java.lang.String)
+	 * @see com.sitewhere.spi.asset.IAssetModule#search(com.sitewhere.spi.asset.AssetType,
+	 * java.lang.String)
 	 */
-	public List<HardwareAsset> search(String criteria) throws SiteWhereException {
+	public List<HardwareAsset> search(AssetType type, String criteria) throws SiteWhereException {
 		criteria = criteria.toLowerCase();
 		List<HardwareAsset> results = new ArrayList<HardwareAsset>();
+		Map<String, HardwareAsset> cache = (type == AssetType.Device) ? deviceAssetsById : hardwareAssetsById;
 		if (criteria.length() == 0) {
-			results.addAll(assetsById.values());
-			return results;
-		}
-		for (HardwareAsset asset : assetsById.values()) {
-			if (matcher.isHardwareMatch(asset, criteria)) {
-				results.add(asset);
+			results.addAll(cache.values());
+		} else {
+			for (HardwareAsset asset : cache.values()) {
+				if (matcher.isHardwareMatch(asset, criteria)) {
+					results.add(asset);
+				}
 			}
 		}
+		Collections.sort(results);
 		return results;
 	}
 
@@ -185,8 +212,8 @@ public class FileSystemHardwareAssetModule implements IAssetModule<HardwareAsset
 	public ICommandResponse refresh() throws SiteWhereException {
 		try {
 			reload();
-			String message = "Loaded " + assetsById.size() + " assets.";
-			return new CommandResponse(CommandResult.Successful, message);
+			showLoadResults();
+			return new CommandResponse(CommandResult.Successful, "Refresh successful.");
 		} catch (SiteWhereException e) {
 			return new CommandResponse(CommandResult.Failed, e.getMessage());
 		}

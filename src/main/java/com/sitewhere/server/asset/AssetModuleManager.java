@@ -23,6 +23,7 @@ import com.sitewhere.spi.asset.IAsset;
 import com.sitewhere.spi.asset.IAssetModule;
 import com.sitewhere.spi.asset.IAssetModuleManager;
 import com.sitewhere.spi.command.ICommandResponse;
+import com.sitewhere.spi.device.DeviceAssignmentType;
 
 /**
  * Manages the list of modules
@@ -84,11 +85,27 @@ public class AssetModuleManager implements IAssetModuleManager {
 	public IAsset getAssetById(AssetType type, String id) throws SiteWhereException {
 		for (IAssetModule<?> module : modules) {
 			if (module.isAssetTypeSupported(type)) {
-				IAsset result = module.getAssetById(id);
+				IAsset result = module.getAssetById(type, id);
 				if (result != null) {
 					return result;
 				}
 			}
+		}
+		return null;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.sitewhere.spi.asset.IAssetModuleManager#getAssignedAsset(com.sitewhere.spi.
+	 * device.DeviceAssignmentType, java.lang.String)
+	 */
+	public IAsset getAssignedAsset(DeviceAssignmentType type, String id) throws SiteWhereException {
+		if (type == DeviceAssignmentType.Person) {
+			return getAssetById(AssetType.Person, id);
+		} else if (type == DeviceAssignmentType.Hardware) {
+			return getAssetById(AssetType.Hardware, id);
 		}
 		return null;
 	}
@@ -103,7 +120,7 @@ public class AssetModuleManager implements IAssetModuleManager {
 	public List<? extends IAsset> search(AssetType type, String criteria) throws SiteWhereException {
 		for (IAssetModule<?> module : modules) {
 			if (module.isAssetTypeSupported(type)) {
-				List<? extends IAsset> results = module.search(criteria);
+				List<? extends IAsset> results = module.search(type, criteria);
 				Collections.sort(results);
 				return results;
 			}

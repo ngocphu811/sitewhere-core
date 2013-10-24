@@ -19,8 +19,8 @@ import com.sitewhere.dao.mongodb.common.MongoMetadataProvider;
 import com.sitewhere.dao.mongodb.common.MongoSiteWhereEntity;
 import com.sitewhere.rest.model.device.DeviceAssignment;
 import com.sitewhere.rest.model.device.DeviceLocation;
-import com.sitewhere.spi.asset.AssetType;
 import com.sitewhere.spi.device.DeviceAssignmentStatus;
+import com.sitewhere.spi.device.DeviceAssignmentType;
 import com.sitewhere.spi.device.IDeviceAssignment;
 import com.sitewhere.spi.device.IDeviceLocation;
 
@@ -37,8 +37,8 @@ public class MongoDeviceAssignment implements MongoConverter<IDeviceAssignment> 
 	/** Property for asset id */
 	public static final String PROP_ASSET_ID = "assetId";
 
-	/** Property for asset type */
-	public static final String PROP_ASSET_TYPE = "assetType";
+	/** Property for assignment type */
+	public static final String PROP_ASSIGNMENT_TYPE = "assignmentType";
 
 	/** Property for released date */
 	public static final String PROP_RELEASED_DATE = "releasedDate";
@@ -87,8 +87,8 @@ public class MongoDeviceAssignment implements MongoConverter<IDeviceAssignment> 
 			target.append(PROP_ACTIVE_DATE, source.getActiveDate());
 		}
 		target.append(PROP_ASSET_ID, source.getAssetId());
-		if (source.getAssetType() != null) {
-			target.append(PROP_ASSET_TYPE, source.getAssetType().name());
+		if (source.getAssignmentType() != null) {
+			target.append(PROP_ASSIGNMENT_TYPE, source.getAssignmentType().name());
 		}
 		if (source.getReleasedDate() != null) {
 			target.append(PROP_RELEASED_DATE, source.getReleasedDate());
@@ -129,7 +129,7 @@ public class MongoDeviceAssignment implements MongoConverter<IDeviceAssignment> 
 	public static void fromDBObject(DBObject source, DeviceAssignment target) {
 		Date activeDate = (Date) source.get(PROP_ACTIVE_DATE);
 		String assetId = (String) source.get(PROP_ASSET_ID);
-		String assetType = (String) source.get(PROP_ASSET_TYPE);
+		String assignmentType = (String) source.get(PROP_ASSIGNMENT_TYPE);
 		Date releasedDate = (Date) source.get(PROP_RELEASED_DATE);
 		String status = (String) source.get(PROP_STATUS);
 		String token = (String) source.get(PROP_TOKEN);
@@ -140,8 +140,8 @@ public class MongoDeviceAssignment implements MongoConverter<IDeviceAssignment> 
 			target.setActiveDate(activeDate);
 		}
 		target.setAssetId(assetId);
-		if (assetType != null) {
-			target.setAssetType(AssetType.valueOf(assetType));
+		if (assignmentType != null) {
+			target.setAssignmentType(DeviceAssignmentType.valueOf(assignmentType));
 		}
 		if (releasedDate != null) {
 			target.setReleasedDate(releasedDate);

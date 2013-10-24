@@ -1,6 +1,6 @@
 <hardware-assets>
 	<!-- MeiTrack personal trackers -->
-	<hardware-asset id="174" name="MeiTrack MT88" sku="MT88">
+	<hardware-asset id="174" name="MeiTrack MT88" sku="MT88" device="true">
 		<description>Smallest GPS Tracker Suitable for the Blind, Elderly, Children and Pets. Recessed Braille SOS Button. Small Size. Clip for Watch Belt.</description>
 		<image-url>http://54.235.148.185/magento/media/catalog/product/m/2/m201010131357417441.jpg</image-url>
 		<property name="manufacturer" value="MeiTrack"/>
@@ -8,7 +8,7 @@
 		<property name="sos.button" value="true"/>
 		<property name="two.way.audio" value="false"/>
 	</hardware-asset>
-	<hardware-asset id="175" name="MeiTrack MT90" sku="MT90">
+	<hardware-asset id="175" name="MeiTrack MT90" sku="MT90" device="true">
 		<description>MT90 is a waterproof GPS personal tracker suitable for lone workers, kids, aged, pet, assets, vehicle and fleet management.</description>
 		<image-url>http://explorethecanyon.com/wp-content/uploads/2012/10/MT90-update1208+a.jpg</image-url>
 		<property name="manufacturer" value="MeiTrack"/>
@@ -18,7 +18,7 @@
 	</hardware-asset>
 	
 	<!-- Ekahau tags and sensors -->
-	<hardware-asset id="200" name="Ekahau A4 Tag" sku="EA4">
+	<hardware-asset id="200" name="Ekahau A4 Tag" sku="EA4" device="true">
 		<description>A4 Wi-Fi tags act as small computers that transmit data to the Ekahau Vision server which determines asset location and status, displayed in the Vision software interface.</description>
 		<image-url>http://www.ekahau.com/userData/ekahau/wi-fi-tags/ekahau-a4-tag.jpg</image-url>
 		<property name="manufacturer" value="Ekahau"/>
@@ -28,7 +28,7 @@
 		<property name="wearable" value="false"/>
 		<property name="senses.temperature" value="false"/>
 	</hardware-asset>
-	<hardware-asset id="201" name="Ekahau B4 Tag" sku="EB4">
+	<hardware-asset id="201" name="Ekahau B4 Tag" sku="EB4" device="true">
 		<description>B4 badge tags offer an integrated staff duress or panic switch--employees just tug on the badge and their location and an alarm is sent to security and other designated groups.</description>
 		<image-url>http://www.ekahau.com/userData/ekahau/wi-fi-tags/ekahau-b4-tag.jpg</image-url>
 		<property name="manufacturer" value="Ekahau"/>
@@ -38,7 +38,7 @@
 		<property name="wearable" value="true"/>
 		<property name="senses.temperature" value="false"/>
 	</hardware-asset>
-	<hardware-asset id="202" name="Ekahau T301W Wearable Tag" sku="ET301W">
+	<hardware-asset id="202" name="Ekahau T301W Wearable Tag" sku="ET301W" device="true">
 		<description>The waterproof and wearable T301W wristband tag includes two colored LEDs which signal events to the tag wearer, in addition to vibration-based alerting. Patients can acknowledge calls and press the call button to request help.</description>
 		<image-url>http://www.ekahau.com/userData/ekahau/wi-fi-tags/ekahau-t301w-wearable-tag.jpg</image-url>
 		<property name="manufacturer" value="Ekahau"/>
@@ -48,7 +48,7 @@
 		<property name="wearable" value="true"/>
 		<property name="senses.temperature" value="false"/>
 	</hardware-asset>
-	<hardware-asset id="203" name="Ekahau Wireless TS1 Temperature Sensor" sku="ETS1">
+	<hardware-asset id="203" name="Ekahau Wireless TS1 Temperature Sensor" sku="ETS1" device="true">
 		<description>The lightweight TS1 temperature tag with probe measures and communicates temperatures ranging from: -80° C - + 125° C, and custom high/low threshold settings. TS1 sensors come with a programmable on-board audio buzzer and visual LED alert buttons.</description>
 		<image-url>http://www.ekahau.com/userData/ekahau/wi-fi-tags/ekahau-ts-temp-sensor.jpg</image-url>
 		<property name="manufacturer" value="Ekahau"/>
@@ -56,14 +56,14 @@
 		<property name="senses.temperature" value="true"/>
 		<property name="senses.humidity" value="false"/>
 	</hardware-asset>
-	<hardware-asset id="204" name="Ekahau Wireless TS2 Temperature Sensor" sku="ETS2">
+	<hardware-asset id="204" name="Ekahau Wireless TS2 Temperature Sensor" sku="ETS2" device="true">
 		<description>With the TS2 Dual Temperature Sensor tag, you can monitor two separate probes from the same sensor which lowers the total cost of deployment. The temperature sensor tag itself remains always outside of the extreme temperatures allowing for easy maintenance and better network connectivity. In case of network outages, the Ekahau TS tags can locally store the temperature measurements and automatically provide the measurements to the application after the outage</description>
 		<image-url>http://www.ekahau.com/userData/ekahau/wi-fi-tags/ekahau-ts-temp-sensor.jpg</image-url>
 		<property name="wifi" value="true"/>
 		<property name="senses.temperature" value="true"/>
 		<property name="senses.humidity" value="false"/>
 	</hardware-asset>
-	<hardware-asset id="205" name="Ekahau HS1 Humidity Sensor" sku="EHS1">
+	<hardware-asset id="205" name="Ekahau HS1 Humidity Sensor" sku="EHS1" device="true">
 		<description>The Ekahau HS1 humidity tags provide an automated way to measure and monitor the relative humidity and surrouding temperature.</description>
 		<image-url>http://www.ekahau.com/userData/ekahau/wi-fi-tags/ekahau-humidity-sensor.jpg</image-url>
 		<property name="manufacturer" value="Ekahau"/>

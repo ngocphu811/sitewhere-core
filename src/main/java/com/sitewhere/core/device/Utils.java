@@ -1,12 +1,12 @@
 /*
-* $Id$
-* --------------------------------------------------------------------------------------
-* Copyright (c) Reveal Technologies, LLC. All rights reserved. http://www.reveal-tech.com
-*
-* The software in this package is published under the terms of the CPAL v1.0
-* license, a copy of which has been included with this distribution in the
-* LICENSE.txt file.
-*/
+ * $Id$
+ * --------------------------------------------------------------------------------------
+ * Copyright (c) Reveal Technologies, LLC. All rights reserved. http://www.reveal-tech.com
+ *
+ * The software in this package is published under the terms of the CPAL v1.0
+ * license, a copy of which has been included with this distribution in the
+ * LICENSE.txt file.
+ */
 package com.sitewhere.core.device;
 
 import com.sitewhere.rest.model.asset.HardwareAsset;
@@ -32,7 +32,7 @@ public class Utils {
 	 */
 	public static String getAssetNameForAssignment(IDeviceAssignment assignment) throws SiteWhereException {
 		IAsset asset = SiteWhereServer.getInstance().getAssetModuleManager()
-				.getAssetById(assignment.getAssetType(), assignment.getAssetId());
+				.getAssignedAsset(assignment.getAssignmentType(), assignment.getAssetId());
 		if (asset instanceof PersonAsset) {
 			return ((PersonAsset) asset).getName();
 		} else if (asset instanceof HardwareAsset) {

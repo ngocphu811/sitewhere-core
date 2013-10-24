@@ -263,7 +263,7 @@ public class MongoDeviceManagement implements IDeviceManagement {
 		newAssignment.setToken(UUID.randomUUID().toString());
 		newAssignment.setSiteToken(request.getSiteToken());
 		newAssignment.setDeviceHardwareId(request.getDeviceHardwareId());
-		newAssignment.setAssetType(request.getAssetType());
+		newAssignment.setAssignmentType(request.getAssignmentType());
 		newAssignment.setAssetId(request.getAssetId());
 		newAssignment.setActiveDate(new Date());
 		newAssignment.setStatus(DeviceAssignmentStatus.Active);

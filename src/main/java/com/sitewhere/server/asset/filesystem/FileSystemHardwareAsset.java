@@ -34,6 +34,9 @@ public class FileSystemHardwareAsset {
 	@XmlAttribute
 	private String sku;
 
+	@XmlAttribute
+	private boolean device;
+
 	@XmlElement
 	private String description;
 
@@ -65,6 +68,14 @@ public class FileSystemHardwareAsset {
 
 	public void setSku(String sku) {
 		this.sku = sku;
+	}
+
+	public boolean isDevice() {
+		return device;
+	}
+
+	public void setDevice(boolean device) {
+		this.device = device;
 	}
 
 	public String getDescription() {
