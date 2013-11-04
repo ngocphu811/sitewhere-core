@@ -43,7 +43,7 @@ import com.sitewhere.spi.SiteWhereException;
 import com.sitewhere.spi.SiteWhereSystemException;
 import com.sitewhere.spi.common.IDateRangeSearchCriteria;
 import com.sitewhere.spi.common.ILocation;
-import com.sitewhere.spi.common.IMetadataEntry;
+import com.sitewhere.spi.common.IMeasurementEntry;
 import com.sitewhere.spi.common.IMetadataProvider;
 import com.sitewhere.spi.common.ISearchCriteria;
 import com.sitewhere.spi.device.AlertSource;
@@ -531,7 +531,7 @@ public class MongoDeviceManagement implements IDeviceManagement {
 		measurements.setAssetName(Utils.getAssetNameForAssignment(assignment));
 		measurements.setEventDate(request.getEventDate());
 		measurements.setReceivedDate(new Date());
-		for (IMetadataEntry entry : request.getMeasurements()) {
+		for (IMeasurementEntry entry : request.getMeasurements()) {
 			measurements.addOrReplaceMeasurement(entry.getName(), entry.getValue());
 		}
 		MetadataProvider.copy(request, measurements);

@@ -17,7 +17,7 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 import com.sitewhere.dao.mongodb.MongoConverter;
 import com.sitewhere.rest.model.device.DeviceMeasurements;
-import com.sitewhere.spi.common.IMetadataEntry;
+import com.sitewhere.spi.common.IMeasurementEntry;
 import com.sitewhere.spi.device.IDeviceMeasurements;
 
 /**
@@ -65,7 +65,7 @@ public class MongoDeviceMeasurements implements MongoConverter<IDeviceMeasuremen
 
 		// Save arbitrary measurements.
 		List<BasicDBObject> props = new ArrayList<BasicDBObject>();
-		for (IMetadataEntry entry : source.getMeasurements()) {
+		for (IMeasurementEntry entry : source.getMeasurements()) {
 			BasicDBObject prop = new BasicDBObject();
 			prop.put(PROP_NAME, entry.getName());
 			prop.put(PROP_VALUE, entry.getValue());
@@ -89,7 +89,7 @@ public class MongoDeviceMeasurements implements MongoConverter<IDeviceMeasuremen
 		if (props != null) {
 			for (DBObject prop : props) {
 				String name = (String) prop.get(PROP_NAME);
-				String value = (String) prop.get(PROP_VALUE);
+				Double value = (Double) prop.get(PROP_VALUE);
 				target.addOrReplaceMeasurement(name, value);
 			}
 		}
