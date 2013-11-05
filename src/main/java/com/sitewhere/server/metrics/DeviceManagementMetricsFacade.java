@@ -109,6 +109,24 @@ public class DeviceManagementMetricsFacade implements IDeviceManagement {
 	/*
 	 * (non-Javadoc)
 	 * 
+	 * @see com.sitewhere.spi.ISiteWhereLifecycle#start()
+	 */
+	public void start() throws SiteWhereException {
+		delegate.start();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.sitewhere.spi.ISiteWhereLifecycle#stop()
+	 */
+	public void stop() throws SiteWhereException {
+		delegate.stop();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see
 	 * com.sitewhere.spi.device.IDeviceManagement#createDevice(com.sitewhere.spi.device
 	 * .request.IDeviceCreateRequest)

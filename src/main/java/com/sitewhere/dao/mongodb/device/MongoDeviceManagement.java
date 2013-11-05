@@ -18,6 +18,7 @@ import java.util.UUID;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.log4j.Logger;
 import org.bson.types.ObjectId;
 
 import com.mongodb.BasicDBObject;
@@ -75,8 +76,29 @@ import com.sitewhere.spi.error.ErrorLevel;
  */
 public class MongoDeviceManagement implements IDeviceManagement {
 
+	/** Static logger instance */
+	private static Logger LOGGER = Logger.getLogger(MongoDeviceManagement.class);
+
 	/** Injected with global SiteWhere Mongo client */
 	private SiteWhereMongoClient mongoClient;
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.sitewhere.spi.device.IDeviceManagement#start()
+	 */
+	public void start() throws SiteWhereException {
+		LOGGER.info("Mongo device management started.");
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.sitewhere.spi.device.IDeviceManagement#stop()
+	 */
+	public void stop() throws SiteWhereException {
+		LOGGER.info("Mongo device management stopped.");
+	}
 
 	/*
 	 * (non-Javadoc)

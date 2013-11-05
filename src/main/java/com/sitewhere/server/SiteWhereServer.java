@@ -179,9 +179,10 @@ public class SiteWhereServer {
 		IDeviceManagement deviceManagementImpl = (IDeviceManagement) SERVER_SPRING_CONTEXT
 				.getBean(SiteWhereServerBeans.BEAN_DEVICE_MANAGEMENT);
 		if (deviceManagementImpl == null) {
-			throw new SiteWhereException("No location management implementation configured.");
+			throw new SiteWhereException("No device management implementation configured.");
 		}
 		deviceManagement = new DeviceManagementMetricsFacade(deviceManagementImpl);
+		deviceManagement.start();
 
 		// Load user management.
 		userManagement = (IUserManagement) SERVER_SPRING_CONTEXT
@@ -189,6 +190,7 @@ public class SiteWhereServer {
 		if (userManagement == null) {
 			throw new SiteWhereException("No user management implementation configured.");
 		}
+		userManagement.start();
 
 		// Load the asset module manager.
 		assetModuleManager = (IAssetModuleManager) SERVER_SPRING_CONTEXT
@@ -196,6 +198,8 @@ public class SiteWhereServer {
 		if (assetModuleManager == null) {
 			throw new SiteWhereException("No asset module manager implementation configured.");
 		}
+		
+		// Print version information.
 		IVersion version = VersionHelper.getVersion();
 		List<String> messages = new ArrayList<String>();
 		messages.add("SiteWhere Server");
