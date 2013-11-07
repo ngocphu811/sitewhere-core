@@ -9,10 +9,18 @@
 	<!-- # SERVICE PROVIDER IMPLEMENTATIONS # -->
 	<!-- #################################### -->
 	
+	<!-- 
 	<bean id="deviceManagement" class="com.sitewhere.dao.mongodb.device.MongoDeviceManagement">
 		<property name="mongoClient" ref="mongo" />
 	</bean>
+	 -->
+
+	<!-- HBase device management implementation -->
+	<bean id="deviceManagement" class="com.sitewhere.hbase.HBaseDeviceManagement">
+		<property name="quorum" value="192.168.32.128" />
+	</bean>
 	
+	<!-- Mongo user management implementation -->
 	<bean id="userManagement" class="com.sitewhere.dao.mongodb.user.MongoUserManagement">
 		<property name="mongoClient" ref="mongo" />
 	</bean>
