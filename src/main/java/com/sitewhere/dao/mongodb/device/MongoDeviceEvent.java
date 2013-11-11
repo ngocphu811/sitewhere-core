@@ -1,19 +1,17 @@
 /*
-* $Id$
-* --------------------------------------------------------------------------------------
-* Copyright (c) Reveal Technologies, LLC. All rights reserved. http://www.reveal-tech.com
-*
-* The software in this package is published under the terms of the CPAL v1.0
-* license, a copy of which has been included with this distribution in the
-* LICENSE.txt file.
-*/
+ * $Id$
+ * --------------------------------------------------------------------------------------
+ * Copyright (c) Reveal Technologies, LLC. All rights reserved. http://www.reveal-tech.com
+ *
+ * The software in this package is published under the terms of the CPAL v1.0
+ * license, a copy of which has been included with this distribution in the
+ * LICENSE.txt file.
+ */
 
 package com.sitewhere.dao.mongodb.device;
 
 import java.util.Date;
 import java.util.List;
-
-import org.bson.types.ObjectId;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
@@ -74,10 +72,6 @@ public class MongoDeviceEvent {
 	 */
 	@SuppressWarnings("unchecked")
 	public static void fromDBObject(DBObject source, DeviceEvent target) {
-		if (source.get(PROP_EVENT_ID) != null) {
-			String id = ((ObjectId) source.get(PROP_EVENT_ID)).toString();
-			target.setId(id);
-		}
 		String siteToken = (String) source.get(PROP_SITE_TOKEN);
 		String assignmentToken = (String) source.get(PROP_DEVICE_ASSIGNMENT_TOKEN);
 		String assetName = (String) source.get(PROP_ASSET_NAME);

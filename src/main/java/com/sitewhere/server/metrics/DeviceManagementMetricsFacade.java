@@ -283,11 +283,11 @@ public class DeviceManagementMetricsFacade implements IDeviceManagement {
 	 * 
 	 * @see
 	 * com.sitewhere.spi.device.IDeviceManagement#updateDeviceAssignmentLocation(java.
-	 * lang.String, java.lang.String)
+	 * lang.String, com.sitewhere.spi.device.IDeviceLocation)
 	 */
-	public IDeviceAssignment updateDeviceAssignmentLocation(String token, String locationId)
+	public IDeviceAssignment updateDeviceAssignmentLocation(String token, IDeviceLocation location)
 			throws SiteWhereException {
-		return delegate.updateDeviceAssignmentLocation(token, locationId);
+		return delegate.updateDeviceAssignmentLocation(token, location);
 	}
 
 	/*

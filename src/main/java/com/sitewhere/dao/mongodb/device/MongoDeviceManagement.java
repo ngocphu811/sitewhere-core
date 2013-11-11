@@ -411,12 +411,10 @@ public class MongoDeviceManagement implements IDeviceManagement {
 	 * 
 	 * @see
 	 * com.sitewhere.spi.device.IDeviceManagement#updateDeviceAssignmentLocation(java.
-	 * lang.String, java.lang.String)
+	 * lang.String, com.sitewhere.spi.device.IDeviceLocation)
 	 */
-	public IDeviceAssignment updateDeviceAssignmentLocation(String token, String locationId)
+	public IDeviceAssignment updateDeviceAssignmentLocation(String token, IDeviceLocation location)
 			throws SiteWhereException {
-		DBObject locationObj = assertDeviceLocation(locationId);
-		IDeviceLocation location = MongoDeviceLocation.fromDBObject(locationObj);
 		DBObject match = assertDeviceAssignment(token);
 		MongoDeviceAssignment.setLocation(location, match);
 		DBCollection assignments = getMongoClient().getDeviceAssignmentsCollection();
