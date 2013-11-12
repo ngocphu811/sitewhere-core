@@ -10,7 +10,6 @@
 
 package com.sitewhere.dao.mongodb.device;
 
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -29,7 +28,6 @@ import com.sitewhere.dao.mongodb.MongoPersistence;
 import com.sitewhere.dao.mongodb.SiteWhereMongoClient;
 import com.sitewhere.dao.mongodb.common.MongoMetadataProvider;
 import com.sitewhere.dao.mongodb.common.MongoSiteWhereEntity;
-import com.sitewhere.rest.model.common.MetadataEntry;
 import com.sitewhere.rest.model.common.MetadataProvider;
 import com.sitewhere.rest.model.device.Device;
 import com.sitewhere.rest.model.device.DeviceAlert;
@@ -788,16 +786,8 @@ public class MongoDeviceManagement implements IDeviceManagement {
 	 * request.ISiteCreateRequest )
 	 */
 	public ISite createSite(ISiteCreateRequest request) throws SiteWhereException {
-		Site site = new Site();
-		site.setName(request.getName());
-		site.setDescription(request.getDescription());
-		site.setImageUrl(request.getImageUrl());
-		site.setMapType(request.getMapType());
-		site.setToken(UUID.randomUUID().toString());
-
-		SiteWherePersistence.initializeEntityMetadata(site);
-		MetadataProvider.copy(request, site);
-		MetadataProvider.copy(request.getMapMetadata(), site.getMapMetadata());
+		// Use common logic so all backend implementations work the same.
+		Site site = SiteWherePersistence.siteCreateLogic(request, UUID.randomUUID().toString());
 
 		DBCollection sites = getMongoClient().getSitesCollection();
 		DBObject created = MongoSite.toDBObject(site);
@@ -817,18 +807,10 @@ public class MongoDeviceManagement implements IDeviceManagement {
 		if (match == null) {
 			throw new SiteWhereSystemException(ErrorCode.InvalidSiteToken, ErrorLevel.ERROR);
 		}
-
 		Site site = MongoSite.fromDBObject(match);
-		site.setName(request.getName());
-		site.setDescription(request.getDescription());
-		site.setImageUrl(request.getImageUrl());
-		site.setMapType(request.getMapType());
-		site.setMetadata(new ArrayList<MetadataEntry>());
-		site.setMapMetadata(new MetadataProvider());
 
-		MetadataProvider.copy(request, site);
-		MetadataProvider.copy(request.getMapMetadata(), site.getMapMetadata());
-		SiteWherePersistence.setUpdatedEntityMetadata(site);
+		// Use common update logic so that backend implemetations act the same way.
+		SiteWherePersistence.siteUpdateLogic(request, site);
 
 		DBObject updated = MongoSite.toDBObject(site);
 
