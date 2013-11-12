@@ -23,6 +23,7 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
+import com.sitewhere.core.device.SiteWherePersistence;
 import com.sitewhere.dao.mongodb.MongoPersistence;
 import com.sitewhere.dao.mongodb.SiteWhereMongoClient;
 import com.sitewhere.dao.mongodb.common.MongoSiteWhereEntity;
@@ -99,7 +100,7 @@ public class MongoUserManagement implements IUserManagement {
 		user.setAuthorities(request.getAuthorities());
 
 		MetadataProvider.copy(request, user);
-		MongoPersistence.initializeEntityMetadata(user);
+		SiteWherePersistence.initializeEntityMetadata(user);
 
 		DBCollection users = getMongoClient().getUsersCollection();
 		DBObject created = MongoUser.toDBObject(user);
@@ -169,7 +170,7 @@ public class MongoUserManagement implements IUserManagement {
 			updatedUser.getMetadata().clear();
 			MetadataProvider.copy(request, updatedUser);
 		}
-		MongoPersistence.setUpdatedEntityMetadata(updatedUser);
+		SiteWherePersistence.setUpdatedEntityMetadata(updatedUser);
 		DBObject updated = MongoUser.toDBObject(updatedUser);
 
 		DBCollection users = getMongoClient().getUsersCollection();

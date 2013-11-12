@@ -10,7 +10,6 @@
 package com.sitewhere.dao.mongodb;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import com.mongodb.BasicDBObject;
@@ -18,9 +17,7 @@ import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.WriteResult;
-import com.sitewhere.rest.model.common.MetadataProviderEntity;
 import com.sitewhere.rest.service.search.SearchResults;
-import com.sitewhere.security.LoginManager;
 import com.sitewhere.spi.SiteWhereException;
 import com.sitewhere.spi.common.IDateRangeSearchCriteria;
 import com.sitewhere.spi.common.ISearchCriteria;
@@ -128,28 +125,5 @@ public class MongoPersistence {
 			dateClause.append("$lte", criteria.getEndDate());
 		}
 		query.put(dateField, dateClause);
-	}
-
-	/**
-	 * Initialize entity fields.
-	 * 
-	 * @param entity
-	 * @throws SiteWhereException
-	 */
-	public static void initializeEntityMetadata(MetadataProviderEntity entity) throws SiteWhereException {
-		entity.setCreatedDate(new Date());
-		entity.setCreatedBy(LoginManager.getCurrentlyLoggedInUser().getUsername());
-		entity.setDeleted(false);
-	}
-
-	/**
-	 * Set updated fields.
-	 * 
-	 * @param entity
-	 * @throws SiteWhereException
-	 */
-	public static void setUpdatedEntityMetadata(MetadataProviderEntity entity) throws SiteWhereException {
-		entity.setUpdatedDate(new Date());
-		entity.setUpdatedBy(LoginManager.getCurrentlyLoggedInUser().getUsername());
 	}
 }

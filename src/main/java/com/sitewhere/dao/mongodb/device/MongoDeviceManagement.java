@@ -24,6 +24,7 @@ import org.bson.types.ObjectId;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
+import com.sitewhere.core.device.SiteWherePersistence;
 import com.sitewhere.dao.mongodb.MongoPersistence;
 import com.sitewhere.dao.mongodb.SiteWhereMongoClient;
 import com.sitewhere.dao.mongodb.common.MongoMetadataProvider;
@@ -118,7 +119,7 @@ public class MongoDeviceManagement implements IDeviceManagement {
 		newDevice.setComments(request.getComments());
 
 		MetadataProvider.copy(request, newDevice);
-		MongoPersistence.initializeEntityMetadata(newDevice);
+		SiteWherePersistence.initializeEntityMetadata(newDevice);
 
 		DBCollection devices = getMongoClient().getDevicesCollection();
 		DBObject created = MongoDevice.toDBObject(newDevice);
@@ -153,7 +154,7 @@ public class MongoDeviceManagement implements IDeviceManagement {
 			updatedDevice.getMetadata().clear();
 			MetadataProvider.copy(request, updatedDevice);
 		}
-		MongoPersistence.setUpdatedEntityMetadata(updatedDevice);
+		SiteWherePersistence.setUpdatedEntityMetadata(updatedDevice);
 		DBObject updated = MongoDevice.toDBObject(updatedDevice);
 
 		DBCollection devices = getMongoClient().getDevicesCollection();
@@ -289,7 +290,7 @@ public class MongoDeviceManagement implements IDeviceManagement {
 		newAssignment.setActiveDate(new Date());
 		newAssignment.setStatus(DeviceAssignmentStatus.Active);
 
-		MongoPersistence.initializeEntityMetadata(newAssignment);
+		SiteWherePersistence.initializeEntityMetadata(newAssignment);
 		MetadataProvider.copy(request, newAssignment);
 
 		DBCollection assignments = getMongoClient().getDeviceAssignmentsCollection();
@@ -381,7 +382,7 @@ public class MongoDeviceManagement implements IDeviceManagement {
 		DBObject match = assertDeviceAssignment(token);
 		MongoMetadataProvider.toDBObject(metadata, match);
 		DeviceAssignment assignment = MongoDeviceAssignment.fromDBObject(match);
-		MongoPersistence.setUpdatedEntityMetadata(assignment);
+		SiteWherePersistence.setUpdatedEntityMetadata(assignment);
 		BasicDBObject query = new BasicDBObject(MongoDeviceAssignment.PROP_TOKEN, token);
 		DBCollection assignments = getMongoClient().getDeviceAssignmentsCollection();
 		MongoPersistence.update(assignments, query, MongoDeviceAssignment.toDBObject(assignment));
@@ -794,7 +795,7 @@ public class MongoDeviceManagement implements IDeviceManagement {
 		site.setMapType(request.getMapType());
 		site.setToken(UUID.randomUUID().toString());
 
-		MongoPersistence.initializeEntityMetadata(site);
+		SiteWherePersistence.initializeEntityMetadata(site);
 		MetadataProvider.copy(request, site);
 		MetadataProvider.copy(request.getMapMetadata(), site.getMapMetadata());
 
@@ -824,11 +825,10 @@ public class MongoDeviceManagement implements IDeviceManagement {
 		site.setMapType(request.getMapType());
 		site.setMetadata(new ArrayList<MetadataEntry>());
 		site.setMapMetadata(new MetadataProvider());
-		site.setUpdatedDate(new Date());
-		site.setUpdatedBy("admin");
 
 		MetadataProvider.copy(request, site);
 		MetadataProvider.copy(request.getMapMetadata(), site.getMapMetadata());
+		SiteWherePersistence.setUpdatedEntityMetadata(site);
 
 		DBObject updated = MongoSite.toDBObject(site);
 
@@ -914,7 +914,7 @@ public class MongoDeviceManagement implements IDeviceManagement {
 		zone.setFillColor(request.getFillColor());
 		zone.setOpacity(request.getOpacity());
 
-		MongoPersistence.initializeEntityMetadata(zone);
+		SiteWherePersistence.initializeEntityMetadata(zone);
 		MetadataProvider.copy(request, zone);
 
 		for (ILocation coordinate : request.getCoordinates()) {
@@ -948,7 +948,7 @@ public class MongoDeviceManagement implements IDeviceManagement {
 			zone.getCoordinates().add(coordinate);
 		}
 
-		MongoPersistence.setUpdatedEntityMetadata(zone);
+		SiteWherePersistence.setUpdatedEntityMetadata(zone);
 		MetadataProvider.copy(request, zone);
 
 		DBObject updated = MongoZone.toDBObject(zone);
