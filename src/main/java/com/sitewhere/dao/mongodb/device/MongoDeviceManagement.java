@@ -24,7 +24,6 @@ import org.bson.types.ObjectId;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
-import com.sitewhere.core.device.Utils;
 import com.sitewhere.dao.mongodb.MongoPersistence;
 import com.sitewhere.dao.mongodb.SiteWhereMongoClient;
 import com.sitewhere.dao.mongodb.common.MongoMetadataProvider;
@@ -411,17 +410,19 @@ public class MongoDeviceManagement implements IDeviceManagement {
 	 * 
 	 * @see
 	 * com.sitewhere.spi.device.IDeviceManagement#updateDeviceAssignmentLocation(java.
-	 * lang.String, com.sitewhere.spi.device.IDeviceLocation)
+	 * lang.String, com.sitewhere.spi.device.request.IDeviceLocationCreateRequest)
 	 */
-	public IDeviceAssignment updateDeviceAssignmentLocation(String token, IDeviceLocation location)
+	public IDeviceAssignment updateDeviceAssignmentLocation(String token, IDeviceLocationCreateRequest request)
 			throws SiteWhereException {
 		DBObject match = assertDeviceAssignment(token);
+		DeviceAssignment assignment = MongoDeviceAssignment.fromDBObject(match);
+		DeviceLocation location = createDeviceLocationForRequest(assignment, request);
 		MongoDeviceAssignment.setLocation(location, match);
 		DBCollection assignments = getMongoClient().getDeviceAssignmentsCollection();
 		BasicDBObject query = new BasicDBObject(MongoDeviceAssignment.PROP_TOKEN, token);
 		MongoPersistence.update(assignments, query, match);
-		DeviceAssignment assignment = MongoDeviceAssignment.fromDBObject(match);
-		return assignment;
+		DeviceAssignment updated = MongoDeviceAssignment.fromDBObject(match);
+		return updated;
 	}
 
 	/*
@@ -548,7 +549,6 @@ public class MongoDeviceManagement implements IDeviceManagement {
 		DeviceMeasurements measurements = new DeviceMeasurements();
 		measurements.setSiteToken(assignment.getSiteToken());
 		measurements.setDeviceAssignmentToken(assignment.getToken());
-		measurements.setAssetName(Utils.getAssetNameForAssignment(assignment));
 		measurements.setEventDate(request.getEventDate());
 		measurements.setReceivedDate(new Date());
 		for (IMeasurementEntry entry : request.getMeasurements()) {
@@ -618,21 +618,26 @@ public class MongoDeviceManagement implements IDeviceManagement {
 	 */
 	public IDeviceLocation addDeviceLocation(IDeviceAssignment assignment,
 			IDeviceLocationCreateRequest request) throws SiteWhereException {
+		DeviceLocation location = createDeviceLocationForRequest(assignment, request);
+
+		DBCollection locationsColl = getMongoClient().getLocationsCollection();
+		DBObject locObject = MongoDeviceLocation.toDBObject(location);
+		MongoPersistence.insert(locationsColl, locObject);
+		return MongoDeviceLocation.fromDBObject(locObject);
+	}
+
+	protected DeviceLocation createDeviceLocationForRequest(IDeviceAssignment assignment,
+			IDeviceLocationCreateRequest request) {
 		DeviceLocation location = new DeviceLocation();
 		location.setSiteToken(assignment.getSiteToken());
 		location.setDeviceAssignmentToken(assignment.getToken());
-		location.setAssetName(Utils.getAssetNameForAssignment(assignment));
 		location.setEventDate(request.getEventDate());
 		location.setReceivedDate(new Date());
 		location.setLatitude(request.getLatitude());
 		location.setLongitude(request.getLongitude());
 		location.setElevation(request.getElevation());
 		MetadataProvider.copy(request, location);
-
-		DBCollection locationsColl = getMongoClient().getLocationsCollection();
-		DBObject locObject = MongoDeviceLocation.toDBObject(location);
-		MongoPersistence.insert(locationsColl, locObject);
-		return MongoDeviceLocation.fromDBObject(locObject);
+		return location;
 	}
 
 	/*
@@ -726,7 +731,6 @@ public class MongoDeviceManagement implements IDeviceManagement {
 		DeviceAlert alert = new DeviceAlert();
 		alert.setSiteToken(assignment.getSiteToken());
 		alert.setDeviceAssignmentToken(assignment.getToken());
-		alert.setAssetName(Utils.getAssetNameForAssignment(assignment));
 		alert.setEventDate(request.getEventDate());
 		alert.setReceivedDate(new Date());
 		alert.setSource(AlertSource.Device);

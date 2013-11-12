@@ -65,7 +65,6 @@ public class InterpolatedHistoryBuilder {
 			Collections.sort(locations, eventComparator);
 			IDeviceLocation last = null;
 			for (IDeviceLocation location : locations) {
-				history.setAssetName(location.getAssetName());
 				if (last == null) {
 					last = location;
 					continue;

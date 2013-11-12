@@ -35,9 +35,6 @@ public class MongoDeviceEvent {
 	/** Property for device assignment token */
 	public static final String PROP_DEVICE_ASSIGNMENT_TOKEN = "deviceAssignmentToken";
 
-	/** Property for asset name at time of event */
-	public static final String PROP_ASSET_NAME = "assetName";
-
 	/** Property for time measurements were taken */
 	public static final String PROP_EVENT_DATE = "eventDate";
 
@@ -56,7 +53,6 @@ public class MongoDeviceEvent {
 	public static void toDBObject(IDeviceEvent source, BasicDBObject target) {
 		target.append(PROP_SITE_TOKEN, source.getSiteToken());
 		target.append(PROP_DEVICE_ASSIGNMENT_TOKEN, source.getDeviceAssignmentToken());
-		target.append(PROP_ASSET_NAME, source.getAssetName());
 		target.append(PROP_EVENT_DATE, source.getEventDate());
 		target.append(PROP_RECEIVED_DATE, source.getReceivedDate());
 		target.append(PROP_ALERT_IDS, source.getAlertIds());
@@ -74,14 +70,12 @@ public class MongoDeviceEvent {
 	public static void fromDBObject(DBObject source, DeviceEvent target) {
 		String siteToken = (String) source.get(PROP_SITE_TOKEN);
 		String assignmentToken = (String) source.get(PROP_DEVICE_ASSIGNMENT_TOKEN);
-		String assetName = (String) source.get(PROP_ASSET_NAME);
 		Date eventDate = (Date) source.get(PROP_EVENT_DATE);
 		Date receivedDate = (Date) source.get(PROP_RECEIVED_DATE);
 		List<String> alertIds = (List<String>) source.get(PROP_ALERT_IDS);
 
 		target.setSiteToken(siteToken);
 		target.setDeviceAssignmentToken(assignmentToken);
-		target.setAssetName(assetName);
 		target.setEventDate(eventDate);
 		target.setReceivedDate(receivedDate);
 		target.setAlertIds(alertIds);
