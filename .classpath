@@ -11,7 +11,6 @@
 	<classpathentry kind="var" path="M2_REPO/javax/ws/rs/jsr311-api/1.1.1/jsr311-api-1.1.1.jar"/>
 	<classpathentry kind="var" path="M2_REPO/javax/servlet/servlet-api/2.3/servlet-api-2.3.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/sitewhere-client"/>
-	<classpathentry kind="var" path="M2_REPO/org/mongodb/mongo-java-driver/2.10.1/mongo-java-driver-2.10.1.jar"/>
 	<classpathentry kind="var" path="M2_REPO/com/fasterxml/jackson/core/jackson-annotations/2.0.4/jackson-annotations-2.0.4.jar"/>
 	<classpathentry kind="var" path="M2_REPO/com/fasterxml/jackson/core/jackson-core/2.1.1/jackson-core-2.1.1.jar"/>
 	<classpathentry kind="var" path="M2_REPO/com/fasterxml/jackson/core/jackson-databind/2.1.1/jackson-databind-2.1.1.jar"/>

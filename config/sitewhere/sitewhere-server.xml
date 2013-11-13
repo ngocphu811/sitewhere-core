@@ -4,36 +4,36 @@
 	xsi:schemaLocation="
            http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
            http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-3.0.xsd">
-	
-	<!-- #################################### -->
-	<!-- # SERVICE PROVIDER IMPLEMENTATIONS # -->
-	<!-- #################################### -->
-	
-	<!-- 
-	<bean id="deviceManagement" class="com.sitewhere.dao.mongodb.device.MongoDeviceManagement">
-		<property name="mongoClient" ref="mongo" />
-	</bean>
-	 -->
-
-	<!-- HBase device management implementation -->
-	<bean id="deviceManagement" class="com.sitewhere.hbase.HBaseDeviceManagement">
-		<property name="quorum" value="192.168.32.128" />
-	</bean>
-	
-	<!-- Mongo user management implementation -->
-	<bean id="userManagement" class="com.sitewhere.dao.mongodb.user.MongoUserManagement">
-		<property name="mongoClient" ref="mongo" />
-	</bean>
 
 	<!-- ############################ -->
 	<!-- # MONGO DATASTORE SETTINGS # -->
 	<!-- ############################ -->
 	
 	<!-- Mongo client shared by SiteWhere Mongo components -->
-	<bean id="mongo" class="com.sitewhere.dao.mongodb.SiteWhereMongoClient">
+	<bean id="mongo" class="com.sitewhere.mongodb.SiteWhereMongoClient">
 		<property name="hostname" value="localhost" />
 		<property name="port" value="27017" />
 		<property name="databaseName" value="sitewhere" />
+	</bean>
+	
+	<!-- #################################### -->
+	<!-- # SERVICE PROVIDER IMPLEMENTATIONS # -->
+	<!-- #################################### -->
+	
+	<bean id="deviceManagement" class="com.sitewhere.mongodb.device.MongoDeviceManagement">
+		<property name="mongoClient" ref="mongo" />
+	</bean>
+
+	<!-- HBase device management implementation -->
+	<!-- 
+	<bean id="deviceManagement" class="com.sitewhere.hbase.HBaseDeviceManagement">
+		<property name="quorum" value="192.168.32.128" />
+	</bean>
+	 -->
+	
+	<!-- Mongo user management implementation -->
+	<bean id="userManagement" class="com.sitewhere.mongodb.user.MongoUserManagement">
+		<property name="mongoClient" ref="mongo" />
 	</bean>
 
 	<!-- ################################ -->
