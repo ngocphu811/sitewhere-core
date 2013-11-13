@@ -413,18 +413,6 @@ public class DeviceManagementMetricsFacade implements IDeviceManagement {
 	 * (non-Javadoc)
 	 * 
 	 * @see
-	 * com.sitewhere.spi.device.IDeviceManagement#associateAlertWithMeasurements(java.
-	 * lang.String, java.lang.String)
-	 */
-	public void associateAlertWithMeasurements(String alertId, String measurementsId)
-			throws SiteWhereException {
-		delegate.associateAlertWithMeasurements(alertId, measurementsId);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
 	 * com.sitewhere.spi.device.IDeviceManagement#addDeviceLocation(com.sitewhere.spi.
 	 * device.IDeviceAssignment,
 	 * com.sitewhere.spi.device.request.IDeviceLocationCreateRequest)
@@ -482,18 +470,6 @@ public class DeviceManagementMetricsFacade implements IDeviceManagement {
 	public SearchResults<IDeviceLocation> listDeviceLocations(List<String> assignmentTokens,
 			IDateRangeSearchCriteria criteria) throws SiteWhereException {
 		return delegate.listDeviceLocations(assignmentTokens, criteria);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * com.sitewhere.spi.device.IDeviceManagement#associateAlertWithLocation(java.lang
-	 * .String, java.lang.String)
-	 */
-	public IDeviceLocation associateAlertWithLocation(String alertId, String locationId)
-			throws SiteWhereException {
-		return delegate.associateAlertWithLocation(alertId, locationId);
 	}
 
 	/*

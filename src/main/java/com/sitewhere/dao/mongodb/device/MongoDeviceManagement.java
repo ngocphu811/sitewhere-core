@@ -590,18 +590,6 @@ public class MongoDeviceManagement implements IDeviceManagement {
 	 * (non-Javadoc)
 	 * 
 	 * @see
-	 * com.sitewhere.spi.device.IDeviceManagement#associateAlertWithMeasurements(java.
-	 * lang.String, java.lang.String)
-	 */
-	public void associateAlertWithMeasurements(String alertId, String measurementsId)
-			throws SiteWhereException {
-		throw new SiteWhereException("Not implemented");
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
 	 * com.sitewhere.spi.device.IDeviceManagement#addDeviceLocation(com.sitewhere.spi.
 	 * device.IDeviceAssignment ,
 	 * com.sitewhere.spi.device.request.IDeviceLocationCreateRequest)
