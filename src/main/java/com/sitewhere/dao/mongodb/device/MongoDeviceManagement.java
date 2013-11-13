@@ -278,17 +278,9 @@ public class MongoDeviceManagement implements IDeviceManagement {
 			throw new SiteWhereSystemException(ErrorCode.DeviceAlreadyAssigned, ErrorLevel.ERROR);
 		}
 
-		DeviceAssignment newAssignment = new DeviceAssignment();
-		newAssignment.setToken(UUID.randomUUID().toString());
-		newAssignment.setSiteToken(request.getSiteToken());
-		newAssignment.setDeviceHardwareId(request.getDeviceHardwareId());
-		newAssignment.setAssignmentType(request.getAssignmentType());
-		newAssignment.setAssetId(request.getAssetId());
-		newAssignment.setActiveDate(new Date());
-		newAssignment.setStatus(DeviceAssignmentStatus.Active);
-
-		SiteWherePersistence.initializeEntityMetadata(newAssignment);
-		MetadataProvider.copy(request, newAssignment);
+		// Use common logic to load assignment from request.
+		DeviceAssignment newAssignment = SiteWherePersistence.deviceAssignmentCreateLogic(request,
+				request.getSiteToken(), UUID.randomUUID().toString());
 
 		DBCollection assignments = getMongoClient().getDeviceAssignmentsCollection();
 		DBObject created = MongoDeviceAssignment.toDBObject(newAssignment);

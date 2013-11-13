@@ -15,11 +15,14 @@ import java.util.Date;
 import com.sitewhere.rest.model.common.MetadataEntry;
 import com.sitewhere.rest.model.common.MetadataProvider;
 import com.sitewhere.rest.model.common.MetadataProviderEntity;
+import com.sitewhere.rest.model.device.DeviceAssignment;
 import com.sitewhere.rest.model.device.Site;
 import com.sitewhere.rest.model.device.Zone;
 import com.sitewhere.security.LoginManager;
 import com.sitewhere.spi.SiteWhereException;
 import com.sitewhere.spi.common.ILocation;
+import com.sitewhere.spi.device.DeviceAssignmentStatus;
+import com.sitewhere.spi.device.request.IDeviceAssignmentCreateRequest;
 import com.sitewhere.spi.device.request.ISiteCreateRequest;
 import com.sitewhere.spi.device.request.IZoneCreateRequest;
 
@@ -93,6 +96,32 @@ public class SiteWherePersistence {
 		MetadataProvider.copy(source, target);
 		MetadataProvider.copy(source.getMapMetadata(), target.getMapMetadata());
 		SiteWherePersistence.setUpdatedEntityMetadata(target);
+	}
+
+	/**
+	 * Common logic for creating a device assignment from a request.
+	 * 
+	 * @param source
+	 * @param siteToken
+	 * @param uuid
+	 * @return
+	 * @throws SiteWhereException
+	 */
+	public static DeviceAssignment deviceAssignmentCreateLogic(IDeviceAssignmentCreateRequest source,
+			String siteToken, String uuid) throws SiteWhereException {
+		DeviceAssignment newAssignment = new DeviceAssignment();
+		newAssignment.setToken(uuid);
+		newAssignment.setSiteToken(source.getSiteToken());
+		newAssignment.setDeviceHardwareId(source.getDeviceHardwareId());
+		newAssignment.setAssignmentType(source.getAssignmentType());
+		newAssignment.setAssetId(source.getAssetId());
+		newAssignment.setActiveDate(new Date());
+		newAssignment.setStatus(DeviceAssignmentStatus.Active);
+
+		SiteWherePersistence.initializeEntityMetadata(newAssignment);
+		MetadataProvider.copy(source, newAssignment);
+
+		return newAssignment;
 	}
 
 	/**
