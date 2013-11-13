@@ -41,7 +41,6 @@ import com.sitewhere.rest.service.search.SearchResults;
 import com.sitewhere.spi.SiteWhereException;
 import com.sitewhere.spi.SiteWhereSystemException;
 import com.sitewhere.spi.common.IDateRangeSearchCriteria;
-import com.sitewhere.spi.common.ILocation;
 import com.sitewhere.spi.common.IMeasurementEntry;
 import com.sitewhere.spi.common.IMetadataProvider;
 import com.sitewhere.spi.common.ISearchCriteria;
@@ -888,20 +887,8 @@ public class MongoDeviceManagement implements IDeviceManagement {
 	 * ISite, com.sitewhere.spi.device.request.IZoneCreateRequest)
 	 */
 	public IZone createZone(ISite site, IZoneCreateRequest request) throws SiteWhereException {
-		Zone zone = new Zone();
-		zone.setToken(UUID.randomUUID().toString());
-		zone.setSiteToken(site.getToken());
-		zone.setName(request.getName());
-		zone.setBorderColor(request.getBorderColor());
-		zone.setFillColor(request.getFillColor());
-		zone.setOpacity(request.getOpacity());
-
-		SiteWherePersistence.initializeEntityMetadata(zone);
-		MetadataProvider.copy(request, zone);
-
-		for (ILocation coordinate : request.getCoordinates()) {
-			zone.getCoordinates().add(coordinate);
-		}
+		Zone zone = SiteWherePersistence.zoneCreateLogic(request, site.getToken(), UUID.randomUUID()
+				.toString());
 
 		DBCollection zones = getMongoClient().getZonesCollection();
 		DBObject created = MongoZone.toDBObject(zone);
@@ -920,18 +907,7 @@ public class MongoDeviceManagement implements IDeviceManagement {
 		DBObject match = assertZone(token);
 
 		Zone zone = MongoZone.fromDBObject(match);
-		zone.setName(request.getName());
-		zone.setBorderColor(request.getBorderColor());
-		zone.setFillColor(request.getFillColor());
-		zone.setOpacity(request.getOpacity());
-
-		zone.getCoordinates().clear();
-		for (ILocation coordinate : request.getCoordinates()) {
-			zone.getCoordinates().add(coordinate);
-		}
-
-		SiteWherePersistence.setUpdatedEntityMetadata(zone);
-		MetadataProvider.copy(request, zone);
+		SiteWherePersistence.zoneUpdateLogic(request, zone);
 
 		DBObject updated = MongoZone.toDBObject(zone);
 

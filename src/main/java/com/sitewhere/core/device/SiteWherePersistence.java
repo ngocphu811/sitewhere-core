@@ -16,9 +16,12 @@ import com.sitewhere.rest.model.common.MetadataEntry;
 import com.sitewhere.rest.model.common.MetadataProvider;
 import com.sitewhere.rest.model.common.MetadataProviderEntity;
 import com.sitewhere.rest.model.device.Site;
+import com.sitewhere.rest.model.device.Zone;
 import com.sitewhere.security.LoginManager;
 import com.sitewhere.spi.SiteWhereException;
+import com.sitewhere.spi.common.ILocation;
 import com.sitewhere.spi.device.request.ISiteCreateRequest;
+import com.sitewhere.spi.device.request.IZoneCreateRequest;
 
 /**
  * Common methods needed by device service provider implementations.
@@ -90,5 +93,55 @@ public class SiteWherePersistence {
 		MetadataProvider.copy(source, target);
 		MetadataProvider.copy(source.getMapMetadata(), target.getMapMetadata());
 		SiteWherePersistence.setUpdatedEntityMetadata(target);
+	}
+
+	/**
+	 * Common logic for creating a zone based on an incoming request.
+	 * 
+	 * @param source
+	 * @param siteToken
+	 * @param uuid
+	 * @return
+	 * @throws SiteWhereException
+	 */
+	public static Zone zoneCreateLogic(IZoneCreateRequest source, String siteToken, String uuid)
+			throws SiteWhereException {
+		Zone zone = new Zone();
+		zone.setToken(uuid);
+		zone.setSiteToken(siteToken);
+		zone.setName(source.getName());
+		zone.setBorderColor(source.getBorderColor());
+		zone.setFillColor(source.getFillColor());
+		zone.setOpacity(source.getOpacity());
+
+		SiteWherePersistence.initializeEntityMetadata(zone);
+		MetadataProvider.copy(source, zone);
+
+		for (ILocation coordinate : source.getCoordinates()) {
+			zone.getCoordinates().add(coordinate);
+		}
+		return zone;
+	}
+
+	/**
+	 * Common code for copying information from an update request to an existing zone.
+	 * 
+	 * @param source
+	 * @param target
+	 * @throws SiteWhereException
+	 */
+	public static void zoneUpdateLogic(IZoneCreateRequest source, Zone target) throws SiteWhereException {
+		target.setName(source.getName());
+		target.setBorderColor(source.getBorderColor());
+		target.setFillColor(source.getFillColor());
+		target.setOpacity(source.getOpacity());
+
+		target.getCoordinates().clear();
+		for (ILocation coordinate : source.getCoordinates()) {
+			target.getCoordinates().add(coordinate);
+		}
+
+		SiteWherePersistence.setUpdatedEntityMetadata(target);
+		MetadataProvider.copy(source, target);
 	}
 }
