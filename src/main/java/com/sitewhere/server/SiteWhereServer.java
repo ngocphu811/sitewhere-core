@@ -10,7 +10,10 @@
 
 package com.sitewhere.server;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,10 +26,13 @@ import org.springframework.core.io.FileSystemResource;
 
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.health.HealthCheckRegistry;
+import com.sitewhere.core.user.UserModelInitializer;
+import com.sitewhere.rest.model.user.UserSearchCriteria;
 import com.sitewhere.server.metrics.DeviceManagementMetricsFacade;
 import com.sitewhere.spi.SiteWhereException;
 import com.sitewhere.spi.asset.IAssetModuleManager;
 import com.sitewhere.spi.device.IDeviceManagement;
+import com.sitewhere.spi.user.IUser;
 import com.sitewhere.spi.user.IUserManagement;
 import com.sitewhere.version.IVersion;
 import com.sitewhere.version.VersionHelper;
@@ -198,7 +204,7 @@ public class SiteWhereServer {
 		if (assetModuleManager == null) {
 			throw new SiteWhereException("No asset module manager implementation configured.");
 		}
-		
+
 		// Print version information.
 		IVersion version = VersionHelper.getVersion();
 		List<String> messages = new ArrayList<String>();
@@ -209,6 +215,36 @@ public class SiteWhereServer {
 		messages.add("Copyright (c) 2013 Reveal Technologies, LLC");
 		String message = StringMessageUtils.getBoilerPlate(messages, '*', 60);
 		LOGGER.info("\n" + message + "\n");
+
+		verifyUserModel();
+	}
+
+	/**
+	 * Check whether user model is populated and offer to bootstrap system if not.
+	 */
+	protected void verifyUserModel() {
+		try {
+			List<IUser> users = getUserManagement().listUsers(new UserSearchCriteria());
+			if (users.size() == 0) {
+				List<String> messages = new ArrayList<String>();
+				messages.add("User model is currently empty. A default user and permissions can be "
+						+ "created automatically so that the admin interface and web services can authenticate. "
+						+ "Create default user and permissions now?");
+				String message = StringMessageUtils.getBoilerPlate(messages, '*', 60);
+				LOGGER.info("\n" + message + "\n");
+				System.out.println("Initialize user model? Yes/No (Default is Yes)");
+				BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+				String response = br.readLine();
+				if ((response.length() == 0) || (response.toLowerCase().startsWith("y"))) {
+					UserModelInitializer umInit = new UserModelInitializer(getUserManagement());
+					umInit.initialize();
+				}
+			}
+		} catch (SiteWhereException e) {
+			LOGGER.warn("Unable to initialize user model.", e);
+		} catch (IOException e) {
+			LOGGER.error("Unable to read user response from console.", e);
+		}
 	}
 
 	/**
