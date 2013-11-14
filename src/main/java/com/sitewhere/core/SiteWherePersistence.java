@@ -7,10 +7,13 @@
  * license, a copy of which has been included with this distribution in the
  * LICENSE.txt file.
  */
-package com.sitewhere.core.device;
+package com.sitewhere.core;
 
 import java.util.ArrayList;
 import java.util.Date;
+
+import org.springframework.security.authentication.encoding.MessageDigestPasswordEncoder;
+import org.springframework.security.authentication.encoding.ShaPasswordEncoder;
 
 import com.sitewhere.rest.model.common.MetadataEntry;
 import com.sitewhere.rest.model.common.MetadataProvider;
@@ -18,6 +21,8 @@ import com.sitewhere.rest.model.common.MetadataProviderEntity;
 import com.sitewhere.rest.model.device.DeviceAssignment;
 import com.sitewhere.rest.model.device.Site;
 import com.sitewhere.rest.model.device.Zone;
+import com.sitewhere.rest.model.user.GrantedAuthority;
+import com.sitewhere.rest.model.user.User;
 import com.sitewhere.security.LoginManager;
 import com.sitewhere.spi.SiteWhereException;
 import com.sitewhere.spi.common.ILocation;
@@ -25,6 +30,8 @@ import com.sitewhere.spi.device.DeviceAssignmentStatus;
 import com.sitewhere.spi.device.request.IDeviceAssignmentCreateRequest;
 import com.sitewhere.spi.device.request.ISiteCreateRequest;
 import com.sitewhere.spi.device.request.IZoneCreateRequest;
+import com.sitewhere.spi.user.request.IGrantedAuthorityCreateRequest;
+import com.sitewhere.spi.user.request.IUserCreateRequest;
 
 /**
  * Common methods needed by device service provider implementations.
@@ -32,6 +39,9 @@ import com.sitewhere.spi.device.request.IZoneCreateRequest;
  * @author Derek
  */
 public class SiteWherePersistence {
+
+	/** Password encoder */
+	private static MessageDigestPasswordEncoder passwordEncoder = new ShaPasswordEncoder();
 
 	/**
 	 * Initialize entity fields.
@@ -172,5 +182,85 @@ public class SiteWherePersistence {
 
 		SiteWherePersistence.setUpdatedEntityMetadata(target);
 		MetadataProvider.copy(source, target);
+	}
+
+	/**
+	 * Common logic for creating a user based on an incoming request.
+	 * 
+	 * @param source
+	 * @return
+	 * @throws SiteWhereException
+	 */
+	public static User userCreateLogic(IUserCreateRequest source) throws SiteWhereException {
+		User user = new User();
+		user.setUsername(source.getUsername());
+		user.setHashedPassword(passwordEncoder.encodePassword(source.getPassword(), null));
+		user.setFirstName(source.getFirstName());
+		user.setLastName(source.getLastName());
+		user.setLastLogin(null);
+		user.setStatus(source.getStatus());
+		user.setAuthorities(source.getAuthorities());
+
+		MetadataProvider.copy(source, user);
+		SiteWherePersistence.initializeEntityMetadata(user);
+		return user;
+	}
+
+	/**
+	 * Common code for copying information from an update request to an existing user.
+	 * 
+	 * @param source
+	 * @param target
+	 * @throws SiteWhereException
+	 */
+	public static void userUpdateLogic(IUserCreateRequest source, User target) throws SiteWhereException {
+		if (source.getUsername() != null) {
+			target.setUsername(source.getUsername());
+		}
+		if (source.getPassword() != null) {
+			target.setHashedPassword(passwordEncoder.encodePassword(source.getPassword(), null));
+		}
+		if (source.getFirstName() != null) {
+			target.setFirstName(source.getFirstName());
+		}
+		if (source.getLastName() != null) {
+			target.setLastName(source.getLastName());
+		}
+		if (source.getStatus() != null) {
+			target.setStatus(source.getStatus());
+		}
+		if (source.getAuthorities() != null) {
+			target.setAuthorities(source.getAuthorities());
+		}
+		if ((source.getMetadata() != null) && (source.getMetadata().size() > 0)) {
+			target.getMetadata().clear();
+			MetadataProvider.copy(source, target);
+		}
+		SiteWherePersistence.setUpdatedEntityMetadata(target);
+	}
+
+	/**
+	 * Common logic for creating a granted authority based on an incoming request.
+	 * 
+	 * @param source
+	 * @return
+	 * @throws SiteWhereException
+	 */
+	public static GrantedAuthority grantedAuthorityCreateLogic(IGrantedAuthorityCreateRequest source)
+			throws SiteWhereException {
+		GrantedAuthority auth = new GrantedAuthority();
+		auth.setAuthority(source.getAuthority());
+		auth.setDescription(source.getDescription());
+		return auth;
+	}
+
+	/**
+	 * Common logic for encoding a plaintext password.
+	 * 
+	 * @param plaintext
+	 * @return
+	 */
+	public static String encodePassoword(String plaintext) {
+		return passwordEncoder.encodePassword(plaintext, null);
 	}
 }
