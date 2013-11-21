@@ -18,7 +18,11 @@ import org.springframework.security.authentication.encoding.ShaPasswordEncoder;
 import com.sitewhere.rest.model.common.MetadataEntry;
 import com.sitewhere.rest.model.common.MetadataProvider;
 import com.sitewhere.rest.model.common.MetadataProviderEntity;
+import com.sitewhere.rest.model.device.DeviceAlert;
 import com.sitewhere.rest.model.device.DeviceAssignment;
+import com.sitewhere.rest.model.device.DeviceEvent;
+import com.sitewhere.rest.model.device.DeviceLocation;
+import com.sitewhere.rest.model.device.DeviceMeasurements;
 import com.sitewhere.rest.model.device.Site;
 import com.sitewhere.rest.model.device.Zone;
 import com.sitewhere.rest.model.user.GrantedAuthority;
@@ -26,8 +30,15 @@ import com.sitewhere.rest.model.user.User;
 import com.sitewhere.security.LoginManager;
 import com.sitewhere.spi.SiteWhereException;
 import com.sitewhere.spi.common.ILocation;
+import com.sitewhere.spi.common.IMeasurementEntry;
+import com.sitewhere.spi.device.AlertSource;
 import com.sitewhere.spi.device.DeviceAssignmentStatus;
+import com.sitewhere.spi.device.IDeviceAssignment;
+import com.sitewhere.spi.device.request.IDeviceAlertCreateRequest;
 import com.sitewhere.spi.device.request.IDeviceAssignmentCreateRequest;
+import com.sitewhere.spi.device.request.IDeviceEventCreateRequest;
+import com.sitewhere.spi.device.request.IDeviceLocationCreateRequest;
+import com.sitewhere.spi.device.request.IDeviceMeasurementsCreateRequest;
 import com.sitewhere.spi.device.request.ISiteCreateRequest;
 import com.sitewhere.spi.device.request.IZoneCreateRequest;
 import com.sitewhere.spi.user.request.IGrantedAuthorityCreateRequest;
@@ -132,6 +143,81 @@ public class SiteWherePersistence {
 		MetadataProvider.copy(source, newAssignment);
 
 		return newAssignment;
+	}
+
+	/**
+	 * Common creation logic for all device events.
+	 * 
+	 * @param request
+	 * @param assignment
+	 * @param target
+	 */
+	public static void deviceEventCreateLogic(IDeviceEventCreateRequest request,
+			IDeviceAssignment assignment, DeviceEvent target) {
+		target.setSiteToken(assignment.getSiteToken());
+		target.setDeviceAssignmentToken(assignment.getToken());
+		target.setAssignmentType(assignment.getAssignmentType());
+		target.setAssetId(assignment.getAssetId());
+		target.setEventDate(request.getEventDate());
+		target.setReceivedDate(new Date());
+		MetadataProvider.copy(request, target);
+	}
+
+	/**
+	 * Common logic for creating {@link DeviceMeasurements} from
+	 * {@link IDeviceMeasurementsCreateRequest}.
+	 * 
+	 * @param request
+	 * @param assignment
+	 * @return
+	 * @throws SiteWhereException
+	 */
+	public static DeviceMeasurements deviceMeasurementsCreateLogic(IDeviceMeasurementsCreateRequest request,
+			IDeviceAssignment assignment) throws SiteWhereException {
+		DeviceMeasurements measurements = new DeviceMeasurements();
+		deviceEventCreateLogic(request, assignment, measurements);
+		for (IMeasurementEntry entry : request.getMeasurements()) {
+			measurements.addOrReplaceMeasurement(entry.getName(), entry.getValue());
+		}
+		return measurements;
+	}
+
+	/**
+	 * Common logic for creating {@link DeviceLocation} from
+	 * {@link IDeviceLocationCreateRequest}.
+	 * 
+	 * @param assignment
+	 * @param request
+	 * @return
+	 * @throws SiteWhereException
+	 */
+	public static DeviceLocation deviceLocationCreateLogic(IDeviceAssignment assignment,
+			IDeviceLocationCreateRequest request) throws SiteWhereException {
+		DeviceLocation location = new DeviceLocation();
+		deviceEventCreateLogic(request, assignment, location);
+		location.setLatitude(request.getLatitude());
+		location.setLongitude(request.getLongitude());
+		location.setElevation(request.getElevation());
+		return location;
+	}
+
+	/**
+	 * Common logic for creating {@link DeviceAlert} from
+	 * {@link IDeviceAlertCreateRequest}.
+	 * 
+	 * @param assignment
+	 * @param request
+	 * @return
+	 * @throws SiteWhereException
+	 */
+	public static DeviceAlert deviceAlertCreateLogic(IDeviceAssignment assignment,
+			IDeviceAlertCreateRequest request) throws SiteWhereException {
+		DeviceAlert alert = new DeviceAlert();
+		deviceEventCreateLogic(request, assignment, alert);
+		alert.setSource(AlertSource.Device);
+		alert.setType(request.getType());
+		alert.setMessage(request.getMessage());
+		return alert;
 	}
 
 	/**
