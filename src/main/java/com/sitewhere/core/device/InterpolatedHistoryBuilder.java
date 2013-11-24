@@ -13,7 +13,6 @@ package com.sitewhere.core.device;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -22,7 +21,6 @@ import java.util.Map;
 import com.sitewhere.rest.model.common.Location;
 import com.sitewhere.rest.model.device.DeviceAssignmentHistoryEntry;
 import com.sitewhere.rest.model.device.InterpolatedAssignmentHistory;
-import com.sitewhere.spi.device.IDeviceEvent;
 import com.sitewhere.spi.device.IDeviceLocation;
 
 /**
@@ -40,9 +38,6 @@ public class InterpolatedHistoryBuilder {
 
 	/** Maximum slot value */
 	private Long maxSlot;
-
-	/** Used to sort events */
-	private Comparator<IDeviceEvent> eventComparator = new DeviceEventDateComparator();
 
 	/** Build history entries for all assignments */
 	public List<InterpolatedAssignmentHistory> build(List<IDeviceLocation> matches) {
@@ -62,7 +57,7 @@ public class InterpolatedHistoryBuilder {
 		history.setSlots(createEmptySlots());
 		List<IDeviceLocation> locations = locationsByAssignment.get(assignmentToken);
 		if (locations != null) {
-			Collections.sort(locations, eventComparator);
+			Collections.sort(locations);
 			IDeviceLocation last = null;
 			for (IDeviceLocation location : locations) {
 				if (last == null) {
