@@ -1,7 +1,0 @@
-db.devices.ensureIndex({"hardwareId": 1}, {unique: true});
-db.assignments.ensureIndex({"token": 1 }, {unique: true});
-db.assignments.ensureIndex({"lastLocation.latLong": "2d", "lastLocation.eventDate": -1});
-db.locations.ensureIndex({"latLong": "2d", "eventDate": -1});
-db.locations.ensureIndex({"deviceAssignmentToken": 1, "eventDate": -1});
-db.measurements.ensureIndex({"deviceAssignmentToken": 1, "eventDate": -1});
-db.alerts.ensureIndex({"deviceAssignmentToken": 1, "eventDate": -1});
