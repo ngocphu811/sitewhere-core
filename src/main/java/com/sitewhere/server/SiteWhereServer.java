@@ -19,6 +19,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.mule.util.StringMessageUtils;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.GenericApplicationContext;
@@ -26,12 +27,12 @@ import org.springframework.core.io.FileSystemResource;
 
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.health.HealthCheckRegistry;
-import com.sitewhere.core.user.UserModelInitializer;
 import com.sitewhere.rest.model.user.UserSearchCriteria;
 import com.sitewhere.server.metrics.DeviceManagementMetricsFacade;
 import com.sitewhere.spi.SiteWhereException;
 import com.sitewhere.spi.asset.IAssetModuleManager;
 import com.sitewhere.spi.device.IDeviceManagement;
+import com.sitewhere.spi.server.user.IUserModelInitializer;
 import com.sitewhere.spi.user.IUser;
 import com.sitewhere.spi.user.IUserManagement;
 import com.sitewhere.version.IVersion;
@@ -224,6 +225,8 @@ public class SiteWhereServer {
 	 */
 	protected void verifyUserModel() {
 		try {
+			IUserModelInitializer init = (IUserModelInitializer) SERVER_SPRING_CONTEXT
+					.getBean(SiteWhereServerBeans.BEAN_USER_MODEL_INITIALIZER);
 			List<IUser> users = getUserManagement().listUsers(new UserSearchCriteria());
 			if (users.size() == 0) {
 				List<String> messages = new ArrayList<String>();
@@ -236,10 +239,12 @@ public class SiteWhereServer {
 				BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 				String response = br.readLine();
 				if ((response.length() == 0) || (response.toLowerCase().startsWith("y"))) {
-					UserModelInitializer umInit = new UserModelInitializer(getUserManagement());
-					umInit.initialize();
+					init.initialize(getUserManagement());
 				}
 			}
+		} catch (NoSuchBeanDefinitionException e) {
+			LOGGER.info("No user model initializer found in Spring bean configuration. Skipping.");
+			return;
 		} catch (SiteWhereException e) {
 			LOGGER.warn("Unable to initialize user model.", e);
 		} catch (IOException e) {

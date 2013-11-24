@@ -12,11 +12,16 @@
 
 	<!-- Leave uncommented to use MondoDB backend -->
 	<import resource="sitewhere-mongodb.xml"/>
-	
+
 	<!-- Leave uncommented to use HBase backend -->
-	<!--  
-	<import resource="sitewhere-hbase.xml"/>
-	-->
+	<!-- <import resource="sitewhere-hbase.xml"/> -->
+
+	<!-- ##################### -->
+	<!-- # DATA INITIALIZERS # -->
+	<!-- ##################### -->
+
+	<!-- Default file system hardware asset module -->
+	<bean id="userModelInitializer" class="com.sitewhere.server.user.DefaultUserModelInitializer"/>
 
 	<!-- ################################ -->
 	<!-- # ASSET MODULE IMPLEMENTATIONS # -->

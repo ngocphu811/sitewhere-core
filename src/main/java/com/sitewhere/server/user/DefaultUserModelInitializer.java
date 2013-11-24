@@ -7,19 +7,21 @@
  * license, a copy of which has been included with this distribution in the
  * LICENSE.txt file.
  */
-package com.sitewhere.core.user;
+package com.sitewhere.server.user;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import com.sitewhere.core.user.ISiteWhereAuthorities;
 import com.sitewhere.rest.model.user.User;
 import com.sitewhere.rest.model.user.request.GrantedAuthorityCreateRequest;
 import com.sitewhere.rest.model.user.request.UserCreateRequest;
 import com.sitewhere.security.SitewhereAuthentication;
 import com.sitewhere.security.SitewhereUserDetails;
 import com.sitewhere.spi.SiteWhereException;
+import com.sitewhere.spi.server.user.IUserModelInitializer;
 import com.sitewhere.spi.user.AccountStatus;
 import com.sitewhere.spi.user.IGrantedAuthority;
 import com.sitewhere.spi.user.IUserManagement;
@@ -30,7 +32,7 @@ import com.sitewhere.spi.user.IUserManagement;
  * 
  * @author Derek
  */
-public class UserModelInitializer {
+public class DefaultUserModelInitializer implements IUserModelInitializer {
 
 	/** Default administrator username */
 	public static final String DEFAULT_USERNAME = "admin";
@@ -41,17 +43,15 @@ public class UserModelInitializer {
 	/** User management instance */
 	private IUserManagement userManagement;
 
-	public UserModelInitializer(IUserManagement userManagement) {
-		this.setUserManagement(userManagement);
-	}
-
 	/**
 	 * Initialize the user model with a expected list of granted authorities and default
 	 * user.
 	 * 
 	 * @throws SiteWhereException
 	 */
-	public void initialize() throws SiteWhereException {
+	public void initialize(IUserManagement userManagement) throws SiteWhereException {
+		setUserManagement(userManagement);
+
 		GrantedAuthorityCreateRequest gaReq = new GrantedAuthorityCreateRequest();
 
 		// Create authenticated user authority.
