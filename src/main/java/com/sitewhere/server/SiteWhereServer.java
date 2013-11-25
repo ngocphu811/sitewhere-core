@@ -27,12 +27,20 @@ import org.springframework.core.io.FileSystemResource;
 
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.health.HealthCheckRegistry;
+import com.sitewhere.rest.model.common.SearchCriteria;
+import com.sitewhere.rest.model.user.User;
 import com.sitewhere.rest.model.user.UserSearchCriteria;
+import com.sitewhere.rest.service.search.SearchResults;
+import com.sitewhere.security.SitewhereAuthentication;
+import com.sitewhere.security.SitewhereUserDetails;
 import com.sitewhere.server.metrics.DeviceManagementMetricsFacade;
 import com.sitewhere.spi.SiteWhereException;
 import com.sitewhere.spi.asset.IAssetModuleManager;
 import com.sitewhere.spi.device.IDeviceManagement;
+import com.sitewhere.spi.device.ISite;
+import com.sitewhere.spi.server.device.IDeviceModelInitializer;
 import com.sitewhere.spi.server.user.IUserModelInitializer;
+import com.sitewhere.spi.user.IGrantedAuthority;
 import com.sitewhere.spi.user.IUser;
 import com.sitewhere.spi.user.IUserManagement;
 import com.sitewhere.version.IVersion;
@@ -165,6 +173,20 @@ public class SiteWhereServer {
 	}
 
 	/**
+	 * Returns a fake account used for operations on the data model done by the system.
+	 * 
+	 * @return
+	 * @throws SiteWhereException
+	 */
+	public static SitewhereAuthentication getSystemAuthentication() throws SiteWhereException {
+		User fake = new User();
+		fake.setUsername("system");
+		SitewhereUserDetails details = new SitewhereUserDetails(fake, new ArrayList<IGrantedAuthority>());
+		SitewhereAuthentication auth = new SitewhereAuthentication(details, null);
+		return auth;
+	}
+
+	/**
 	 * Create the server.
 	 * 
 	 * @throws SiteWhereException
@@ -183,8 +205,8 @@ public class SiteWhereServer {
 		SERVER_SPRING_CONTEXT = loadServerApplicationContext(serverConfigFile);
 
 		// Load device management and wrap it for metrics.
-		IDeviceManagement deviceManagementImpl = (IDeviceManagement) SERVER_SPRING_CONTEXT
-				.getBean(SiteWhereServerBeans.BEAN_DEVICE_MANAGEMENT);
+		IDeviceManagement deviceManagementImpl =
+				(IDeviceManagement) SERVER_SPRING_CONTEXT.getBean(SiteWhereServerBeans.BEAN_DEVICE_MANAGEMENT);
 		if (deviceManagementImpl == null) {
 			throw new SiteWhereException("No device management implementation configured.");
 		}
@@ -192,16 +214,16 @@ public class SiteWhereServer {
 		deviceManagement.start();
 
 		// Load user management.
-		userManagement = (IUserManagement) SERVER_SPRING_CONTEXT
-				.getBean(SiteWhereServerBeans.BEAN_USER_MANAGEMENT);
+		userManagement =
+				(IUserManagement) SERVER_SPRING_CONTEXT.getBean(SiteWhereServerBeans.BEAN_USER_MANAGEMENT);
 		if (userManagement == null) {
 			throw new SiteWhereException("No user management implementation configured.");
 		}
 		userManagement.start();
 
 		// Load the asset module manager.
-		assetModuleManager = (IAssetModuleManager) SERVER_SPRING_CONTEXT
-				.getBean(SiteWhereServerBeans.BEAN_ASSET_MODULE_MANAGER);
+		assetModuleManager =
+				(IAssetModuleManager) SERVER_SPRING_CONTEXT.getBean(SiteWhereServerBeans.BEAN_ASSET_MODULE_MANAGER);
 		if (assetModuleManager == null) {
 			throw new SiteWhereException("No asset module manager implementation configured.");
 		}
@@ -218,6 +240,7 @@ public class SiteWhereServer {
 		LOGGER.info("\n" + message + "\n");
 
 		verifyUserModel();
+		verifyDeviceModel();
 	}
 
 	/**
@@ -225,8 +248,8 @@ public class SiteWhereServer {
 	 */
 	protected void verifyUserModel() {
 		try {
-			IUserModelInitializer init = (IUserModelInitializer) SERVER_SPRING_CONTEXT
-					.getBean(SiteWhereServerBeans.BEAN_USER_MODEL_INITIALIZER);
+			IUserModelInitializer init =
+					(IUserModelInitializer) SERVER_SPRING_CONTEXT.getBean(SiteWhereServerBeans.BEAN_USER_MODEL_INITIALIZER);
 			List<IUser> users = getUserManagement().listUsers(new UserSearchCriteria());
 			if (users.size() == 0) {
 				List<String> messages = new ArrayList<String>();
@@ -246,9 +269,41 @@ public class SiteWhereServer {
 			LOGGER.info("No user model initializer found in Spring bean configuration. Skipping.");
 			return;
 		} catch (SiteWhereException e) {
-			LOGGER.warn("Unable to initialize user model.", e);
+			LOGGER.warn("Unable to read from user model.", e);
 		} catch (IOException e) {
-			LOGGER.error("Unable to read user response from console.", e);
+			LOGGER.error("Unable to read response from console.", e);
+		}
+	}
+
+	/**
+	 * Check whether device model is populated and offer to bootstrap system if not.
+	 */
+	protected void verifyDeviceModel() {
+		try {
+			IDeviceModelInitializer init =
+					(IDeviceModelInitializer) SERVER_SPRING_CONTEXT.getBean(SiteWhereServerBeans.BEAN_DEVICE_MODEL_INITIALIZER);
+			SearchResults<ISite> sites = getDeviceManagement().listSites(new SearchCriteria(1, 1));
+			if (sites.getNumResults() == 0) {
+				List<String> messages = new ArrayList<String>();
+				messages.add("There are currently no sites defined in the system. You have the option of loading "
+						+ "a default dataset for previewing system functionality. Would you like to load the default "
+						+ "dataset?");
+				String message = StringMessageUtils.getBoilerPlate(messages, '*', 60);
+				LOGGER.info("\n" + message + "\n");
+				System.out.println("Load default dataset? Yes/No (Default is Yes)");
+				BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+				String response = br.readLine();
+				if ((response.length() == 0) || (response.toLowerCase().startsWith("y"))) {
+					init.initialize(getDeviceManagement());
+				}
+			}
+		} catch (NoSuchBeanDefinitionException e) {
+			LOGGER.info("No device model initializer found in Spring bean configuration. Skipping.");
+			return;
+		} catch (SiteWhereException e) {
+			LOGGER.warn("Unable to read from device model.", e);
+		} catch (IOException e) {
+			LOGGER.error("Unable to read response from console.", e);
 		}
 	}
 

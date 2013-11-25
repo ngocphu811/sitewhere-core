@@ -23,6 +23,10 @@
 	<!-- Default file system hardware asset module -->
 	<bean id="userModelInitializer" class="com.sitewhere.server.user.DefaultUserModelInitializer"/>
 
+	<!-- Default file system hardware asset module -->
+	<bean id="deviceModelInitializer"
+		class="com.sitewhere.server.device.DefaultDeviceModelInitializer"/>
+
 	<!-- ################################ -->
 	<!-- # ASSET MODULE IMPLEMENTATIONS # -->
 	<!-- ################################ -->

@@ -34,6 +34,9 @@ public interface SiteWhereServerBeans {
 	 * DATA INITIALIZERS *
 	 *********************/
 
-	/** Bean id for user management in server configuration */
+	/** Bean id for user management data initializer in server configuration */
 	public static final String BEAN_USER_MODEL_INITIALIZER = "userModelInitializer";
+
+	/** Bean id for device management data initializer in server configuration */
+	public static final String BEAN_DEVICE_MODEL_INITIALIZER = "deviceModelInitializer";
 }
