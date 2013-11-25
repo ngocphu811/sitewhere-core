@@ -31,6 +31,7 @@ import com.sitewhere.security.LoginManager;
 import com.sitewhere.spi.SiteWhereException;
 import com.sitewhere.spi.common.ILocation;
 import com.sitewhere.spi.common.IMeasurementEntry;
+import com.sitewhere.spi.device.AlertLevel;
 import com.sitewhere.spi.device.AlertSource;
 import com.sitewhere.spi.device.DeviceAssignmentStatus;
 import com.sitewhere.spi.device.IDeviceAssignment;
@@ -215,6 +216,11 @@ public class SiteWherePersistence {
 		DeviceAlert alert = new DeviceAlert();
 		deviceEventCreateLogic(request, assignment, alert);
 		alert.setSource(AlertSource.Device);
+		if (request.getLevel() != null) {
+			alert.setLevel(request.getLevel());
+		} else {
+			alert.setLevel(AlertLevel.Info);
+		}
 		alert.setType(request.getType());
 		alert.setMessage(request.getMessage());
 		return alert;

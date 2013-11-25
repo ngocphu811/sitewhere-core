@@ -17,12 +17,14 @@ import java.util.UUID;
 import org.apache.log4j.Logger;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import com.sitewhere.rest.model.common.Location;
 import com.sitewhere.rest.model.device.DeviceAssignment;
 import com.sitewhere.rest.model.device.request.DeviceAlertCreateRequest;
 import com.sitewhere.rest.model.device.request.DeviceAssignmentCreateRequest;
 import com.sitewhere.rest.model.device.request.DeviceCreateRequest;
 import com.sitewhere.rest.model.device.request.DeviceMeasurementsCreateRequest;
 import com.sitewhere.rest.model.device.request.SiteCreateRequest;
+import com.sitewhere.rest.model.device.request.ZoneCreateRequest;
 import com.sitewhere.server.SiteWhereServer;
 import com.sitewhere.spi.SiteWhereException;
 import com.sitewhere.spi.device.DeviceAssignmentType;
@@ -31,6 +33,8 @@ import com.sitewhere.spi.device.IDeviceAssignment;
 import com.sitewhere.spi.device.IDeviceManagement;
 import com.sitewhere.spi.device.IDeviceMeasurements;
 import com.sitewhere.spi.device.ISite;
+import com.sitewhere.spi.device.ISiteMapMetadata;
+import com.sitewhere.spi.device.IZone;
 import com.sitewhere.spi.server.device.IDeviceModelInitializer;
 
 /**
@@ -53,6 +57,9 @@ public class DefaultDeviceModelInitializer implements IDeviceModelInitializer {
 	/** Prefix for create assignment log message */
 	public static final String PREFIX_CREATE_ASSIGNMENT = "[Create Assignment]";
 
+	/** Prefix for create zone log message */
+	public static final String PREFIX_CREATE_ZONE = "[Create Zone]";
+
 	/** Number of devices to create */
 	public static final int NUM_SITES = 1;
 
@@ -64,7 +71,7 @@ public class DefaultDeviceModelInitializer implements IDeviceModelInitializer {
 
 	/** Image URL assocaited with sites */
 	public static final String SITE_IMAGE_URL =
-			"http://i.telegraph.co.uk/multimedia/archive/01809/satellite_1809335c.jpg";
+			"https://s3.amazonaws.com/sitewhere-demo/construction/construction.jpg";
 
 	/** Available choices for devices/assignments that track location */
 	protected static AssignmentChoice[] LOCATION_TRACKERS = {
@@ -114,15 +121,53 @@ public class DefaultDeviceModelInitializer implements IDeviceModelInitializer {
 			SiteCreateRequest request = new SiteCreateRequest();
 			request.setName("Construction Site " + (x + 1));
 			request.setDescription("A construction site with many high-value assets that should "
-					+ "not be taken offset. The system provides location tracking for the assets and notifies "
+					+ "not be taken offsite. The system provides location tracking for the assets and notifies "
 					+ "administrators if any of the assets move outside of the general site area or "
 					+ "into areas where they are not allowed.");
 			request.setImageUrl(SITE_IMAGE_URL);
 			request.setMapType("mapquest");
-			results.add(getDeviceManagement().createSite(request));
+			request.getMapMetadata().addOrReplaceMetadata(ISiteMapMetadata.MAP_CENTER_LATITUDE,
+					"34.10469794977326");
+			request.getMapMetadata().addOrReplaceMetadata(ISiteMapMetadata.MAP_CENTER_LONGITUDE,
+					"-84.23966646194458");
+			request.getMapMetadata().addOrReplaceMetadata(ISiteMapMetadata.MAP_ZOOM_LEVEL, "15");
+			ISite site = getDeviceManagement().createSite(request);
+			results.add(site);
 			LOGGER.info(PREFIX_CREATE_SITE + " " + request.getName());
+
+			// Create a zone for the site.
+			createZone(site);
 		}
 		return results;
+	}
+
+	/**
+	 * Create the construction zone.
+	 * 
+	 * @param site
+	 * @return
+	 * @throws SiteWhereException
+	 */
+	public IZone createZone(ISite site) throws SiteWhereException {
+		ZoneCreateRequest request = new ZoneCreateRequest();
+		request.setName("Construction Site");
+		request.setBorderColor("#017112");
+		request.setFillColor("#1db32e");
+		request.setOpacity(0.4);
+		List<Location> coords = new ArrayList<Location>();
+		coords.add(new Location(34.10260138703638, -84.24412965774536));
+		coords.add(new Location(34.101837372446774, -84.24243450164795));
+		coords.add(new Location(34.101517550337825, -84.24091100692749));
+		coords.add(new Location(34.10154953265732, -84.23856675624847));
+		coords.add(new Location(34.10153176473365, -84.23575580120087));
+		coords.add(new Location(34.10409030732968, -84.23689305782318));
+		coords.add(new Location(34.104996439280704, -84.23700034618376));
+		coords.add(new Location(34.10606246444614, -84.23700034618376));
+		coords.add(new Location(34.107691680235604, -84.23690915107727));
+		request.setCoordinates(coords);
+		IZone zone = getDeviceManagement().createZone(site, request);
+		LOGGER.info(PREFIX_CREATE_ZONE + " " + zone.getToken());
+		return zone;
 	}
 
 	/**
@@ -180,7 +225,7 @@ public class DefaultDeviceModelInitializer implements IDeviceModelInitializer {
 			areq.setMessage("Fire alarm has been triggered on the third floor.");
 			areq.setEventDate(new Date(current));
 			getDeviceManagement().addDeviceAlert(assignment, areq);
-			
+
 			current += 10000;
 		}
 		return results;
