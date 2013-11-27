@@ -3,6 +3,7 @@
 >
 	<properties>
 		<sitewhere.version>0.9.2</sitewhere.version>
+		<mule.version>3.4.0</mule.version>
 	</properties>
 
 	<modelVersion>4.0.0</modelVersion>
@@ -100,6 +101,12 @@
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-annotations</artifactId>
 			<version>2.0.4</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.mule</groupId>
+			<artifactId>mule-core</artifactId>
+			<version>${mule.version}</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
