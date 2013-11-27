@@ -17,25 +17,35 @@ import java.util.UUID;
 import org.apache.log4j.Logger;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import com.sitewhere.core.geo.GeoUtils;
 import com.sitewhere.rest.model.common.Location;
-import com.sitewhere.rest.model.device.DeviceAssignment;
 import com.sitewhere.rest.model.device.request.DeviceAlertCreateRequest;
 import com.sitewhere.rest.model.device.request.DeviceAssignmentCreateRequest;
 import com.sitewhere.rest.model.device.request.DeviceCreateRequest;
+import com.sitewhere.rest.model.device.request.DeviceLocationCreateRequest;
 import com.sitewhere.rest.model.device.request.DeviceMeasurementsCreateRequest;
 import com.sitewhere.rest.model.device.request.SiteCreateRequest;
 import com.sitewhere.rest.model.device.request.ZoneCreateRequest;
 import com.sitewhere.server.SiteWhereServer;
 import com.sitewhere.spi.SiteWhereException;
+import com.sitewhere.spi.device.AlertLevel;
 import com.sitewhere.spi.device.DeviceAssignmentType;
 import com.sitewhere.spi.device.IDevice;
 import com.sitewhere.spi.device.IDeviceAssignment;
+import com.sitewhere.spi.device.IDeviceLocation;
 import com.sitewhere.spi.device.IDeviceManagement;
 import com.sitewhere.spi.device.IDeviceMeasurements;
 import com.sitewhere.spi.device.ISite;
 import com.sitewhere.spi.device.ISiteMapMetadata;
 import com.sitewhere.spi.device.IZone;
 import com.sitewhere.spi.server.device.IDeviceModelInitializer;
+import com.vividsolutions.jts.algorithm.MinimumBoundingCircle;
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.LineString;
+import com.vividsolutions.jts.geom.Point;
+import com.vividsolutions.jts.geom.Polygon;
+import com.vividsolutions.jts.geom.util.AffineTransformation;
 
 /**
  * Used to load a default site/devices/assignments/events so that there is demo data in
@@ -60,14 +70,35 @@ public class DefaultDeviceModelInitializer implements IDeviceModelInitializer {
 	/** Prefix for create zone log message */
 	public static final String PREFIX_CREATE_ZONE = "[Create Zone]";
 
+	/** Prefix for create event log message */
+	public static final String PREFIX_CREATE_EVENTS = "[Create Events]";
+
 	/** Number of devices to create */
 	public static final int NUM_SITES = 1;
 
 	/** Number of devices/assignments to create */
-	public static final int ASSIGNMENTS_PER_SITE = 5;
+	public static final int ASSIGNMENTS_PER_SITE = 15;
 
 	/** Number of events per assignment */
-	public static final int EVENTS_PER_ASSIGNMENT = 50;
+	public static final int EVENTS_PER_ASSIGNMENT = 75;
+
+	/** Number of events per assignment */
+	public static final int LOCATIONS_PER_ASSIGNMENT = 40;
+
+	/** Minimum engine temp */
+	public static final double MIN_TEMP = 80;
+
+	/** Maximum engine temp */
+	public static final double MAX_TEMP = 200;
+
+	/** Temp at which a warning alert will be generated */
+	public static final double WARN_TEMP = 160;
+
+	/** Temp at which an error alert will be generated */
+	public static final double ERROR_TEMP = 180;
+
+	/** Temp at which a critical alert will be generated */
+	public static final double CRITICAL_TEMP = 190;
 
 	/** Image URL assocaited with sites */
 	public static final String SITE_IMAGE_URL =
@@ -80,6 +111,9 @@ public class DefaultDeviceModelInitializer implements IDeviceModelInitializer {
 			new AssignmentChoice("175", "Equipment Tracker", DeviceAssignmentType.Hardware, "302"),
 			new AssignmentChoice("174", "Equipment Tracker", DeviceAssignmentType.Hardware, "303"),
 			new AssignmentChoice("174", "Equipment Tracker", DeviceAssignmentType.Hardware, "304") };
+
+	/** Locations that determine zone edges */
+	protected List<Location> zoneLocations;
 
 	/** Device management implementation */
 	protected IDeviceManagement deviceManagement;
@@ -97,6 +131,18 @@ public class DefaultDeviceModelInitializer implements IDeviceModelInitializer {
 
 		// Use the system account for logging "created by" on created elements.
 		SecurityContextHolder.getContext().setAuthentication(SiteWhereServer.getSystemAuthentication());
+
+		// Coordinates for edges of zone.
+		zoneLocations = new ArrayList<Location>();
+		zoneLocations.add(new Location(34.10260138703638, -84.24412965774536));
+		zoneLocations.add(new Location(34.101837372446774, -84.24243450164795));
+		zoneLocations.add(new Location(34.101517550337825, -84.24091100692749));
+		zoneLocations.add(new Location(34.10154953265732, -84.23856675624847));
+		zoneLocations.add(new Location(34.10153176473365, -84.23575580120087));
+		zoneLocations.add(new Location(34.10409030732968, -84.23689305782318));
+		zoneLocations.add(new Location(34.104996439280704, -84.23700034618376));
+		zoneLocations.add(new Location(34.10606246444614, -84.23700034618376));
+		zoneLocations.add(new Location(34.107691680235604, -84.23690915107727));
 
 		List<ISite> sites = createSites();
 		for (ISite site : sites) {
@@ -154,17 +200,7 @@ public class DefaultDeviceModelInitializer implements IDeviceModelInitializer {
 		request.setBorderColor("#017112");
 		request.setFillColor("#1db32e");
 		request.setOpacity(0.4);
-		List<Location> coords = new ArrayList<Location>();
-		coords.add(new Location(34.10260138703638, -84.24412965774536));
-		coords.add(new Location(34.101837372446774, -84.24243450164795));
-		coords.add(new Location(34.101517550337825, -84.24091100692749));
-		coords.add(new Location(34.10154953265732, -84.23856675624847));
-		coords.add(new Location(34.10153176473365, -84.23575580120087));
-		coords.add(new Location(34.10409030732968, -84.23689305782318));
-		coords.add(new Location(34.104996439280704, -84.23700034618376));
-		coords.add(new Location(34.10606246444614, -84.23700034618376));
-		coords.add(new Location(34.107691680235604, -84.23690915107727));
-		request.setCoordinates(coords);
+		request.setCoordinates(zoneLocations);
 		IZone zone = getDeviceManagement().createZone(site, request);
 		LOGGER.info(PREFIX_CREATE_ZONE + " " + zone.getToken());
 		return zone;
@@ -178,10 +214,12 @@ public class DefaultDeviceModelInitializer implements IDeviceModelInitializer {
 	 * @throws SiteWhereException
 	 */
 	public List<IDeviceAssignment> createAssignments(ISite site) throws SiteWhereException {
+		Date now = new Date();
 		List<IDeviceAssignment> results = new ArrayList<IDeviceAssignment>();
 		for (int x = 0; x < ASSIGNMENTS_PER_SITE; x++) {
 			AssignmentChoice assnChoice = getRandomAssignmentChoice();
 
+			// Create device.
 			DeviceCreateRequest request = new DeviceCreateRequest();
 			request.setHardwareId(UUID.randomUUID().toString());
 			request.setComments(assnChoice.getDeviceDescriptionBase() + " " + (x + 1) + ".");
@@ -189,6 +227,7 @@ public class DefaultDeviceModelInitializer implements IDeviceModelInitializer {
 			IDevice device = getDeviceManagement().createDevice(request);
 			LOGGER.info(PREFIX_CREATE_DEVICE + " " + device.getHardwareId());
 
+			// Create assignment.
 			DeviceAssignmentCreateRequest assnRequest = new DeviceAssignmentCreateRequest();
 			assnRequest.setAssignmentType(assnChoice.getAssignmentType());
 			assnRequest.setAssetId(assnChoice.getAssignmentAssetId());
@@ -197,6 +236,10 @@ public class DefaultDeviceModelInitializer implements IDeviceModelInitializer {
 			assnRequest.addOrReplaceMetadata("S/N", UUID.randomUUID().toString());
 			IDeviceAssignment assignment = getDeviceManagement().createDeviceAssignment(assnRequest);
 			LOGGER.info(PREFIX_CREATE_ASSIGNMENT + " " + assignment.getToken());
+
+			// Create events for assignment.
+			createDeviceMeasurements(assignment, now);
+			createDeviceLocations(assignment, now);
 
 			results.add(assignment);
 		}
@@ -210,24 +253,134 @@ public class DefaultDeviceModelInitializer implements IDeviceModelInitializer {
 	 * @return
 	 * @throws SiteWhereException
 	 */
-	public List<IDeviceMeasurements> createDeviceMeasurements(DeviceAssignment assignment, Date start)
+	protected List<IDeviceMeasurements> createDeviceMeasurements(IDeviceAssignment assignment, Date start)
 			throws SiteWhereException {
 		long current = start.getTime();
+		double temp = MIN_TEMP;
+		double fuel = 100;
+		double delta = 4;
+		double mult = 3;
+		int measurementCount = 0;
+		int alertCount = 0;
 		List<IDeviceMeasurements> results = new ArrayList<IDeviceMeasurements>();
 		for (int x = 0; x < EVENTS_PER_ASSIGNMENT; x++) {
+			// Simulate temperature changes.
+			temp = temp + (delta + ((Math.random() * mult * 2) - mult));
+			temp = Math.round(temp * 100.0) / 100.0;
+			if ((temp > MAX_TEMP) || (temp < MIN_TEMP)) {
+				delta = -delta;
+			}
+
+			// Simulate fuel changes.
+			fuel -= (Math.random() * 2);
+			fuel = Math.round(fuel * 100.0) / 100.0;
+			if (fuel < 0) {
+				fuel = 0;
+			}
+
+			// Store current temperature measurement.
 			DeviceMeasurementsCreateRequest mreq = new DeviceMeasurementsCreateRequest();
-			mreq.addOrReplaceMeasurement("engine.temperature", 145.0);
+			mreq.addOrReplaceMeasurement("engine.temperature", temp);
+			mreq.addOrReplaceMeasurement("fuel.level", fuel);
 			mreq.setEventDate(new Date(current));
 			results.add(getDeviceManagement().addDeviceMeasurements(assignment, mreq));
+			measurementCount++;
 
-			DeviceAlertCreateRequest areq = new DeviceAlertCreateRequest();
-			areq.setType("fire.alarm");
-			areq.setMessage("Fire alarm has been triggered on the third floor.");
-			areq.setEventDate(new Date(current));
-			getDeviceManagement().addDeviceAlert(assignment, areq);
+			// Create alerts based on current temperature.
+			if (temp > WARN_TEMP) {
+				DeviceAlertCreateRequest areq = new DeviceAlertCreateRequest();
+				areq.setType("engine.overheat");
+				areq.setEventDate(new Date(current));
+				areq.setMessage("Engine temperature is at top of operating range.");
+				areq.setLevel(AlertLevel.Warning);
+				if (temp > ERROR_TEMP) {
+					areq.setMessage("Engine temperature is at a dangerous level.");
+					areq.setLevel(AlertLevel.Error);
+				} else if (temp > CRITICAL_TEMP) {
+					areq.setMessage("Engine temperature critical. Shutting down.");
+					areq.setLevel(AlertLevel.Critical);
+					break;
+				}
+				getDeviceManagement().addDeviceAlert(assignment, areq);
+				alertCount++;
+			}
 
 			current += 10000;
 		}
+		LOGGER.info(PREFIX_CREATE_EVENTS + " " + measurementCount + " measurements. " + alertCount
+				+ " alerts.");
+		return results;
+	}
+
+	/**
+	 * Create device locations in a path near the main zone.
+	 * 
+	 * @param assignment
+	 * @param start
+	 * @return
+	 * @throws SiteWhereException
+	 */
+	protected List<IDeviceLocation> createDeviceLocations(IDeviceAssignment assignment, Date date)
+			throws SiteWhereException {
+		long current = date.getTime();
+		Polygon zone = GeoUtils.createPolygonForLocations(zoneLocations);
+		Point centroid = zone.getCentroid();
+
+		// Calculate length of steps between locations based on bounding circle.
+		MinimumBoundingCircle circle = new MinimumBoundingCircle(zone);
+		double step = circle.getRadius() / 10;
+
+		double cx = centroid.getX();
+		double cy = centroid.getY();
+		double deltaX = (Math.sqrt(Math.random()) * step * 2) - step;
+		double deltaY = (Math.sqrt(Math.random()) * step * 2) - step;
+
+		// Used to rotate deltas to turn path and stay inside polygon.
+		AffineTransformation xform = new AffineTransformation();
+		xform.rotate(Math.toRadians(22.5));
+
+		List<IDeviceLocation> results = new ArrayList<IDeviceLocation>();
+		GeometryFactory factory = new GeometryFactory();
+		for (int x = 0; x < LOCATIONS_PER_ASSIGNMENT; x++) {
+			boolean foundNext = false;
+
+			// Add a little randomness to path.
+			double waver = ((Math.random() * 20) - 10.0);
+			AffineTransformation waverXform = new AffineTransformation();
+			waverXform.rotate(Math.toRadians(waver));
+			Coordinate waverDelta = new Coordinate(deltaX, deltaY);
+			waverXform.transform(waverDelta, waverDelta);
+			deltaX = waverDelta.x;
+			deltaY = waverDelta.y;
+
+			while (!foundNext) {
+				Coordinate start = new Coordinate(cx, cy);
+				Coordinate end = new Coordinate(cx + deltaX, cy + deltaY);
+				Coordinate[] lineCoords = { start, end };
+				LineString line = factory.createLineString(lineCoords);
+				if (zone.contains(line)) {
+					DeviceLocationCreateRequest request = new DeviceLocationCreateRequest();
+					request.setLatitude(end.y);
+					request.setLongitude(end.x);
+					request.setElevation(0.0);
+					request.setEventDate(new Date(current));
+					IDeviceLocation created = getDeviceManagement().addDeviceLocation(assignment, request);
+					results.add(created);
+
+					cx = cx + deltaX;
+					cy = cy + deltaY;
+					foundNext = true;
+				} else {
+					// Rotate deltas and try again.
+					Coordinate delta = new Coordinate(deltaX, deltaY);
+					xform.transform(delta, delta);
+					deltaX = delta.x;
+					deltaY = delta.y;
+				}
+			}
+			current += 30000;
+		}
+		LOGGER.info(PREFIX_CREATE_EVENTS + " " + results.size() + " locations. ");
 		return results;
 	}
 
