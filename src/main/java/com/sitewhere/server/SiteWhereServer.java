@@ -27,10 +27,9 @@ import org.springframework.core.io.FileSystemResource;
 
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.health.HealthCheckRegistry;
-import com.sitewhere.rest.model.common.SearchCriteria;
+import com.sitewhere.rest.model.search.SearchCriteria;
 import com.sitewhere.rest.model.user.User;
 import com.sitewhere.rest.model.user.UserSearchCriteria;
-import com.sitewhere.rest.service.search.SearchResults;
 import com.sitewhere.security.SitewhereAuthentication;
 import com.sitewhere.security.SitewhereUserDetails;
 import com.sitewhere.server.metrics.DeviceManagementMetricsFacade;
@@ -38,6 +37,7 @@ import com.sitewhere.spi.SiteWhereException;
 import com.sitewhere.spi.asset.IAssetModuleManager;
 import com.sitewhere.spi.device.IDeviceManagement;
 import com.sitewhere.spi.device.ISite;
+import com.sitewhere.spi.search.ISearchResults;
 import com.sitewhere.spi.server.device.IDeviceModelInitializer;
 import com.sitewhere.spi.server.user.IUserModelInitializer;
 import com.sitewhere.spi.user.IGrantedAuthority;
@@ -282,7 +282,7 @@ public class SiteWhereServer {
 		try {
 			IDeviceModelInitializer init =
 					(IDeviceModelInitializer) SERVER_SPRING_CONTEXT.getBean(SiteWhereServerBeans.BEAN_DEVICE_MODEL_INITIALIZER);
-			SearchResults<ISite> sites = getDeviceManagement().listSites(new SearchCriteria(1, 1));
+			ISearchResults<ISite> sites = getDeviceManagement().listSites(new SearchCriteria(1, 1));
 			if (sites.getNumResults() == 0) {
 				List<String> messages = new ArrayList<String>();
 				messages.add("There are currently no sites defined in the system. You have the option of loading "

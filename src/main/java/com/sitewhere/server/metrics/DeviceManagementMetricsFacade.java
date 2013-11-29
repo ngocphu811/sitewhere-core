@@ -13,12 +13,9 @@ import java.util.List;
 
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
-import com.sitewhere.rest.service.search.SearchResults;
 import com.sitewhere.server.SiteWhereServer;
 import com.sitewhere.spi.SiteWhereException;
-import com.sitewhere.spi.common.IDateRangeSearchCriteria;
 import com.sitewhere.spi.common.IMetadataProvider;
-import com.sitewhere.spi.common.ISearchCriteria;
 import com.sitewhere.spi.device.DeviceAssignmentStatus;
 import com.sitewhere.spi.device.IDevice;
 import com.sitewhere.spi.device.IDeviceAlert;
@@ -37,6 +34,9 @@ import com.sitewhere.spi.device.request.IDeviceLocationCreateRequest;
 import com.sitewhere.spi.device.request.IDeviceMeasurementsCreateRequest;
 import com.sitewhere.spi.device.request.ISiteCreateRequest;
 import com.sitewhere.spi.device.request.IZoneCreateRequest;
+import com.sitewhere.spi.search.IDateRangeSearchCriteria;
+import com.sitewhere.spi.search.ISearchCriteria;
+import com.sitewhere.spi.search.ISearchResults;
 
 /**
  * Wraps a device management implementation in a facade that gathers metrics about each
@@ -172,7 +172,7 @@ public class DeviceManagementMetricsFacade implements IDeviceManagement {
 	 * @see com.sitewhere.spi.device.IDeviceManagement#listDevices(boolean,
 	 * com.sitewhere.spi.common.ISearchCriteria)
 	 */
-	public SearchResults<IDevice> listDevices(boolean includeDeleted, ISearchCriteria criteria)
+	public ISearchResults<IDevice> listDevices(boolean includeDeleted, ISearchCriteria criteria)
 			throws SiteWhereException {
 		return delegate.listDevices(includeDeleted, criteria);
 	}
@@ -184,7 +184,7 @@ public class DeviceManagementMetricsFacade implements IDeviceManagement {
 	 * com.sitewhere.spi.device.IDeviceManagement#listUnassignedDevices(com.sitewhere.
 	 * spi.common.ISearchCriteria)
 	 */
-	public SearchResults<IDevice> listUnassignedDevices(ISearchCriteria criteria) throws SiteWhereException {
+	public ISearchResults<IDevice> listUnassignedDevices(ISearchCriteria criteria) throws SiteWhereException {
 		return delegate.listUnassignedDevices(criteria);
 	}
 
@@ -324,7 +324,7 @@ public class DeviceManagementMetricsFacade implements IDeviceManagement {
 	 * com.sitewhere.spi.device.IDeviceManagement#getDeviceAssignmentHistory(java.lang
 	 * .String, com.sitewhere.spi.common.ISearchCriteria)
 	 */
-	public SearchResults<IDeviceAssignment> getDeviceAssignmentHistory(String hardwareId,
+	public ISearchResults<IDeviceAssignment> getDeviceAssignmentHistory(String hardwareId,
 			ISearchCriteria criteria) throws SiteWhereException {
 		return delegate.getDeviceAssignmentHistory(hardwareId, criteria);
 	}
@@ -336,7 +336,7 @@ public class DeviceManagementMetricsFacade implements IDeviceManagement {
 	 * com.sitewhere.spi.device.IDeviceManagement#getDeviceAssignmentsForSite(java.lang
 	 * .String, com.sitewhere.spi.common.ISearchCriteria)
 	 */
-	public SearchResults<IDeviceAssignment> getDeviceAssignmentsForSite(String siteToken,
+	public ISearchResults<IDeviceAssignment> getDeviceAssignmentsForSite(String siteToken,
 			ISearchCriteria criteria) throws SiteWhereException {
 		final Timer.Context context = getDeviceAssignmentsForSiteTimer.time();
 		try {
@@ -352,7 +352,7 @@ public class DeviceManagementMetricsFacade implements IDeviceManagement {
 	 * @see com.sitewhere.spi.device.IDeviceManagement#getDeviceAssignmentsNear(double,
 	 * double, double, com.sitewhere.spi.common.ISearchCriteria)
 	 */
-	public SearchResults<IDeviceAssignment> getDeviceAssignmentsNear(double latitude, double longitude,
+	public ISearchResults<IDeviceAssignment> getDeviceAssignmentsNear(double latitude, double longitude,
 			double maxDistance, ISearchCriteria criteria) throws SiteWhereException {
 		return delegate.getDeviceAssignmentsNear(latitude, longitude, maxDistance, criteria);
 	}
@@ -382,7 +382,7 @@ public class DeviceManagementMetricsFacade implements IDeviceManagement {
 	 * com.sitewhere.spi.device.IDeviceManagement#listDeviceMeasurements(java.lang.String,
 	 * com.sitewhere.spi.common.IDateRangeSearchCriteria)
 	 */
-	public SearchResults<IDeviceMeasurements> listDeviceMeasurements(String siteToken,
+	public ISearchResults<IDeviceMeasurements> listDeviceMeasurements(String siteToken,
 			IDateRangeSearchCriteria criteria) throws SiteWhereException {
 		final Timer.Context context = listDeviceMeasurementsTimer.time();
 		try {
@@ -399,7 +399,7 @@ public class DeviceManagementMetricsFacade implements IDeviceManagement {
 	 * com.sitewhere.spi.device.IDeviceManagement#listDeviceMeasurementsForSite(java.lang
 	 * .String, com.sitewhere.spi.common.IDateRangeSearchCriteria)
 	 */
-	public SearchResults<IDeviceMeasurements> listDeviceMeasurementsForSite(String siteToken,
+	public ISearchResults<IDeviceMeasurements> listDeviceMeasurementsForSite(String siteToken,
 			IDateRangeSearchCriteria criteria) throws SiteWhereException {
 		final Timer.Context context = listDeviceMeasurementsForSiteTimer.time();
 		try {
@@ -434,7 +434,7 @@ public class DeviceManagementMetricsFacade implements IDeviceManagement {
 	 * com.sitewhere.spi.device.IDeviceManagement#listDeviceLocations(java.lang.String,
 	 * com.sitewhere.spi.common.IDateRangeSearchCriteria)
 	 */
-	public SearchResults<IDeviceLocation> listDeviceLocations(String assignmentToken,
+	public ISearchResults<IDeviceLocation> listDeviceLocations(String assignmentToken,
 			IDateRangeSearchCriteria criteria) throws SiteWhereException {
 		final Timer.Context context = listDeviceLocationsTimer.time();
 		try {
@@ -451,7 +451,7 @@ public class DeviceManagementMetricsFacade implements IDeviceManagement {
 	 * com.sitewhere.spi.device.IDeviceManagement#listDeviceLocationsForSite(java.lang
 	 * .String, com.sitewhere.spi.common.IDateRangeSearchCriteria)
 	 */
-	public SearchResults<IDeviceLocation> listDeviceLocationsForSite(String siteToken,
+	public ISearchResults<IDeviceLocation> listDeviceLocationsForSite(String siteToken,
 			IDateRangeSearchCriteria criteria) throws SiteWhereException {
 		final Timer.Context context = listDeviceLocationsForSiteTimer.time();
 		try {
@@ -467,7 +467,7 @@ public class DeviceManagementMetricsFacade implements IDeviceManagement {
 	 * @see com.sitewhere.spi.device.IDeviceManagement#listDeviceLocations(java.util.List,
 	 * com.sitewhere.spi.common.IDateRangeSearchCriteria)
 	 */
-	public SearchResults<IDeviceLocation> listDeviceLocations(List<String> assignmentTokens,
+	public ISearchResults<IDeviceLocation> listDeviceLocations(List<String> assignmentTokens,
 			IDateRangeSearchCriteria criteria) throws SiteWhereException {
 		return delegate.listDeviceLocations(assignmentTokens, criteria);
 	}
@@ -495,7 +495,7 @@ public class DeviceManagementMetricsFacade implements IDeviceManagement {
 	 * @see com.sitewhere.spi.device.IDeviceManagement#listDeviceAlerts(java.lang.String,
 	 * com.sitewhere.spi.common.IDateRangeSearchCriteria)
 	 */
-	public SearchResults<IDeviceAlert> listDeviceAlerts(String assignmentToken,
+	public ISearchResults<IDeviceAlert> listDeviceAlerts(String assignmentToken,
 			IDateRangeSearchCriteria criteria) throws SiteWhereException {
 		final Timer.Context context = listDeviceAlertsTimer.time();
 		try {
@@ -512,7 +512,7 @@ public class DeviceManagementMetricsFacade implements IDeviceManagement {
 	 * com.sitewhere.spi.device.IDeviceManagement#listDeviceAlertsForSite(java.lang.String
 	 * , com.sitewhere.spi.common.IDateRangeSearchCriteria)
 	 */
-	public SearchResults<IDeviceAlert> listDeviceAlertsForSite(String siteToken,
+	public ISearchResults<IDeviceAlert> listDeviceAlertsForSite(String siteToken,
 			IDateRangeSearchCriteria criteria) throws SiteWhereException {
 		final Timer.Context context = listDeviceAlertsForSiteTimer.time();
 		try {
@@ -568,7 +568,7 @@ public class DeviceManagementMetricsFacade implements IDeviceManagement {
 	 * @see com.sitewhere.spi.device.IDeviceManagement#listSites(com.sitewhere.spi.common.
 	 * ISearchCriteria)
 	 */
-	public SearchResults<ISite> listSites(ISearchCriteria criteria) throws SiteWhereException {
+	public ISearchResults<ISite> listSites(ISearchCriteria criteria) throws SiteWhereException {
 		return delegate.listSites(criteria);
 	}
 
@@ -608,7 +608,7 @@ public class DeviceManagementMetricsFacade implements IDeviceManagement {
 	 * @see com.sitewhere.spi.device.IDeviceManagement#listZones(java.lang.String,
 	 * com.sitewhere.spi.common.ISearchCriteria)
 	 */
-	public SearchResults<IZone> listZones(String siteToken, ISearchCriteria criteria)
+	public ISearchResults<IZone> listZones(String siteToken, ISearchCriteria criteria)
 			throws SiteWhereException {
 		return delegate.listZones(siteToken, criteria);
 	}
