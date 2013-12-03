@@ -19,6 +19,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import com.sitewhere.geo.GeoUtils;
 import com.sitewhere.rest.model.common.Location;
+import com.sitewhere.rest.model.device.DeviceEventBatch;
 import com.sitewhere.rest.model.device.request.DeviceAlertCreateRequest;
 import com.sitewhere.rest.model.device.request.DeviceAssignmentCreateRequest;
 import com.sitewhere.rest.model.device.request.DeviceCreateRequest;
@@ -263,6 +264,8 @@ public class DefaultDeviceModelInitializer implements IDeviceModelInitializer {
 		int measurementCount = 0;
 		int alertCount = 0;
 		List<IDeviceMeasurements> results = new ArrayList<IDeviceMeasurements>();
+		DeviceMeasurementsCreateRequest lastMx = null;
+		DeviceAlertCreateRequest lastAlert = null;
 		for (int x = 0; x < EVENTS_PER_ASSIGNMENT; x++) {
 			// Simulate temperature changes.
 			temp = temp + (delta + ((Math.random() * mult * 2) - mult));
@@ -284,6 +287,7 @@ public class DefaultDeviceModelInitializer implements IDeviceModelInitializer {
 			mreq.addOrReplaceMeasurement("fuel.level", fuel);
 			mreq.setEventDate(new Date(current));
 			results.add(getDeviceManagement().addDeviceMeasurements(assignment, mreq));
+			lastMx = mreq;
 			measurementCount++;
 
 			// Create alerts based on current temperature.
@@ -302,6 +306,7 @@ public class DefaultDeviceModelInitializer implements IDeviceModelInitializer {
 					break;
 				}
 				getDeviceManagement().addDeviceAlert(assignment, areq);
+				lastAlert = areq;
 				alertCount++;
 			}
 
@@ -309,6 +314,16 @@ public class DefaultDeviceModelInitializer implements IDeviceModelInitializer {
 		}
 		LOGGER.info(PREFIX_CREATE_EVENTS + " " + measurementCount + " measurements. " + alertCount
 				+ " alerts.");
+
+		// Update assignment state.
+		DeviceEventBatch batch = new DeviceEventBatch();
+		if (lastMx != null) {
+			batch.getMeasurements().add(lastMx);
+		}
+		if (lastAlert != null) {
+			batch.getAlerts().add(lastAlert);
+		}
+		getDeviceManagement().updateDeviceAssignmentState(assignment.getToken(), batch);
 		return results;
 	}
 
@@ -341,6 +356,7 @@ public class DefaultDeviceModelInitializer implements IDeviceModelInitializer {
 
 		List<IDeviceLocation> results = new ArrayList<IDeviceLocation>();
 		GeometryFactory factory = new GeometryFactory();
+		DeviceLocationCreateRequest lastLoc = null;
 		for (int x = 0; x < LOCATIONS_PER_ASSIGNMENT; x++) {
 			boolean foundNext = false;
 
@@ -365,6 +381,7 @@ public class DefaultDeviceModelInitializer implements IDeviceModelInitializer {
 					request.setElevation(0.0);
 					request.setEventDate(new Date(current));
 					IDeviceLocation created = getDeviceManagement().addDeviceLocation(assignment, request);
+					lastLoc = request;
 					results.add(created);
 
 					cx = cx + deltaX;
@@ -381,6 +398,13 @@ public class DefaultDeviceModelInitializer implements IDeviceModelInitializer {
 			current += 30000;
 		}
 		LOGGER.info(PREFIX_CREATE_EVENTS + " " + results.size() + " locations. ");
+
+		// Update assignment state.
+		if (lastLoc != null) {
+			DeviceEventBatch batch = new DeviceEventBatch();
+			batch.getLocations().add(lastLoc);
+			getDeviceManagement().updateDeviceAssignmentState(assignment.getToken(), batch);
+		}
 		return results;
 	}
 

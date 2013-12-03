@@ -11,6 +11,8 @@ package com.sitewhere.core;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.springframework.security.authentication.encoding.MessageDigestPasswordEncoder;
 import org.springframework.security.authentication.encoding.ShaPasswordEncoder;
@@ -20,8 +22,10 @@ import com.sitewhere.rest.model.common.MetadataProvider;
 import com.sitewhere.rest.model.common.MetadataProviderEntity;
 import com.sitewhere.rest.model.device.DeviceAlert;
 import com.sitewhere.rest.model.device.DeviceAssignment;
+import com.sitewhere.rest.model.device.DeviceAssignmentState;
 import com.sitewhere.rest.model.device.DeviceEvent;
 import com.sitewhere.rest.model.device.DeviceLocation;
+import com.sitewhere.rest.model.device.DeviceMeasurement;
 import com.sitewhere.rest.model.device.DeviceMeasurements;
 import com.sitewhere.rest.model.device.Site;
 import com.sitewhere.rest.model.device.Zone;
@@ -34,7 +38,11 @@ import com.sitewhere.spi.common.IMeasurementEntry;
 import com.sitewhere.spi.device.AlertLevel;
 import com.sitewhere.spi.device.AlertSource;
 import com.sitewhere.spi.device.DeviceAssignmentStatus;
+import com.sitewhere.spi.device.IDeviceAlert;
 import com.sitewhere.spi.device.IDeviceAssignment;
+import com.sitewhere.spi.device.IDeviceAssignmentState;
+import com.sitewhere.spi.device.IDeviceEventBatch;
+import com.sitewhere.spi.device.IDeviceMeasurement;
 import com.sitewhere.spi.device.request.IDeviceAlertCreateRequest;
 import com.sitewhere.spi.device.request.IDeviceAssignmentCreateRequest;
 import com.sitewhere.spi.device.request.IDeviceEventCreateRequest;
@@ -224,6 +232,123 @@ public class SiteWherePersistence {
 		alert.setType(request.getType());
 		alert.setMessage(request.getMessage());
 		return alert;
+	}
+
+	/**
+	 * Creates an updated {@link DeviceAssignmentState} based on existing state and a
+	 * batch of events that should update the state.
+	 * 
+	 * @param assignment
+	 * @param batch
+	 * @return
+	 * @throws SiteWhereException
+	 */
+	public static DeviceAssignmentState assignmentStateUpdateLogic(IDeviceAssignment assignment,
+			IDeviceEventBatch batch) throws SiteWhereException {
+		DeviceAssignmentState state = new DeviceAssignmentState();
+		assignmentStateLocationUpdateLogic(assignment, state, batch);
+		assignmentStateMeasurementsUpdateLogic(assignment, state, batch);
+		assignmentStateAlertsUpdateLogic(assignment, state, batch);
+		return state;
+	}
+
+	/**
+	 * Update state "last location" based on new locations from batch.
+	 * 
+	 * @param assignment
+	 * @param updated
+	 * @param batch
+	 * @throws SiteWhereException
+	 */
+	public static void assignmentStateLocationUpdateLogic(IDeviceAssignment assignment,
+			DeviceAssignmentState updated, IDeviceEventBatch batch) throws SiteWhereException {
+		IDeviceAssignmentState existing = assignment.getState();
+		if ((existing != null) && (existing.getLastLocation() != null)) {
+			updated.setLastLocation(DeviceLocation.copy(existing.getLastLocation()));
+		}
+		if ((batch.getLocations() != null) && (!batch.getLocations().isEmpty())) {
+			// Find latest location if multiple are passed.
+			IDeviceLocationCreateRequest latest = batch.getLocations().get(0);
+			for (IDeviceLocationCreateRequest lc : batch.getLocations()) {
+				if ((lc.getEventDate() != null) && (lc.getEventDate().after(latest.getEventDate()))) {
+					latest = lc;
+				}
+			}
+			// Make sure existing location measurement not after latest.
+			if ((updated.getLastLocation() == null)
+					|| (latest.getEventDate().after(updated.getLastLocation().getEventDate()))) {
+				updated.setLastLocation(deviceLocationCreateLogic(assignment, latest));
+			}
+		}
+	}
+
+	/**
+	 * Update state "latest measurements" based on new measurements from batch.
+	 * 
+	 * @param assignment
+	 * @param updated
+	 * @param batch
+	 * @throws SiteWhereException
+	 */
+	public static void assignmentStateMeasurementsUpdateLogic(IDeviceAssignment assignment,
+			DeviceAssignmentState updated, IDeviceEventBatch batch) throws SiteWhereException {
+		IDeviceAssignmentState existing = assignment.getState();
+		Map<String, IDeviceMeasurement> measurementsById = new HashMap<String, IDeviceMeasurement>();
+		if ((existing != null) && (existing.getLatestMeasurements() != null)) {
+			for (IDeviceMeasurement m : existing.getLatestMeasurements()) {
+				measurementsById.put(m.getName(), m);
+			}
+		}
+		if ((batch.getMeasurements() != null) && (!batch.getMeasurements().isEmpty())) {
+			for (IDeviceMeasurementsCreateRequest request : batch.getMeasurements()) {
+				for (IMeasurementEntry entry : request.getMeasurements()) {
+					IDeviceMeasurement em = measurementsById.get(entry.getName());
+					if ((em == null) || (em.getEventDate().before(request.getEventDate()))) {
+						DeviceMeasurement newMeasurement = new DeviceMeasurement();
+						deviceEventCreateLogic(request, assignment, newMeasurement);
+						newMeasurement.setName(entry.getName());
+						newMeasurement.setValue(entry.getValue());
+						measurementsById.put(entry.getName(), newMeasurement);
+					}
+				}
+			}
+		}
+		updated.getLatestMeasurements().clear();
+		for (IDeviceMeasurement m : measurementsById.values()) {
+			updated.getLatestMeasurements().add(m);
+		}
+	}
+
+	/**
+	 * Update state "latest alerts" based on new alerts from batch.
+	 * 
+	 * @param assignment
+	 * @param updated
+	 * @param batch
+	 * @throws SiteWhereException
+	 */
+	public static void assignmentStateAlertsUpdateLogic(IDeviceAssignment assignment,
+			DeviceAssignmentState updated, IDeviceEventBatch batch) throws SiteWhereException {
+		IDeviceAssignmentState existing = assignment.getState();
+		Map<String, IDeviceAlert> alertsById = new HashMap<String, IDeviceAlert>();
+		if ((existing != null) && (existing.getLatestAlerts() != null)) {
+			for (IDeviceAlert a : existing.getLatestAlerts()) {
+				alertsById.put(a.getType(), a);
+			}
+		}
+		if ((batch.getAlerts() != null) && (!batch.getAlerts().isEmpty())) {
+			for (IDeviceAlertCreateRequest request : batch.getAlerts()) {
+				IDeviceAlert ea = alertsById.get(request.getType());
+				if ((ea == null) || (ea.getEventDate().before(request.getEventDate()))) {
+					DeviceAlert newAlert = deviceAlertCreateLogic(assignment, request);
+					alertsById.put(newAlert.getType(), newAlert);
+				}
+			}
+		}
+		updated.getLatestAlerts().clear();
+		for (IDeviceAlert a : alertsById.values()) {
+			updated.getLatestAlerts().add(a);
+		}
 	}
 
 	/**
