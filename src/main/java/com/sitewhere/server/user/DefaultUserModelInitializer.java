@@ -51,6 +51,9 @@ public class DefaultUserModelInitializer implements IUserModelInitializer {
 	/** User management instance */
 	private IUserManagement userManagement;
 
+	/** Indiates whether model should be initialized if no console is available for input */
+	private boolean initializeIfNoConsole = false;
+
 	/**
 	 * Initialize the user model with a expected list of granted authorities and default
 	 * user.
@@ -111,6 +114,19 @@ public class DefaultUserModelInitializer implements IUserModelInitializer {
 		getUserManagement().createUser(ureq);
 		SecurityContextHolder.getContext().setAuthentication(null);
 		LOGGER.info(PREFIX_CREATE_USER + " " + ureq.getUsername());
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.sitewhere.spi.server.IModelInitializer#isInitializeIfNoConsole()
+	 */
+	public boolean isInitializeIfNoConsole() {
+		return initializeIfNoConsole;
+	}
+
+	public void setInitializeIfNoConsole(boolean initializeIfNoConsole) {
+		this.initializeIfNoConsole = initializeIfNoConsole;
 	}
 
 	public IUserManagement getUserManagement() {

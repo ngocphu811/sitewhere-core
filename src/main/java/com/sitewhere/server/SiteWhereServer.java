@@ -244,6 +244,21 @@ public class SiteWhereServer {
 	}
 
 	/**
+	 * Read a line from standard in.
+	 * 
+	 * @return
+	 * @throws SiteWhereException
+	 */
+	protected String readLine() throws SiteWhereException {
+		try {
+			BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+			return br.readLine();
+		} catch (IOException e) {
+			throw new SiteWhereException(e);
+		}
+	}
+
+	/**
 	 * Check whether user model is populated and offer to bootstrap system if not.
 	 */
 	protected void verifyUserModel() {
@@ -259,8 +274,12 @@ public class SiteWhereServer {
 				String message = StringMessageUtils.getBoilerPlate(messages, '*', 60);
 				LOGGER.info("\n" + message + "\n");
 				System.out.println("Initialize user model? Yes/No (Default is Yes)");
-				BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-				String response = br.readLine();
+				String response = readLine();
+				if ((response == null) && (init.isInitializeIfNoConsole())) {
+					response = "Y";
+				} else if ((response == null) && (!init.isInitializeIfNoConsole())) {
+					response = "N";
+				}
 				if ((response.length() == 0) || (response.toLowerCase().startsWith("y"))) {
 					init.initialize(getUserManagement());
 				}
@@ -269,9 +288,7 @@ public class SiteWhereServer {
 			LOGGER.info("No user model initializer found in Spring bean configuration. Skipping.");
 			return;
 		} catch (SiteWhereException e) {
-			LOGGER.warn("Unable to read from user model.", e);
-		} catch (IOException e) {
-			LOGGER.error("Unable to read response from console.", e);
+			LOGGER.warn("Error verifying user model.", e);
 		}
 	}
 
@@ -291,8 +308,12 @@ public class SiteWhereServer {
 				String message = StringMessageUtils.getBoilerPlate(messages, '*', 60);
 				LOGGER.info("\n" + message + "\n");
 				System.out.println("Load default dataset? Yes/No (Default is Yes)");
-				BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-				String response = br.readLine();
+				String response = readLine();
+				if ((response == null) && (init.isInitializeIfNoConsole())) {
+					response = "Y";
+				} else if ((response == null) && (!init.isInitializeIfNoConsole())) {
+					response = "N";
+				}
 				if ((response.length() == 0) || (response.toLowerCase().startsWith("y"))) {
 					init.initialize(getDeviceManagement());
 				}
@@ -302,8 +323,6 @@ public class SiteWhereServer {
 			return;
 		} catch (SiteWhereException e) {
 			LOGGER.warn("Unable to read from device model.", e);
-		} catch (IOException e) {
-			LOGGER.error("Unable to read response from console.", e);
 		}
 	}
 

@@ -119,6 +119,9 @@ public class DefaultDeviceModelInitializer implements IDeviceModelInitializer {
 	/** Device management implementation */
 	protected IDeviceManagement deviceManagement;
 
+	/** Indiates whether model should be initialized if no console is available for input */
+	private boolean initializeIfNoConsole = false;
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -154,6 +157,19 @@ public class DefaultDeviceModelInitializer implements IDeviceModelInitializer {
 		}
 
 		SecurityContextHolder.getContext().setAuthentication(null);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.sitewhere.spi.server.IModelInitializer#isInitializeIfNoConsole()
+	 */
+	public boolean isInitializeIfNoConsole() {
+		return initializeIfNoConsole;
+	}
+
+	public void setInitializeIfNoConsole(boolean initializeIfNoConsole) {
+		this.initializeIfNoConsole = initializeIfNoConsole;
 	}
 
 	/**
@@ -260,7 +276,7 @@ public class DefaultDeviceModelInitializer implements IDeviceModelInitializer {
 		double temp = MIN_TEMP;
 		double fuel = 100;
 		double delta = 4;
-		double mult = 3;
+		double mult = 6;
 		int measurementCount = 0;
 		int alertCount = 0;
 		List<IDeviceMeasurements> results = new ArrayList<IDeviceMeasurements>();

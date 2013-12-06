@@ -21,11 +21,14 @@
 	<!-- ##################### -->
 
 	<!-- Default file system hardware asset module -->
-	<bean id="userModelInitializer" class="com.sitewhere.server.user.DefaultUserModelInitializer"/>
+	<bean id="userModelInitializer" class="com.sitewhere.server.user.DefaultUserModelInitializer">
+		<property name="initializeIfNoConsole" value="Yes"/>
+	</bean>
 
 	<!-- Default file system hardware asset module -->
-	<bean id="deviceModelInitializer"
-		class="com.sitewhere.server.device.DefaultDeviceModelInitializer"/>
+	<bean id="deviceModelInitializer" class="com.sitewhere.server.device.DefaultDeviceModelInitializer">
+		<property name="initializeIfNoConsole" value="Yes"/>
+	</bean>
 
 	<!-- ################################ -->
 	<!-- # ASSET MODULE IMPLEMENTATIONS # -->
