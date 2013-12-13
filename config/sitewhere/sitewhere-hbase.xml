@@ -10,10 +10,17 @@
 	<!-- # HBASE DATASTORE SETTINGS # -->
 	<!-- ############################ -->
 
-	<!-- HBase client shared by SiteWhere HBase components -->
-	<bean id="hbase" class="com.sitewhere.hbase.SiteWhereHBaseClient">
+	<!-- HBase client for standard HBase distributions -->
+	<bean id="hbase" class="com.sitewhere.hbase.DefaultHBaseClient">
+		<property name="quorum" value="192.168.32.129"/>
+	</bean>
+	
+	<!-- HBase client for Intel IDH 2.5.1 distribution -->
+	<!--
+	<bean id="hbase" class="com.sitewhere.hbase.vendor.intel.IntelIDH251HBaseClient">
 		<property name="quorum" value="192.168.32.128"/>
 	</bean>
+	-->
 
 	<!-- HBase device management implementation -->
 	<bean id="deviceManagement" class="com.sitewhere.hbase.device.HBaseDeviceManagement">
