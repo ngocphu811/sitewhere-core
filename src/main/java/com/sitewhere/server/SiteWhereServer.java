@@ -210,7 +210,9 @@ public class SiteWhereServer {
 		if (deviceManagementImpl == null) {
 			throw new SiteWhereException("No device management implementation configured.");
 		}
-		deviceManagement = new DeviceManagementMetricsFacade(deviceManagementImpl);
+		DeviceManagementMetricsFacade facade = new DeviceManagementMetricsFacade();
+		facade.setDelegate(deviceManagementImpl);
+		deviceManagement = facade;
 		deviceManagement.start();
 
 		// Load user management.
