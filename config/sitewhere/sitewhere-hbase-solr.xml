@@ -14,8 +14,14 @@
 	<import resource="sitewhere-hbase-clients.xml"/>
 
 	<!-- HBase device management implementation -->
-	<bean id="deviceManagement" class="com.sitewhere.hbase.device.HBaseDeviceManagement">
+	<bean id="hbaseDeviceManagement" class="com.sitewhere.hbase.device.HBaseDeviceManagement">
 		<property name="client" ref="hbase"/>
+	</bean>
+
+	<!-- HBase device management implementation -->
+	<bean id="deviceManagement" class="com.sitewhere.solr.SolrDeviceManagementDecorator">
+		<property name="delegate" ref="hbaseDeviceManagement"/>
+		<property name="solrServerUrl" value="http://192.168.32.129:8983/solr"/>
 	</bean>
 
 	<!-- HBase device management implementation -->

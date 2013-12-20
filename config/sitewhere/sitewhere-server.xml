@@ -13,8 +13,11 @@
 	<!-- Leave uncommented to use MondoDB backend -->
 	<import resource="sitewhere-mongodb.xml"/>
 
-	<!-- Leave uncommented to use HBase backend -->
+	<!-- Uncomment to use HBase datastore -->
 	<!-- <import resource="sitewhere-hbase.xml"/> -->
+
+	<!-- Uncomment to use HBase datastore with Solr indexing -->
+	<!-- <import resource="sitewhere-hbase-solr.xml"/> -->
 
 	<!-- ##################### -->
 	<!-- # DATA INITIALIZERS # -->
