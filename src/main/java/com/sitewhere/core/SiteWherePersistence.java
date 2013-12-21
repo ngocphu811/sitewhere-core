@@ -9,7 +9,6 @@
  */
 package com.sitewhere.core;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -17,7 +16,6 @@ import java.util.Map;
 import org.springframework.security.authentication.encoding.MessageDigestPasswordEncoder;
 import org.springframework.security.authentication.encoding.ShaPasswordEncoder;
 
-import com.sitewhere.rest.model.common.MetadataEntry;
 import com.sitewhere.rest.model.common.MetadataProvider;
 import com.sitewhere.rest.model.common.MetadataProviderEntity;
 import com.sitewhere.rest.model.device.DeviceAlert;
@@ -120,7 +118,7 @@ public class SiteWherePersistence {
 		target.setDescription(source.getDescription());
 		target.setImageUrl(source.getImageUrl());
 		target.setMapType(source.getMapType());
-		target.setMetadata(new ArrayList<MetadataEntry>());
+		target.clearMetadata();
 		target.setMapMetadata(new MetadataProvider());
 
 		MetadataProvider.copy(source, target);
