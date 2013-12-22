@@ -25,7 +25,7 @@
 	<!-- Solr device management wrapper for MongoDB -->
 	<bean id="deviceManagement" class="com.sitewhere.solr.SolrDeviceManagementDecorator">
 		<property name="delegate" ref="mongoDeviceManagement"/>
-		<property name="solrServerUrl" value="http://192.168.32.129:8983/solr"/>
+		<property name="solrServerUrl" value="http://192.168.32.129:8983/solr/sitewhere"/>
 	</bean>
 
 	<!-- Mongo user management implementation -->
