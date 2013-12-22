@@ -188,12 +188,10 @@ public class DefaultDeviceModelInitializer implements IDeviceModelInitializer {
 					+ "administrators if any of the assets move outside of the general site area or "
 					+ "into areas where they are not allowed.");
 			request.setImageUrl(SITE_IMAGE_URL);
-			request.setMapType("mapquest");
-			request.getMapMetadata().addOrReplaceMetadata(ISiteMapMetadata.MAP_CENTER_LATITUDE,
-					"34.10469794977326");
-			request.getMapMetadata().addOrReplaceMetadata(ISiteMapMetadata.MAP_CENTER_LONGITUDE,
-					"-84.23966646194458");
-			request.getMapMetadata().addOrReplaceMetadata(ISiteMapMetadata.MAP_ZOOM_LEVEL, "15");
+			request.getMap().setType("mapquest");
+			request.getMap().addOrReplaceMetadata(ISiteMapMetadata.MAP_CENTER_LATITUDE, "34.10469794977326");
+			request.getMap().addOrReplaceMetadata(ISiteMapMetadata.MAP_CENTER_LONGITUDE, "-84.23966646194458");
+			request.getMap().addOrReplaceMetadata(ISiteMapMetadata.MAP_ZOOM_LEVEL, "15");
 			ISite site = getDeviceManagement().createSite(request);
 			results.add(site);
 			LOGGER.info(PREFIX_CREATE_SITE + " " + request.getName());

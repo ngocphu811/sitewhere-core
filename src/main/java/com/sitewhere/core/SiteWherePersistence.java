@@ -26,6 +26,7 @@ import com.sitewhere.rest.model.device.DeviceLocation;
 import com.sitewhere.rest.model.device.DeviceMeasurement;
 import com.sitewhere.rest.model.device.DeviceMeasurements;
 import com.sitewhere.rest.model.device.Site;
+import com.sitewhere.rest.model.device.SiteMapData;
 import com.sitewhere.rest.model.device.Zone;
 import com.sitewhere.rest.model.user.GrantedAuthority;
 import com.sitewhere.rest.model.user.User;
@@ -96,12 +97,11 @@ public class SiteWherePersistence {
 		site.setName(source.getName());
 		site.setDescription(source.getDescription());
 		site.setImageUrl(source.getImageUrl());
-		site.setMapType(source.getMapType());
 		site.setToken(uuid);
+		site.setMap(SiteMapData.copy(source.getMap()));
 
 		SiteWherePersistence.initializeEntityMetadata(site);
 		MetadataProvider.copy(source, site);
-		MetadataProvider.copy(source.getMapMetadata(), site.getMapMetadata());
 		return site;
 	}
 
@@ -116,12 +116,10 @@ public class SiteWherePersistence {
 		target.setName(source.getName());
 		target.setDescription(source.getDescription());
 		target.setImageUrl(source.getImageUrl());
-		target.setMapType(source.getMapType());
 		target.clearMetadata();
-		target.setMapMetadata(new MetadataProvider());
+		target.setMap(SiteMapData.copy(source.getMap()));
 
 		MetadataProvider.copy(source, target);
-		MetadataProvider.copy(source.getMapMetadata(), target.getMapMetadata());
 		SiteWherePersistence.setUpdatedEntityMetadata(target);
 	}
 
