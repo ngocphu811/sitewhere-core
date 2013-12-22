@@ -32,7 +32,6 @@ import com.sitewhere.rest.model.user.User;
 import com.sitewhere.security.LoginManager;
 import com.sitewhere.spi.SiteWhereException;
 import com.sitewhere.spi.common.ILocation;
-import com.sitewhere.spi.common.IMeasurementEntry;
 import com.sitewhere.spi.device.AlertLevel;
 import com.sitewhere.spi.device.AlertSource;
 import com.sitewhere.spi.device.DeviceAssignmentStatus;
@@ -183,8 +182,8 @@ public class SiteWherePersistence {
 			IDeviceAssignment assignment) throws SiteWhereException {
 		DeviceMeasurements measurements = new DeviceMeasurements();
 		deviceEventCreateLogic(request, assignment, measurements);
-		for (IMeasurementEntry entry : request.getMeasurements()) {
-			measurements.addOrReplaceMeasurement(entry.getName(), entry.getValue());
+		for (String key : request.getMeasurements().keySet()) {
+			measurements.addOrReplaceMeasurement(key, request.getMeasurement(key));
 		}
 		return measurements;
 	}
@@ -299,14 +298,14 @@ public class SiteWherePersistence {
 		}
 		if ((batch.getMeasurements() != null) && (!batch.getMeasurements().isEmpty())) {
 			for (IDeviceMeasurementsCreateRequest request : batch.getMeasurements()) {
-				for (IMeasurementEntry entry : request.getMeasurements()) {
-					IDeviceMeasurement em = measurementsById.get(entry.getName());
+				for (String key : request.getMeasurements().keySet()) {
+					IDeviceMeasurement em = measurementsById.get(key);
 					if ((em == null) || (em.getEventDate().before(request.getEventDate()))) {
 						DeviceMeasurement newMeasurement = new DeviceMeasurement();
 						deviceEventCreateLogic(request, assignment, newMeasurement);
-						newMeasurement.setName(entry.getName());
-						newMeasurement.setValue(entry.getValue());
-						measurementsById.put(entry.getName(), newMeasurement);
+						newMeasurement.setName(key);
+						newMeasurement.setValue(request.getMeasurement(key));
+						measurementsById.put(key, newMeasurement);
 					}
 				}
 			}

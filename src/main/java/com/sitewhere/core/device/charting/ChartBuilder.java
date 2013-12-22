@@ -18,7 +18,6 @@ import java.util.Map;
 
 import com.sitewhere.rest.model.device.charting.ChartEntry;
 import com.sitewhere.rest.model.device.charting.ChartSeries;
-import com.sitewhere.spi.common.IMeasurementEntry;
 import com.sitewhere.spi.device.IDeviceMeasurements;
 import com.sitewhere.spi.device.charting.IChartSeries;
 
@@ -43,8 +42,8 @@ public class ChartBuilder {
 
 		// Add all measurements.
 		for (IDeviceMeasurements measurements : matches) {
-			for (IMeasurementEntry entry : measurements.getMeasurements()) {
-				addMeasurementEntry(entry, measurements.getEventDate());
+			for (String key : measurements.getMeasurements().keySet()) {
+				addSeriesEntry(key, measurements.getMeasurement(key), measurements.getEventDate());
 			}
 		}
 		// Sort entries by date.
@@ -59,19 +58,20 @@ public class ChartBuilder {
 	/**
 	 * Add a new measurement entry. Create a new series if one does not already exist.
 	 * 
-	 * @param entry
+	 * @param key
+	 * @param value
+	 * @param date
 	 */
-	protected void addMeasurementEntry(IMeasurementEntry entry, Date date) {
-		String measurement = entry.getName();
-		IChartSeries<Double> series = seriesByMeasurementName.get(measurement);
+	protected void addSeriesEntry(String key, Double value, Date date) {
+		IChartSeries<Double> series = seriesByMeasurementName.get(key);
 		if (series == null) {
 			ChartSeries<Double> newSeries = new ChartSeries<Double>();
-			newSeries.setMeasurementId(measurement);
-			seriesByMeasurementName.put(measurement, newSeries);
+			newSeries.setMeasurementId(key);
+			seriesByMeasurementName.put(key, newSeries);
 			series = newSeries;
 		}
 		ChartEntry<Double> seriesEntry = new ChartEntry<Double>();
-		seriesEntry.setValue(entry.getValue());
+		seriesEntry.setValue(value);
 		seriesEntry.setMeasurementDate(date);
 		series.getEntries().add(seriesEntry);
 	}
