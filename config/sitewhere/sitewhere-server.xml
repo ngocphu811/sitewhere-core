@@ -10,8 +10,11 @@
 	<!-- # SERVICE PROVIDER IMPLEMENTATIONS # -->
 	<!-- #################################### -->
 
-	<!-- Leave uncommented to use MondoDB backend -->
+	<!-- Leave uncommented to use MondoDB datastore -->
 	<import resource="sitewhere-mongodb.xml"/>
+
+	<!-- Uncomment to use MongoDB datastore with Solr indexing -->
+	<!-- <import resource="sitewhere-mongodb-solr.xml"/> -->
 
 	<!-- Uncomment to use HBase datastore -->
 	<!-- <import resource="sitewhere-hbase.xml"/> -->
