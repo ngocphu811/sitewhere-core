@@ -2,7 +2,7 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"
 >
 	<properties>
-		<sitewhere.version>0.9.3</sitewhere.version>
+		<sitewhere.version>0.9.4</sitewhere.version>
 		<mule.version>3.4.0</mule.version>
 	</properties>
 
