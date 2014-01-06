@@ -22,7 +22,7 @@
 	<classpathentry kind="var" path="M2_REPO/org/mule/mule-core/3.4.0/mule-core-3.4.0.jar"/>
 	<classpathentry kind="var" path="M2_REPO/com/codahale/metrics/metrics-core/3.0.1/metrics-core-3.0.1.jar"/>
 	<classpathentry kind="var" path="M2_REPO/com/codahale/metrics/metrics-healthchecks/3.0.1/metrics-healthchecks-3.0.1.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/apache/cxf/cxf-bundle/2.7.7/cxf-bundle-2.7.7.jar"/>
 	<classpathentry kind="var" path="M2_REPO/com/vividsolutions/jts/1.13/jts-1.13.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/apache/cxf/cxf-bundle/2.7.3/cxf-bundle-2.7.3.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
